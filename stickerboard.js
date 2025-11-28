@@ -28,14 +28,14 @@ const {
     createStickerboard,
     updateStickerboard,
     deleteStickerboard
-} = require('../routes/stickerboard');
+} = require('/routes/stickerboard');
 
-const router = express.Router();
 
 // map the express.router for / address to methods we defined
 router
     .route('/')
     .get(getStickerboards)
+    .post(createStickerboard)
 // map the express router for passed id number to methods we defined
 router
     .route('/:id')
