@@ -11,10 +11,49 @@ const asyncHandler = require('../middleware/async');
 // @access Public
 exports.getStickerboards = asyncHandler(async (req, res, next) => {
         // await on the async call to .find() for find all stickerboards, and return success
-        console.log(req.query)
-        const stickerboards = await Stickerboard.find();
+        // console.log(req.query)
+        // const stickerboards = await Stickerboard.find();
+        // we'll modify the basic routine above to use a regex to make the query conform
+        // to the MONGODB query operators standards for > < >= <=
 
-        res.status(200).json({ success: true, count: stickerboards.length, data: stickerboards });
+        let query;  // just initialize
+
+        // Spread operator to copy query element of req into a new object
+        const reqQuery = { ...req.query };
+
+        // Array of Fields to exclude when filtering, just our keyword 'select' for now
+        const removeFields = ['select'];
+
+        // Loop over removeFields and delete them from reqQuery so we aren't searching the DB for 'select'
+        removeFields.forEach(param => delete reqQuery[param]);
+
+        // Create query string
+        let queryStr = JSON.stringify(req.query);
+
+        // regex goes between //s, \b word boundary, /g global
+        // Create comparison operators we can pass to mongoose
+        queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+        console.log(queryStr);
+
+        // Find the resource
+        query = Stickerboard.find(JSON.parse(queryStr));
+
+        // Select fields if select was included in the query
+        if (req.query.select) {
+            // Selected fields are comma delimited in our request, but Mongoose wants them space delimited
+            // .split turns them into an array, join rejoins them space delimited
+            const fields = req.query.select.split(',').join(' ');
+            query = query.select(fields);
+            console.log(`Selected these fields: ${fields}`.yellow.underline);
+        }
+
+        // Execute the query
+        const stickerboards = await query;
+
+        // Publish the response
+        res
+            .status(200)
+            .json({ success: true, count: stickerboards.length, data: stickerboards });
 });
 
 // @desc Get single stickerboard

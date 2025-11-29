@@ -3,18 +3,21 @@
     "name": "Coop's Board",
     "description": "my journey",
     "tags": ["get fit", "thin", "inspiration"],
-    "weeks": "17"
+    "weeks": "17",
+    "totalCost": "0"
   },
   {
     "name": "Toby Man",
     "description": "my journey",
     "tags": ["get fit", "thin", "inspiration"],
-    "weeks": "42"
+    "weeks": "42",
+    "totalCost": "2000"
   },
   {
     "name": "Cheddar man",
     "description": "my journey",
     "tags": ["get fit", "thin", "inspiration"],
-    "weeks": "42"
+    "weeks": "42",
+    "totalCost": "12000"
   }
 ]

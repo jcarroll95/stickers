@@ -25,7 +25,8 @@ const StickerboardSchema = new mongoose.Schema({
     photo: {
         type: String,
         default: 'no-photo.jpg'
-    }
+    },
+    totalCost: Number
 });
 
 // Let's introduce slugify middleware - create a stickerboard slug from the name.

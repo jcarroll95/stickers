@@ -1,5 +1,6 @@
 // @desc Main application file for the server
 const express = require('express');
+// dotenv is possibly not necessary with current node
 const dotenv = require('dotenv');
 const logger = require('./middleware/logger');
 const morgan = require('morgan');
@@ -12,7 +13,6 @@ dotenv.config({ path: './config/config.env' });
 
 // Connect to MongoDB
 connectDB();
-//
 
 // route files
 const stickerboard = require('./routes/stickerboard');
@@ -32,7 +32,10 @@ if(process.env.NODE_ENV === 'development') {
 // app.use(logger);
 
 // mount routers
-app.use('/api/v1/stickerboard', stickerboard); // connecting our route to the file
+app.use('/api/v1/stickerboards', stickerboard); // connecting our route to the file
+
+// Query Parsing setting for Express to let query work in nested functions
+app.set('query parser', 'extended');
 
 // set port to config.env value or 5000 if not present
 const PORT = process.env.PORT || 5000;
