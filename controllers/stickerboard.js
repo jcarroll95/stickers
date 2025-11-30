@@ -3,57 +3,99 @@ const ErrorResponse = require('../utils/errorResponse');
 const Stickerboard = require('../models/Stickerboard');
 const asyncHandler = require('../middleware/async');
 
-
-
-
 // @desc Get all stickerboards
 // @route GET /api/v1/stickerboards
 // @access Public
 exports.getStickerboards = asyncHandler(async (req, res, next) => {
-        // await on the async call to .find() for find all stickerboards, and return success
-        // console.log(req.query)
-        // const stickerboards = await Stickerboard.find();
-        // we'll modify the basic routine above to use a regex to make the query conform
-        // to the MONGODB query operators standards for > < >= <=
+    // await on the async call to .find() for find all stickerboards, and return success
+    // console.log(req.query)
+    // const stickerboards = await Stickerboard.find();
+    // we'll modify the basic routine above to use a regex to make the query conform
+    // to the MONGODB query operators standards for > < >= <=
 
-        let query;  // just initialize
+    let query;  // just initialize
 
-        // Spread operator to copy query element of req into a new object
-        const reqQuery = { ...req.query };
+    // Spread operator to copy query element of req into a new object
+    const reqQuery = { ...req.query };
 
-        // Array of Fields to exclude when filtering, just our keyword 'select' for now
-        const removeFields = ['select'];
+    // Array of Fields to exclude when filtering
+    // select chooses to return a limited selection of fields from the query
+    // sort chooses sortby field and establishes a default
+    // page and limit are for pagination. limit = results per page
+    const removeFields = ['select', 'sort', 'page', 'limit'];
 
-        // Loop over removeFields and delete them from reqQuery so we aren't searching the DB for 'select'
-        removeFields.forEach(param => delete reqQuery[param]);
+    // Loop over removeFields and delete them from reqQuery so we aren't searching the DB for 'select'
+    removeFields.forEach(param => delete reqQuery[param]);
 
-        // Create query string
-        let queryStr = JSON.stringify(req.query);
+    // Create query string against the SANITIZED version of reqQuery so we don't re-insert the removed fields
+    let queryStr = JSON.stringify(reqQuery);
 
-        // regex goes between //s, \b word boundary, /g global
-        // Create comparison operators we can pass to mongoose
-        queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
-        console.log(queryStr);
+    // regex goes between //s, \b word boundary, /g global
+    // Create comparison operators we can pass to mongoose
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+    console.log(queryStr);
 
-        // Find the resource
-        query = Stickerboard.find(JSON.parse(queryStr));
+    // Find the resource now that queryStr has been massaged to work for the mongoose method
+    query = Stickerboard.find(JSON.parse(queryStr));
 
-        // Select fields if select was included in the query
-        if (req.query.select) {
-            // Selected fields are comma delimited in our request, but Mongoose wants them space delimited
-            // .split turns them into an array, join rejoins them space delimited
-            const fields = req.query.select.split(',').join(' ');
-            query = query.select(fields);
-            console.log(`Selected these fields: ${fields}`.yellow.underline);
+    // Sort the query with default by created date descending
+    if (req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ');
+        query = query.sort(sortBy);
+    } else {
+        query = query.sort('-createdAt');   // -1 is mongoose for descending
+    }
+
+    // Select fields if select was included in the query
+    if (req.query.select) {
+        // Selected fields are comma delimited in our request, but Mongoose wants them space delimited
+        // .split turns them into an array, join rejoins them space delimited
+        const fields = req.query.select.split(',').join(' ');
+        query = query.select(fields);
+        console.log(`Selected these fields: ${fields}`.yellow.underline);
+    }
+
+    // Pagination stuff
+    const page = parseInt(req.query.page, 10) || 1;       // requested page, default 1
+    const limit = parseInt(req.query.limit, 10) || 20;    // requested perpage, default 20
+    const startIndex = (page - 1) * limit;                      // which result to start listing on this page
+    const endIndex = page * limit;                              // last result
+    const total = await Stickerboard.countDocuments();
+
+    // mongoose .skip() means skips this number of results before returning results
+    // .limit() means restrict the number of documents returned by this query
+    query = query.skip(startIndex).limit(limit);
+
+    // Execute the query
+    const stickerboards = await query;
+
+    // Pagination result object
+    const pagination = {}
+
+    if (endIndex < total) {
+        pagination.next = {
+            page: page + 1,
+            limit
         }
+    }
 
-        // Execute the query
-        const stickerboards = await query;
+    if (startIndex > 0) {
+        pagination.prev = {
+            page: page - 1,
+            limit
+        }
+    }
 
-        // Publish the response
-        res
-            .status(200)
-            .json({ success: true, count: stickerboards.length, data: stickerboards });
+
+    // Publish the response
+    res
+        .status(200)
+        .json({
+            success: true,
+            count: stickerboards.length,
+            pagination: pagination, // if the variable's is the same as the key we don't need to repeat the name
+            data: stickerboards
+        });
 });
 
 // @desc Get single stickerboard
