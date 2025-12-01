@@ -3,6 +3,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const Stickerboard = require('../models/Stickerboard');
 const asyncHandler = require('../middleware/async');
 
+
 // @desc Get all stickerboards
 // @route GET /api/v1/stickerboards
 // @access Public
@@ -36,7 +37,7 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
     console.log(queryStr);
 
     // Find the resource now that queryStr has been massaged to work for the mongoose method
-    query = Stickerboard.find(JSON.parse(queryStr));
+    query = Stickerboard.find(JSON.parse(queryStr)).populate('stix');
 
     // Sort the query with default by created date descending
     if (req.query.sort) {
@@ -175,13 +176,17 @@ exports.updateStickerboard = asyncHandler(async (req, res, next) => {
 // @route DELETE /api/v1/stickerboards/:id
 // @acess Private
 exports.deleteStickerboard = asyncHandler(async (req, res, next) => {
-        const stickerboard = await Stickerboard.findByIdAndDelete(req.params.id);
+        const stickerboard = await Stickerboard.findById(req.params.id);
 
         if (!stickerboard) {
             return next(
                 new ErrorResponse(`Stickerboard not found with id of ${req.params.id}`, 404)
             );
         }
+        //await Stick.deleteMany({ belongsToBoard: req.params.id });
+
+        await stickerboard.deleteOne();
+
         // if the delete is successful we'll return an empty object {}
         res.status(200).json({ success: true, data: {} });
 });

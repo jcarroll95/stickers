@@ -27,7 +27,11 @@ const StickerboardSchema = new mongoose.Schema({
         default: 'no-photo.jpg'
     },
     totalCost: Number
-});
+},
+    {
+        toJSON: { virtuals: true }
+    },
+);
 
 // Let's introduce slugify middleware - create a stickerboard slug from the name.
 // .pre functions are mongoose middleware run against the db document data before the action is taken in the database
@@ -42,5 +46,21 @@ StickerboardSchema.pre('save', function () {
     //next();
 });
 
+
+// Cascade delete courses when a stickerboard is deleted
+
+StickerboardSchema.pre('deleteOne', { document: true, query: false },async function (next) {
+    console.log(`Stickerboard ___ deleted, stix associated with id ___ deleted`.red.inverse);
+    await this.model('Stick').deleteMany( { belongsToBoard: this._id });
+    //next();
+});
+
+// Reverse population with virtual fields
+StickerboardSchema.virtual('stix', {
+    ref: 'Stick',
+    localField: '_id',
+    foreignField: 'belongsToBoard',
+    justOne: false
+});
 
 module.exports = mongoose.model('Stickerboard', StickerboardSchema);

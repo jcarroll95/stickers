@@ -16,7 +16,7 @@ connectDB();
 
 // route files
 const stickerboard = require('./routes/stickerboard');
-
+const stick = require('./routes/stix');
 
 const app = express();
 
@@ -33,6 +33,7 @@ if(process.env.NODE_ENV === 'development') {
 
 // mount routers
 app.use('/api/v1/stickerboards', stickerboard); // connecting our route to the file
+app.use('/api/v1/stix', stick);
 
 // Query Parsing setting for Express to let query work in nested functions
 app.set('query parser', 'extended');
