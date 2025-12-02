@@ -8,6 +8,7 @@ const express = require('express');
 // controller. Before we added this in, the route would return all stix not just the ones associated to that ID.
 const router = express.Router( { mergeParams: true });
 
+
 // Bring in controller functions
 const {
     getStix,
@@ -20,9 +21,12 @@ router.route('/')
     .get(getStix)
 //    .post(createStickerboard);
 
-router.route('/:id')
+router.route('/:belongsToBoard')
+    .post(addStick);
+
+router.route('/:stickId')
     .get(getStick)
-    .post(addStick)
+    //.post(addStick)
     //.put(updateStickerboard)
     //.delete(deleteStickerboard);
 

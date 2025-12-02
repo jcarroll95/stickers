@@ -72,15 +72,15 @@ exports.getStick = asyncHandler(async (req, res, next) => {
 exports.addStick = asyncHandler(async (req, res, next) => {
     // we need the stickerboard _id that's in the URL to become something we can submit in the body of our
     // response which is adding a new stick IAW our stick model, so let's manually grab it:
-    req.body.belongsToBoard = req.params.id;
+    req.body.belongsToBoard = req.params.belongsToBoard;
 
     // all sticks are associated with a stickerboard. adding a stick must be done by the owner of that board.
 
     // get the stickerboard by ID
-    const stickerboard = await Stickerboard.findById(req.params.id);
+    const stickerboard = await Stickerboard.findById(req.params.belongsToBoard);
     // if it doesn't exist, throw an error
     if (!stickerboard) {
-        return next(new ErrorResponse(`No stickerboard found with id ${req.params.belongsToBoard}`, 404));
+        return next(new ErrorResponse(`No stickerboard found with id ${req.params.id}`, 404));
     }
 
     // mongoose .create IAW our stick model, creating a document that contains the data in our req.body
