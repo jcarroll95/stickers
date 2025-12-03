@@ -13,12 +13,13 @@ const router = express.Router( { mergeParams: true });
 const {
     getStix,
     getStick,
-    addStick
+    addStick,
+    updateStick
 } = require('../controllers/stick');
 
 // Map routes to controller actions
 router.route('/')
-    .get(getStix)
+    .get(getStix);
 //    .post(createStickerboard);
 
 router.route('/:belongsToBoard')
@@ -26,6 +27,7 @@ router.route('/:belongsToBoard')
 
 router.route('/:stickId')
     .get(getStick)
+    .put(updateStick);
     //.post(addStick)
     //.put(updateStickerboard)
     //.delete(deleteStickerboard);

@@ -48,7 +48,7 @@ exports.getStix = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Get stick
-// @route   GET /api/v1/stix/:id
+// @route   GET /api/v1/stix/:stickId
 // @access  Private
 exports.getStick = asyncHandler(async (req, res, next) => {
     const stick = await Stick.findById(req.params.id).populate( {
@@ -57,7 +57,7 @@ exports.getStick = asyncHandler(async (req, res, next) => {
     } );
 
     if (!stick) {
-        return next(new ErrorResponse(`No stick found with id ${req.params.id}`, 404));
+        return next(new ErrorResponse(`No stick found with id ${req.params.stickId}`, 404));
     }
 
     res.status(200).json({
@@ -67,7 +67,7 @@ exports.getStick = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Add a stick
-// @route   POST /api/v1/stickerboards/:id/stix
+// @route   POST /api/v1/stix/:belongsToBoard
 // @access  Private
 exports.addStick = asyncHandler(async (req, res, next) => {
     // we need the stickerboard _id that's in the URL to become something we can submit in the body of our
@@ -85,6 +85,30 @@ exports.addStick = asyncHandler(async (req, res, next) => {
 
     // mongoose .create IAW our stick model, creating a document that contains the data in our req.body
     const stick = await Stick.create(req.body);
+
+    res.status(200).json({
+        success: true,
+        data: stick
+    })
+});
+
+
+// @desc    Update a stick
+// @route   PUT /api/v1/stix/:stickId
+// @access  Private
+exports.updateStick = asyncHandler(async (req, res, next) => {
+    // get the stickerboard by ID and replace the data with json passed in the req body
+    // new: true will return the newly updated mongo data in stick
+    let stick = await Stick.findById(req.params.id);
+    // if it doesn't exist, throw an error
+    if (!stick) {
+        return next(new ErrorResponse(`No stick found with id ${req.params.stickId}`, 404));
+    }
+
+    stick = await Stick.findByIdAndUpdate(req.params.stickId, req.body, {
+        new: true,
+        runValidators: true
+    });
 
     res.status(200).json({
         success: true,
