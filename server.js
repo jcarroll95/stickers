@@ -35,6 +35,10 @@ if(process.env.NODE_ENV === 'development') {
 app.use('/api/v1/stickerboards', stickerboard); // connecting our route to the file
 app.use('/api/v1/stix', stick);
 
+// Bring in the error wrapper
+const errorHandler = require('./middleware/error');
+app.use(errorHandler);
+
 // Query Parsing setting for Express to let query work in nested functions
 app.set('query parser', 'extended');
 

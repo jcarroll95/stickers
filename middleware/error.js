@@ -11,7 +11,9 @@ const errorHandler = (err, req, res, next) => {
 
 // Mongoose bad ObjectId
     if(err.name === 'CastError') {
-        const message = `Resource not found with id of ${req.params.id}`;
+        // modified from req.params.id to mongoose err.path/value since we request resources
+        // with id, belongsToBoard, and stickId
+        const message = `Resource not found: ${err.path}=${err.value}`;
         error = new ErrorResponse(message, 404);
     }
 

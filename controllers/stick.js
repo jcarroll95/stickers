@@ -6,7 +6,7 @@ const Stickerboard = require('../models/Stickerboard');
 
 // @desc    Get stix
 // @route   GET /api/v1/stix
-// @route   GET /api/v1/stickerboards/:stickerboardId
+// @route   GET /api/v1/stickerboards/:belongsToBoard/stix
 // @access  Private
 exports.getStix = asyncHandler(async (req, res, next) => {
     let query;
@@ -51,7 +51,7 @@ exports.getStix = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/stix/:stickId
 // @access  Private
 exports.getStick = asyncHandler(async (req, res, next) => {
-    const stick = await Stick.findById(req.params.id).populate( {
+    const stick = await Stick.findById(req.params.stickId).populate( {
         path: 'belongsToBoard',
         select: [ 'name', 'description' ]
     } );
@@ -80,7 +80,7 @@ exports.addStick = asyncHandler(async (req, res, next) => {
     const stickerboard = await Stickerboard.findById(req.params.belongsToBoard);
     // if it doesn't exist, throw an error
     if (!stickerboard) {
-        return next(new ErrorResponse(`No stickerboard found with id ${req.params.id}`, 404));
+        return next(new ErrorResponse(`No stickerboard found with id ${req.params.belongsToBoard}`, 404));
     }
 
     // mongoose .create IAW our stick model, creating a document that contains the data in our req.body
@@ -99,7 +99,7 @@ exports.addStick = asyncHandler(async (req, res, next) => {
 exports.updateStick = asyncHandler(async (req, res, next) => {
     // get the stickerboard by ID and replace the data with json passed in the req body
     // new: true will return the newly updated mongo data in stick
-    let stick = await Stick.findById(req.params.id);
+    let stick = await Stick.findById(req.params.stickId);
     // if it doesn't exist, throw an error
     if (!stick) {
         return next(new ErrorResponse(`No stick found with id ${req.params.stickId}`, 404));

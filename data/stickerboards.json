@@ -1,23 +1,122 @@
 [
   {
     "name": "Coop's Board",
-    "description": "my journey",
-    "tags": ["get fit", "thin", "inspiration"],
-    "weeks": "17",
-    "totalCost": "0"
+    "description": "Starting semaglutide in Jan, focusing on sustainable habits and weekly check-ins. Tracking appetite changes and energy levels.",
+    "tags": ["semaglutide", "week1", "habits", "NSV"],
+    "weeks": "17"
   },
   {
     "name": "Toby Man",
-    "description": "my journey",
-    "tags": ["get fit", "thin", "inspiration"],
-    "weeks": "42",
-    "totalCost": "2000"
+    "description": "On tirzepatide after plateauing last year. Goal: -35 lbs by summer. Logging workouts, hydration, and side effects.",
+    "tags": ["tirzepatide", "strength", "hydration", "goal"],
+    "weeks": "24"
   },
   {
     "name": "Cheddar man",
-    "description": "my journey",
-    "tags": ["get fit", "thin", "inspiration"],
-    "weeks": "42",
-    "totalCost": "12000"
+    "description": "GLP-1 maintenance phase. Stabilizing weight, adding protein and step goals. Monthly body comp scans.",
+    "tags": ["maintenance", "protein", "steps", "DEXA"],
+    "weeks": "42"
+  },
+  {
+    "name": "Jess' Cut Phase",
+    "description": "PCOS + sema. Prioritizing fiber and breakfast protein. Biweekly measurements and photos.",
+    "tags": ["PCOS", "semaglutide", "fiber", "photos"],
+    "weeks": "6"
+  },
+  {
+    "name": "Mike's Marathon & Mounjaro",
+    "description": "Training for half marathon while titrating tirzepatide. Watching fuel timing to avoid nausea.",
+    "tags": ["tirzepatide", "running", "titration", "fueling"],
+    "weeks": "9"
+  },
+  {
+    "name": "Plant-Based Progress",
+    "description": "Vegan on GLP-1. Meal prep with tofu/legumes. Tracking iron/B12 energy dips and satiety cues.",
+    "tags": ["vegan", "meal-prep", "satiety", "micros"],
+    "weeks": "12"
+  },
+  {
+    "name": "New Dad Reboot",
+    "description": "Sleep deprived but consistent. Short home workouts, fiber target 30g/day, evening walk with stroller.",
+    "tags": ["sleep", "home-workout", "fiber", "walking"],
+    "weeks": "4"
+  },
+  {
+    "name": "Wedding Cut 2026",
+    "description": "Engagement photos in 4 months. Sema + calorie floor guardrails; no skipping meals. Dress fitting milestones.",
+    "tags": ["wedding", "semaglutide", "milestones", "balanced"],
+    "weeks": "8"
+  },
+  {
+    "name": "Hypertension Helper",
+    "description": "Doctor-approved GLP-1 use with BP meds. Sodium awareness, daily weigh-ins, weekly averages.",
+    "tags": ["blood-pressure", "sodium", "weigh-in", "averages"],
+    "weeks": "15"
+  },
+  {
+    "name": "Desk Job Undo",
+    "description": "Sedentary to 8k steps/day. Lunch walk club, water reminders, and resistance bands under the desk.",
+    "tags": ["steps", "office", "hydration", "movement"],
+    "weeks": "5"
+  },
+  {
+    "name": "Prep Before Baby",
+    "description": "OB cleared preconception weight loss. Gentle calorie deficit, prenatal vitamin, zero alcohol.",
+    "tags": ["preconception", "prenatal", "alcohol-free", "gentle-deficit"],
+    "weeks": "10"
+  },
+  {
+    "name": "Travel While Titrating",
+    "description": "Frequent flights; packing protein snacks and electrolytes. Scheduling doses away from long-haul days.",
+    "tags": ["travel", "titration", "snacks", "electrolytes"],
+    "weeks": "7"
+  },
+  {
+    "name": "Strength First Cut",
+    "description": "Prioritizing lifting 3x/week to preserve muscle. Protein 130g target, creatine, body tape each Sunday.",
+    "tags": ["lifting", "protein", "creatine", "measurements"],
+    "weeks": "13"
+  },
+  {
+    "name": "IBS-Friendly GLP-1",
+    "description": "Low-FODMAP rotation to manage GI while on dose escalation. Tracking trigger foods and relief days.",
+    "tags": ["IBS", "low-FODMAP", "GI", "tracking"],
+    "weeks": "11"
+  },
+  {
+    "name": "Sugar Cravings Tamer",
+    "description": "Evening cravings down on GLP-1. Swapping desserts for Greek yogurt bowls. Weekend treat budgeting.",
+    "tags": ["cravings", "dessert-swaps", "routine", "budget"],
+    "weeks": "3"
+  },
+  {
+    "name": "Postpartum Power-Up",
+    "description": "6 months postpartum; cleared for exercise. Gentle cardio + pelvic floor, protein-forward snacks.",
+    "tags": ["postpartum", "cardio", "pelvic-floor", "protein"],
+    "weeks": "14"
+  },
+  {
+    "name": "Coach's Demo Board",
+    "description": "Sample curriculum for group coaching: hunger scale, plate method, weekend strategy, check-ins.",
+    "tags": ["coaching", "hunger-scale", "plate-method", "check-ins"],
+    "weeks": "16"
+  },
+  {
+    "name": "Keto to Moderate",
+    "description": "Transitioning from strict keto to moderate carbs on GLP-1. Watching energy and gym performance.",
+    "tags": ["keto", "carbs", "performance", "transition"],
+    "weeks": "18"
+  },
+  {
+    "name": "Plateau Breaker Plan",
+    "description": "Stalled at week 20; adding step-ups, fluids, and fiber bump. Considering dose increase per MD.",
+    "tags": ["plateau", "steps", "hydration", "fiber"],
+    "weeks": "20"
+  },
+  {
+    "name": "Holiday Season Sanity",
+    "description": "Party-heavy month. GLP-1 helps portions; pre-event protein and one plate rule. No guilt recaps.",
+    "tags": ["holidays", "portions", "pre-game", "mindset"],
+    "weeks": "2"
   }
 ]

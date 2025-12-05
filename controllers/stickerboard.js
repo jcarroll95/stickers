@@ -104,7 +104,7 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
 // @access Public
 exports.getStickerboard = asyncHandler(async (req, res, next) => {
         const stickerboard = await Stickerboard.findById(req.params.id);
-        res.status(200).json({ success: true, data: stickerboard });
+
         // since we're looking for a specific ID, it's possible that one doesn't exist
         // if it doesn't exist then stickerboard will be empty
         // we have to RETURN res.status this time since we already set it in the statement
@@ -121,6 +121,8 @@ exports.getStickerboard = asyncHandler(async (req, res, next) => {
         // you must pass them the next() function, where Express will catch and process them. If we don't
         // want Express to handle the error (it outputs an HTML page, we want to output JSON data) then you
         // have to create your own error handler function. To do this you must delegate
+
+        res.status(200).json({ success: true, data: stickerboard });
 });
 
 
@@ -152,7 +154,7 @@ exports.createStickerboard = asyncHandler(async (req, res, next) => {
 });
 
 // @desc Update stickerboard
-// @route PUT /api/v1/stickerbaords/:id
+// @route PUT /api/v1/stickerboards/:id
 // @access Private
 exports.updateStickerboard = asyncHandler(async (req, res, next) => {
 

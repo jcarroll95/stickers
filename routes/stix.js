@@ -1,4 +1,4 @@
-// Routes for Stickerboard resources
+// Routes for Stick resources
 const express = require('express');
 
 // The express router for stix has the potential to receive a request that originally went to stickerboard
@@ -19,7 +19,8 @@ const {
 
 // Map routes to controller actions
 router.route('/')
-    .get(getStix);
+    .get(getStix)
+    .post(addStick);
 //    .post(createStickerboard);
 
 router.route('/:belongsToBoard')
