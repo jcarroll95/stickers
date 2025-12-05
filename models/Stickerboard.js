@@ -26,7 +26,8 @@ const StickerboardSchema = new mongoose.Schema({
         type: String,
         default: 'no-photo.jpg'
     },
-    totalCost: Number
+    totalCost: Number,
+    averageCost: Number
 },
     {
         toJSON: { virtuals: true }

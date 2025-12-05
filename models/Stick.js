@@ -45,5 +45,47 @@ const StickSchema = new mongoose.Schema({
     }
 });
 
+// Mongoose: statics are called on the actual model, methods are called on the document
+// Stick.myStaticMethod();
+// const stix = Stick.find()
+// stix.myMethod();
+StickSchema.statics.getAverageCost = async function(belongsToBoard) {
+    //console.log('Calculating average cost for board: '.blue, belongsToBoard);
+
+    // Aggregate average cost for all sticks that belong to this board
+    const aggObj = await this.aggregate([
+        { $match: { belongsToBoard: belongsToBoard } },
+        {
+            $group: {
+                _id: '$belongsToBoard',
+                averageCost: { $avg: '$cost' }
+            }
+        }
+    ]);
+
+    // Update the Stickerboard with the new average (or 0 if no sticks remain)
+    try {
+        const avg = aggObj.length > 0 ? aggObj[0].averageCost : 0;
+        await this.model('Stickerboard').findByIdAndUpdate(
+            belongsToBoard,
+            { averageCost: avg },
+            { new: true, runValidators: false }
+        );
+    } catch (err) {
+        console.error('Error updating Stickerboard averageCost:', err);
+    }
+}
+
+
+// Call getAverageCost after save
+StickSchema.post('save', function() {
+    this.constructor.getAverageCost(this.belongsToBoard);
+});
+
+// Recalculate on deletion of a Stick document
+StickSchema.post('deleteOne', { document: true, query: false }, function() {
+    this.constructor.getAverageCost(this.belongsToBoard);
+});
+
 module.exports = mongoose.model('Stick', StickSchema);
 

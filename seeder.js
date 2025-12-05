@@ -18,12 +18,15 @@ mongoose.connect(process.env.MONGO_URI);
 const stickerboards = JSON.parse(fs.readFileSync(`${__dirname}/data/stickerboards.json`, "utf-8"));
 const stix = JSON.parse(fs.readFileSync(`${__dirname}/data/stix.json`, "utf-8"));
 
+
+
+//
 // Import into db
 const importData = async () => {
     try {
         await stickerboard.create(stickerboards);
         await stick.create(stix);
-        console.log(`Data imported: ${stickerboards.length} stickerboards`.green.inverse);
+       // console.log(`Data imported: ${stickerboards.length} stickerboards`.green.inverse);
         console.log(`Data imported: ${stix.length} stix`.blue.inverse);
         process.exit(0);
     } catch (err) {
@@ -31,9 +34,11 @@ const importData = async () => {
     }
 }
 
+//
 // Delete data
 const deleteData = async () => {
     try {
+
         await stickerboard.deleteMany();
         await stick.deleteMany();
         console.log("Data destroyed".red.inverse);
