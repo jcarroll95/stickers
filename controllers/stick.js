@@ -9,22 +9,15 @@ const Stickerboard = require('../models/Stickerboard');
 // @route   GET /api/v1/stickerboards/:belongsToBoard/stix
 // @access  Private
 exports.getStix = asyncHandler(async (req, res, next) => {
-    let query;
 
     if (req.params.belongsToBoard) {
-        // OK so Stick is our Mongoose model of a stick. We REQUIRED it above.
-        // Mongoose method .find applied to model Stick with the input of an object where the
-        // document field belongsToBoard is equal to the passed stickerboard Id.
-        // This is a tedious way of doing it given our framework but let's try.
-        query = Stick.find({ belongsToBoard: req.params.belongsToBoard } );
-
+        // This setup will not apply advancedResults if you're pulling stix from only one board
+        const stix = await Stick.find({ belongsToBoard: req.params.belongsToBoard } );
+        return res.status(200).json( { success: true, count: stix.length, data: stix });
     } else {
-        // If we're here then we didn't pass a belongsToBoard, so this will find all sticks
-        // .populate will pull the name and description of the stickerboard each stick belongs to
-        query = Stick.find().populate({
-            path: 'belongsToBoard',
-            select: [ 'name', 'description' ]
-        });
+        // if you request ALL stix it will paginate via advancedResults
+        res.status(200).json(res.advancedResults);
+
     }
 
 
@@ -114,4 +107,18 @@ exports.updateStick = asyncHandler(async (req, res, next) => {
         success: true,
         data: stick
     })
+});
+
+// @desc    Delete a stick
+// @route   DELETE /api/v1/stix/:stickId
+// @access  Private
+exports.deleteStick = asyncHandler(async (req, res, next) => {
+    let stick = await Stick.findById(req.params.stickId);
+    // if it doesn't exist, throw an error
+    if (!stick) {
+        return next(new ErrorResponse(`No stick found with id ${req.params.stickId}`, 404));
+    }
+
+    await stick.deleteOne();
+    res.status(200).json({ success: true, data: {} });
 });

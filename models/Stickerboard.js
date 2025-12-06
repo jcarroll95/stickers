@@ -64,4 +64,4 @@ StickerboardSchema.virtual('stix', {
     justOne: false
 });
 
-module.exports = mongoose.model('Stickerboard', StickerboardSchema);
+module.exports = mongoose.models.Stickerboard || mongoose.model('Stickerboard', StickerboardSchema);

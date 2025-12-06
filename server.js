@@ -1,10 +1,12 @@
 // @desc Main application file for the server
+const path = require('path');
 const express = require('express');
 // dotenv is possibly not necessary with current node
 const dotenv = require('dotenv');
 const logger = require('./middleware/logger');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
+const fileupload = require('express-fileupload');
 const colors = require('colors');
 
 // load environmental vars for dotenv
@@ -31,9 +33,15 @@ if(process.env.NODE_ENV === 'development') {
 // invoke our custom middleware with app.use
 // app.use(logger);
 
+// file upload for express
+app.use(fileupload());
+
 // mount routers
 app.use('/api/v1/stickerboards', stickerboard); // connecting our route to the file
 app.use('/api/v1/stix', stick);
+
+// set static folder
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Bring in the error wrapper
 const errorHandler = require('./middleware/error');

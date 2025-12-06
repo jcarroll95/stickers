@@ -17,17 +17,24 @@ const {
   createStickerboard,
   updateStickerboard,
   deleteStickerboard,
+  stickerboardPhotoUpload
 } = require('../controllers/stickerboard');
+
+const Stickerboard = require('../models/Stickerboard');
+const advancedResults = require('../middleware/advancedResults');
 
 // Map routes to controller actions
 router.route('/')
-  .get(getStickerboards)
+  .get(advancedResults(Stickerboard, 'stix'), getStickerboards)
   .post(createStickerboard);
 
 router.route('/:id')
   .get(getStickerboard)
   .put(updateStickerboard)
   .delete(deleteStickerboard);
+
+router.route('/:id/photo')
+    .put(stickerboardPhotoUpload);
 
 module.exports = router;
 

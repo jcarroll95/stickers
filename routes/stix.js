@@ -14,12 +14,17 @@ const {
     getStix,
     getStick,
     addStick,
-    updateStick
+    updateStick,
+    deleteStick
 } = require('../controllers/stick');
+
+const Stick = require('../models/Stick');
+const advancedResults = require('../middleware/advancedResults');
+
 
 // Map routes to controller actions
 router.route('/')
-    .get(getStix)
+    .get(advancedResults(Stick, { path: 'stickerboard', select: 'name description', strictPopulate: false }), getStix)
     .post(addStick);
 //    .post(createStickerboard);
 

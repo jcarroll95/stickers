@@ -1,4 +1,5 @@
 // Stickerboard controllers
+const path = require('path');
 const ErrorResponse = require('../utils/errorResponse');
 const Stickerboard = require('../models/Stickerboard');
 const asyncHandler = require('../middleware/async');
@@ -91,12 +92,7 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
     // Publish the response
     res
         .status(200)
-        .json({
-            success: true,
-            count: stickerboards.length,
-            pagination: pagination, // if the variable's is the same as the key we don't need to repeat the name
-            data: stickerboards
-        });
+        .json(res.advancedResults);
 });
 
 // @desc Get single stickerboard
@@ -191,4 +187,61 @@ exports.deleteStickerboard = asyncHandler(async (req, res, next) => {
 
         // if the delete is successful we'll return an empty object {}
         res.status(200).json({ success: true, data: {} });
+});
+
+// @desc Upload photo for stickerboard
+// @route PUT /api/v1/stickerboards/:id/photo
+// @acess Private
+exports.stickerboardPhotoUpload= asyncHandler(async (req, res, next) => {
+    const stickerboard = await Stickerboard.findById(req.params.id);
+
+    if (!stickerboard) {
+        return next(
+            new ErrorResponse(`Stickerboard not found with id of ${req.params.id}`, 404)
+        );
+    }
+
+
+
+    if (!req.files) {
+        return next(
+            new ErrorResponse(`Please upload a file`, 400)
+        );
+    }
+
+    const file = req.files.file;
+    console.log(file);
+    // check that we got a photo
+    if (!file.mimetype.startsWith('image')) {
+        return next(new ErrorResponse(`Please upload an image`, 400));
+    }
+
+    // check filesize
+    if (file.size > process.env.MAX_FILE_UPLOAD) {
+        return next(
+            new ErrorResponse(`Please upload an image smaller than ${process.env.MAX_FILE_UPLOAD} bytes`, 400)
+        );
+    }
+
+    // create filename
+    file.name = `photo_${stickerboard._id}${path.parse(file.name).ext}`;
+    console.log(file.name);
+
+    // write the file
+    file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
+
+        if (err) {
+            console.error(err);
+            return next(
+                new ErrorResponse(`Problem with file upload`, 500)
+            );
+        }
+
+        await Stickerboard.findByIdAndUpdate(req.params.id, { photo: file.name });
+        res.status(200).json({
+            success: true,
+            data: file.name
+        });
+    });
+
 });
