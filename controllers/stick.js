@@ -16,10 +16,9 @@ exports.getStix = asyncHandler(async (req, res, next) => {
         return res.status(200).json( { success: true, count: stix.length, data: stix });
     } else {
         // if you request ALL stix it will paginate via advancedResults
-        res.status(200).json(res.advancedResults);
+        return res.status(200).json(res.advancedResults);
 
     }
-
 
     // put the results of the mongoose .find() into stix
     const stix = await query;

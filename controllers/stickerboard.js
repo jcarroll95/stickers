@@ -126,27 +126,24 @@ exports.getStickerboard = asyncHandler(async (req, res, next) => {
 // @route     POST /api/v1/stickerboards
 // @access    Private
 exports.createStickerboard = asyncHandler(async (req, res, next) => {
-    // Add user to req,body
-    //req.body.user = req.user.id;
+    // Add user to req.body
+    req.body.user = req.user.id;
     console.log(req.body);
-    // Check for published bootcamp
-    // const publishedStickerboard = await Stickerboard.findOne({user: req.user.id});
-    const publishedStickerboard = false;
+
+    // Check if this user already has a published stickerboard
+    const publishedStickerboard = await Stickerboard.findOne({ user: req.user.id });
+
+    // if user is not a vip they can only have one published stickerboard
+    if (publishedStickerboard && req.user.role !== 'vipuser') {
+        return next(new ErrorResponse(`The user with ID ${req.user.id} has already published a Stickerboard`, 400));
+    }
+
     const stickerboard = await Stickerboard.create(req.body);
     res.status(201).json({
         success: true,
         data: stickerboard
     });
-    // If the user is not an admin, they can only add one bootcamp
-    if (publishedStickerboard && req.user.role !== 'admin') {
-        // `The user with ID ${req.user.id} has already published a Stickerboard`,
-        return next(
-            new ErrorResponse(
-                `Oh nooooooo`,
-                400
-            )
-        );
-    }
+
 });
 
 // @desc Update stickerboard
@@ -200,8 +197,6 @@ exports.stickerboardPhotoUpload= asyncHandler(async (req, res, next) => {
             new ErrorResponse(`Stickerboard not found with id of ${req.params.id}`, 404)
         );
     }
-
-
 
     if (!req.files) {
         return next(

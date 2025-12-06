@@ -10,6 +10,8 @@ const router = express.Router();
 const stickRouter = require('./stix');
 router.use('/:belongsToBoard/stix', stickRouter)
 
+const { protect, authorize } = require('../middleware/auth');
+
 // Bring in controller functions
 const {
   getStickerboards,
@@ -26,15 +28,15 @@ const advancedResults = require('../middleware/advancedResults');
 // Map routes to controller actions
 router.route('/')
   .get(advancedResults(Stickerboard, 'stix'), getStickerboards)
-  .post(createStickerboard);
+  .post(protect, createStickerboard);
 
 router.route('/:id')
   .get(getStickerboard)
-  .put(updateStickerboard)
-  .delete(deleteStickerboard);
+  .put(protect, updateStickerboard)
+  .delete(protect, deleteStickerboard);
 
 router.route('/:id/photo')
-    .put(stickerboardPhotoUpload);
+    .put(protect, authorize('vipuser'), stickerboardPhotoUpload);
 
 module.exports = router;
 

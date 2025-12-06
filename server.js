@@ -7,6 +7,7 @@ const logger = require('./middleware/logger');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const fileupload = require('express-fileupload');
+const cookieParser = require('cookie-parser');
 const colors = require('colors');
 
 // load environmental vars for dotenv
@@ -19,7 +20,7 @@ connectDB();
 // route files
 const stickerboard = require('./routes/stickerboard');
 const stick = require('./routes/stix');
-
+const auth = require('./routes/auth');
 const app = express();
 
 // Body parser middleware which lets our methods access json data in req.body
@@ -30,6 +31,9 @@ if(process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
+// Cookie parser middleware
+app.use(cookieParser());
+
 // invoke our custom middleware with app.use
 // app.use(logger);
 
@@ -39,6 +43,7 @@ app.use(fileupload());
 // mount routers
 app.use('/api/v1/stickerboards', stickerboard); // connecting our route to the file
 app.use('/api/v1/stix', stick);
+app.use('/api/v1/auth', auth);
 
 // set static folder
 app.use(express.static(path.join(__dirname, 'public')));

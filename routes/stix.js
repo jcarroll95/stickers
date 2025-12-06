@@ -8,6 +8,8 @@ const express = require('express');
 // controller. Before we added this in, the route would return all stix not just the ones associated to that ID.
 const router = express.Router( { mergeParams: true });
 
+const { protect, authorize } = require('../middleware/auth');
+// Future feature - additional user roles with functionality via authorize
 
 // Bring in controller functions
 const {
@@ -25,15 +27,15 @@ const advancedResults = require('../middleware/advancedResults');
 // Map routes to controller actions
 router.route('/')
     .get(advancedResults(Stick, { path: 'stickerboard', select: 'name description', strictPopulate: false }), getStix)
-    .post(addStick);
+    .post(protect, addStick);
 //    .post(createStickerboard);
 
 router.route('/:belongsToBoard')
-    .post(addStick);
+    .post(protect, addStick);
 
 router.route('/:stickId')
     .get(getStick)
-    .put(updateStick);
+    .put(protect, updateStick);
     //.post(addStick)
     //.put(updateStickerboard)
     //.delete(deleteStickerboard);
