@@ -1,6 +1,8 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
+
 
 const UserSchema = new mongoose.Schema({
     name: {
@@ -36,10 +38,18 @@ const UserSchema = new mongoose.Schema({
 });
 
 // encrypt password with bcrypt before save
-UserSchema.pre('save', async function(next) {
-    const salt = await bcrypt.genSalt(10);  // 10 rounds recommended in documentation
-    this.password = await bcrypt.hash(this.password, salt);
-})
+UserSchema.pre('save', function(next) {
+    if (!this.isModified('password')) return next();
+
+    bcrypt
+        .genSalt(10)
+        .then(salt => bcrypt.hash(this.password, salt))
+        .then(hash => {
+            this.password = hash;
+            next();
+        })
+        .catch(next);
+});
 
 // sign jwt and return, we can call this from the controller
 UserSchema.methods.getSignedJwtToken = function() {
@@ -50,6 +60,24 @@ UserSchema.methods.getSignedJwtToken = function() {
 // match user entered password to hashed password in db
 UserSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
+}
+
+// Generate and hash pw tokem
+UserSchema.methods.getResetPasswordToken = function() {
+    // generate tokem
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    // hash token and set to reset pw token field
+    this.resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    // set timeout
+    this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+    // the original token not the hashed versiom
+    return resetToken;
 }
 
 module.exports = mongoose.model('User', UserSchema);

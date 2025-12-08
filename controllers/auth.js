@@ -55,6 +55,43 @@ exports.login = asyncHandler(async (req, res, next) => {
     sendTokenResponse(user, 200, res);
 })
 
+
+
+// @desc    Get current logged in user
+// @route   POST /api/v1/auth/me
+// @access  Private
+exports.getMe = asyncHandler(async (req, res, next) => {
+   const user = await User.findById(req.user.id);
+
+   res.status(200).json({
+       success: true,
+       data: user
+   });
+
+});
+
+// @desc    Forgot Password
+// @route   POST /api/v1/auth/forgotpassword
+// @access  Public
+exports.forgotPassword = asyncHandler(async (req, res, next) => {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+        return next(new ErrorResponse('Email not recognized', 404));
+    }
+
+    // Get reset token
+    const resetToken = user.getResetPasswordToken();
+
+    // save the reset token
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+        success: true,
+        data: user
+    });
+});
+
 // get token from model, create cookie with jwt, send response
 const sendTokenResponse = (user, statusCode, res) => {
     // create token - LOWERCASE user because this is a static method from our mongoose model
@@ -78,15 +115,4 @@ const sendTokenResponse = (user, statusCode, res) => {
         });
 }
 
-// @desc    Get current logged in user
-// @route   POST /api/v1/auth/me
-// @access  Private
-exports.getMe = asyncHandler(async (req, res, next) => {
-   const user = await User.findById(req.user.id);
 
-   res.status(200).json({
-       success: true,
-       data: user
-   });
-
-});

@@ -10,6 +10,11 @@ const StickSchema = new mongoose.Schema({
         ref: 'Stickerboard',
         required: true
     },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     belongsToUser: String,
     stickNumber: Number,
     stickMed: String,

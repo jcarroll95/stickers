@@ -153,16 +153,28 @@ exports.updateStickerboard = asyncHandler(async (req, res, next) => {
 
     // The mongoose method findByIdAndUpdate will take the id parameter from the route, and apply JSON data contained
     // in the body against matching fields in the schema, with the defined validation.
-        const stickerboard = await Stickerboard.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
-        });
+        let stickerboard = await Stickerboard.findById(req.params.id);
 
         if (!stickerboard) {
             return next(
                 new ErrorResponse(`Stickerboard not found with id of ${req.params.id}`, 404)
             );
         }
+
+        // make sure this user owns the stickerboard
+        if (stickerboard.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return next(
+                new ErrorResponse(`User ${req.user.id} is not authorized to update this board`, 401)
+            )
+        }
+
+        // in this instance .findOneAndUpdate is requiring an OBJECT as the filter param { _id: req.params.id }
+        // rather than simply passing in req.params.id and I don't know why it works everywhere else but not here.
+        stickerboard = await Stickerboard.findOneAndUpdate({ _id: req.params.id }, req.body, {
+            new: true,
+            runValidators: true
+        });
+
 
         res.status(200).json({ success: true, data: stickerboard });
 });
@@ -180,6 +192,13 @@ exports.deleteStickerboard = asyncHandler(async (req, res, next) => {
         }
         //await Stick.deleteMany({ belongsToBoard: req.params.id });
 
+        // make sure this user owns the stickerboard
+        if (stickerboard.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return next(
+                new ErrorResponse(`User ${req.user.id} is not authorized to delete this board`, 401)
+            )
+        }
+
         await stickerboard.deleteOne();
 
         // if the delete is successful we'll return an empty object {}
@@ -196,6 +215,13 @@ exports.stickerboardPhotoUpload= asyncHandler(async (req, res, next) => {
         return next(
             new ErrorResponse(`Stickerboard not found with id of ${req.params.id}`, 404)
         );
+    }
+
+    // make sure this user owns the stickerboard
+    if (stickerboard.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(
+            new ErrorResponse(`User ${req.user.id} is not authorized to delete this board`, 401)
+        )
     }
 
     if (!req.files) {

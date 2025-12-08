@@ -66,6 +66,8 @@ exports.addStick = asyncHandler(async (req, res, next) => {
     // response which is adding a new stick IAW our stick model, so let's manually grab it:
     req.body.belongsToBoard = req.params.belongsToBoard;
 
+    req.body.user = req.user.id;
+
     // all sticks are associated with a stickerboard. adding a stick must be done by the owner of that board.
 
     // get the stickerboard by ID
@@ -73,6 +75,13 @@ exports.addStick = asyncHandler(async (req, res, next) => {
     // if it doesn't exist, throw an error
     if (!stickerboard) {
         return next(new ErrorResponse(`No stickerboard found with id ${req.params.belongsToBoard}`, 404));
+    }
+
+    // make sure this user owns the stickerboard
+    if (stickerboard.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(
+            new ErrorResponse(`User ${req.user.id} is not authorized to add stix to board ${stickerboard.id}`, 401)
+        )
     }
 
     // mongoose .create IAW our stick model, creating a document that contains the data in our req.body
@@ -95,6 +104,13 @@ exports.updateStick = asyncHandler(async (req, res, next) => {
     // if it doesn't exist, throw an error
     if (!stick) {
         return next(new ErrorResponse(`No stick found with id ${req.params.stickId}`, 404));
+    }
+
+    // make sure this user owns the stick
+    if (stick.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(
+            new ErrorResponse(`User ${req.user.id} is not authorized to update this stick`, 401)
+        )
     }
 
     stick = await Stick.findByIdAndUpdate(req.params.stickId, req.body, {
