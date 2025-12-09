@@ -21,6 +21,9 @@ connectDB();
 const stickerboard = require('./routes/stickerboard');
 const stick = require('./routes/stix');
 const auth = require('./routes/auth');
+const users = require('./routes/users');
+const reviews = require('./routes/reviews');
+
 const app = express();
 
 // Body parser middleware which lets our methods access json data in req.body
@@ -44,6 +47,8 @@ app.use(fileupload());
 app.use('/api/v1/stickerboards', stickerboard); // connecting our route to the file
 app.use('/api/v1/stix', stick);
 app.use('/api/v1/auth', auth);
+app.use('/api/v1/auth/users', users);
+app.use('/api/v1/reviews', reviews)
 
 // set static folder
 app.use(express.static(path.join(__dirname, 'public')));

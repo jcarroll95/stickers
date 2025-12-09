@@ -165,4 +165,46 @@ const sendTokenResponse = (user, statusCode, res) => {
         });
 }
 
+// @desc    Update user details
+// @route   PUT /api/v1/auth/updatedetails
+// @access  Private
+exports.updateDetails = asyncHandler(async (req, res, next) => {
+    // this is just for name and email updates: therefore do not apply req.body to the  model, because someone
+    // could inject other fields like changing their role
+    const fieldsToUpdate = {
+        email: req.body.email,
+        name: req.body.name
+    }
+    const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+        new: true,
+        runValidators: true
+    });
+
+    res.status(200).json({
+        success: true,
+        data: user
+    });
+
+});
+
+// @desc    Update Password
+// @route   PUT /api/v1/auth/updatepassword
+// @access  Private
+exports.updatePassword = asyncHandler(async (req, res, next) => {
+    // we are going to find the user by the logged in id AND add in comparison to the stored password which is
+    // not selected by default in our model
+    const user = await User.findById(req.user.id).select('+password');
+
+    // check password
+    if (!(await user.matchPassword(req.body.currentPassword))) {
+        return next(new ErrorResponse('Invalid password', 401));
+    }
+    // update password and save to db
+    user.password = req.body.newPassword;
+    await user.save();
+
+    // send successful respone with updated token for new pw
+    sendTokenResponse(user, 200, res);
+
+});
 
