@@ -1,5 +1,6 @@
 // auth is logging in, registering, etc. distinct from admin tasks of managing users.
-
+const crypto = require('crypto');
+const sendEmail = require('../utils/sendEmail');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const User = require('../models/User');
@@ -86,10 +87,59 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     // save the reset token
     await user.save({ validateBeforeSave: false });
 
-    res.status(200).json({
-        success: true,
-        data: user
+    // create reset password url with token
+    const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/auth/resetpassword/${resetToken}`;
+    const message = `You are receiving this email because you (or someone else) have requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+
+    try {
+        await sendEmail({
+            email: user.email,
+            subject: 'Password Reset Token',
+            message
+        });
+
+        // if it works:
+        res.status(200).json({ success: true, data: 'Password reset email sent' });
+    } catch (err) {
+        // sendEmail failed, we need to remove the reset token from the user's record'
+        console.log(err);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save({ validateBeforeSave: false });
+
+        return next(new ErrorResponse('Email could not be sent', 500));
+    }
+
+});
+
+// @desc    Reset Password
+// @route   PUT /api/v1/auth/resetpassword/:resettoken
+// @access  Private
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+    // get hashed token
+    const resetPasswordToken = crypto.createHash('sha256')
+        .update(req.params.resettoken)
+        .digest('hex');
+
+    // find if user exists with this token and if it's not expired'
+    const user = await User.findOne({
+        resetPasswordToken,
+        resetPasswordExpire: { $gt: Date.now() }
     });
+
+    if (!user) {
+        return next(new ErrorResponse('Invalid token', 400));
+    }
+
+    // set new password, encrypted by our model User.Schema.pre('save') checking if pw was modified
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    // send success response and logged in token
+    sendTokenResponse(user, 200, res);
 });
 
 // get token from model, create cookie with jwt, send response
