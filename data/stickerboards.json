@@ -2,919 +2,1633 @@
   {
     "name": "Coop's Board",
     "description": "Starting semaglutide in Jan, focusing on sustainable habits and weekly check-ins. Tracking appetite changes and energy levels.",
-    "tags": ["semaglutide", "week1", "habits", "NSV"],
+    "tags": [
+      "semaglutide",
+      "week1",
+      "habits",
+      "NSV"
+    ],
+    "user": "6933d0b2aecb068c9cfe828d",
     "weeks": "17"
   },
   {
     "name": "Toby Man",
     "description": "On tirzepatide after plateauing last year. Goal: -35 lbs by summer. Logging workouts, hydration, and side effects.",
-    "tags": ["tirzepatide", "strength", "hydration", "goal"],
+    "tags": [
+      "tirzepatide",
+      "strength",
+      "hydration",
+      "goal"
+    ],
+    "user": "69344b7fe1a70d121b0faf07",
     "weeks": "24"
   },
   {
     "name": "Cheddar man",
     "description": "GLP-1 maintenance phase. Stabilizing weight, adding protein and step goals. Monthly body comp scans.",
-    "tags": ["maintenance", "protein", "steps", "DEXA"],
+    "tags": [
+      "maintenance",
+      "protein",
+      "steps",
+      "DEXA"
+    ],
+    "user": "69388295e32546b9f3386609",
     "weeks": "42"
   },
   {
     "name": "Jess' Cut Phase",
     "description": "PCOS + sema. Prioritizing fiber and breakfast protein. Biweekly measurements and photos.",
-    "tags": ["PCOS", "semaglutide", "fiber", "photos"],
+    "tags": [
+      "PCOS",
+      "semaglutide",
+      "fiber",
+      "photos"
+    ],
+    "user": "69388295e32546b9f338660a",
     "weeks": "6"
   },
   {
     "name": "Mike's Marathon & Mounjaro",
     "description": "Training for half marathon while titrating tirzepatide. Watching fuel timing to avoid nausea.",
-    "tags": ["tirzepatide", "running", "titration", "fueling"],
+    "tags": [
+      "tirzepatide",
+      "running",
+      "titration",
+      "fueling"
+    ],
+    "user": "69388295e32546b9f338660b",
     "weeks": "9"
   },
   {
     "name": "Plant-Based Progress",
     "description": "Vegan on GLP-1. Meal prep with tofu/legumes. Tracking iron/B12 energy dips and satiety cues.",
-    "tags": ["vegan", "meal-prep", "satiety", "micros"],
+    "tags": [
+      "vegan",
+      "meal-prep",
+      "satiety",
+      "micros"
+    ],
+    "user": "69388295e32546b9f338660c",
     "weeks": "12"
   },
   {
     "name": "New Dad Reboot",
     "description": "Sleep deprived but consistent. Short home workouts, fiber target 30g/day, evening walk with stroller.",
-    "tags": ["sleep", "home-workout", "fiber", "walking"],
+    "tags": [
+      "sleep",
+      "home-workout",
+      "fiber",
+      "walking"
+    ],
+    "user": "69388295e32546b9f338660d",
     "weeks": "4"
   },
   {
     "name": "Wedding Cut 2026",
     "description": "Engagement photos in 4 months. Sema + calorie floor guardrails; no skipping meals. Dress fitting milestones.",
-    "tags": ["wedding", "semaglutide", "milestones", "balanced"],
+    "tags": [
+      "wedding",
+      "semaglutide",
+      "milestones",
+      "balanced"
+    ],
+    "user": "69388295e32546b9f3386610",
     "weeks": "8"
   },
   {
     "name": "Hypertension Helper",
     "description": "Doctor-approved GLP-1 use with BP meds. Sodium awareness, daily weigh-ins, weekly averages.",
-    "tags": ["blood-pressure", "sodium", "weigh-in", "averages"],
+    "tags": [
+      "blood-pressure",
+      "sodium",
+      "weigh-in",
+      "averages"
+    ],
+    "user": "69388295e32546b9f3386611",
     "weeks": "15"
   },
   {
     "name": "Desk Job Undo",
     "description": "Sedentary to 8k steps/day. Lunch walk club, water reminders, and resistance bands under the desk.",
-    "tags": ["steps", "office", "hydration", "movement"],
+    "tags": [
+      "steps",
+      "office",
+      "hydration",
+      "movement"
+    ],
+    "user": "69388295e32546b9f3386612",
     "weeks": "5"
   },
   {
     "name": "Prep Before Baby",
     "description": "OB cleared preconception weight loss. Gentle calorie deficit, prenatal vitamin, zero alcohol.",
-    "tags": ["preconception", "prenatal", "alcohol-free", "gentle-deficit"],
+    "tags": [
+      "preconception",
+      "prenatal",
+      "alcohol-free",
+      "gentle-deficit"
+    ],
+    "user": "69388295e32546b9f3386613",
     "weeks": "10"
   },
   {
     "name": "Travel While Titrating",
     "description": "Frequent flights; packing protein snacks and electrolytes. Scheduling doses away from long-haul days.",
-    "tags": ["travel", "titration", "snacks", "electrolytes"],
+    "tags": [
+      "travel",
+      "titration",
+      "snacks",
+      "electrolytes"
+    ],
+    "user": "69388295e32546b9f3386614",
     "weeks": "7"
   },
   {
     "name": "Strength First Cut",
     "description": "Prioritizing lifting 3x/week to preserve muscle. Protein 130g target, creatine, body tape each Sunday.",
-    "tags": ["lifting", "protein", "creatine", "measurements"],
+    "tags": [
+      "lifting",
+      "protein",
+      "creatine",
+      "measurements"
+    ],
+    "user": "69388295e32546b9f3386615",
     "weeks": "13"
   },
   {
     "name": "IBS-Friendly GLP-1",
     "description": "Low-FODMAP rotation to manage GI while on dose escalation. Tracking trigger foods and relief days.",
-    "tags": ["IBS", "low-FODMAP", "GI", "tracking"],
+    "tags": [
+      "IBS",
+      "low-FODMAP",
+      "GI",
+      "tracking"
+    ],
+    "user": "69388295e32546b9f3386616",
     "weeks": "11"
   },
   {
     "name": "Sugar Cravings Tamer",
     "description": "Evening cravings down on GLP-1. Swapping desserts for Greek yogurt bowls. Weekend treat budgeting.",
-    "tags": ["cravings", "dessert-swaps", "routine", "budget"],
+    "tags": [
+      "cravings",
+      "dessert-swaps",
+      "routine",
+      "budget"
+    ],
+    "user": "69388295e32546b9f3386617",
     "weeks": "3"
   },
   {
     "name": "Postpartum Power-Up",
     "description": "6 months postpartum; cleared for exercise. Gentle cardio + pelvic floor, protein-forward snacks.",
-    "tags": ["postpartum", "cardio", "pelvic-floor", "protein"],
+    "tags": [
+      "postpartum",
+      "cardio",
+      "pelvic-floor",
+      "protein"
+    ],
+    "user": "69388295e32546b9f3386618",
     "weeks": "14"
   },
   {
     "name": "Coach's Demo Board",
     "description": "Sample curriculum for group coaching: hunger scale, plate method, weekend strategy, check-ins.",
-    "tags": ["coaching", "hunger-scale", "plate-method", "check-ins"],
+    "tags": [
+      "coaching",
+      "hunger-scale",
+      "plate-method",
+      "check-ins"
+    ],
+    "user": "69388295e32546b9f3386619",
     "weeks": "16"
   },
   {
     "name": "Keto to Moderate",
     "description": "Transitioning from strict keto to moderate carbs on GLP-1. Watching energy and gym performance.",
-    "tags": ["keto", "carbs", "performance", "transition"],
+    "tags": [
+      "keto",
+      "carbs",
+      "performance",
+      "transition"
+    ],
+    "user": "69388295e32546b9f338661a",
     "weeks": "18"
   },
   {
     "name": "Plateau Breaker Plan",
     "description": "Stalled at week 20; adding step-ups, fluids, and fiber bump. Considering dose increase per MD.",
-    "tags": ["plateau", "steps", "hydration", "fiber"],
+    "tags": [
+      "plateau",
+      "steps",
+      "hydration",
+      "fiber"
+    ],
+    "user": "69388295e32546b9f338661b",
     "weeks": "20"
   },
   {
     "name": "Holiday Season Sanity",
     "description": "Party-heavy month. GLP-1 helps portions; pre-event protein and one plate rule. No guilt recaps.",
-    "tags": ["holidays", "portions", "pre-game", "mindset"],
+    "tags": [
+      "holidays",
+      "portions",
+      "pre-game",
+      "mindset"
+    ],
+    "user": "69388295e32546b9f338661c",
     "weeks": "2"
   },
   {
     "name": "Fresh Start February",
     "description": "Restarting habits after travel. Protein first, 7k daily steps, and journaling hunger cues on GLP-1.",
-    "tags": ["reset", "protein-first", "steps", "journaling"],
+    "tags": [
+      "reset",
+      "protein-first",
+      "steps",
+      "journaling"
+    ],
+    "user": "69388295e32546b9f338661d",
     "weeks": "4"
   },
   {
     "name": "Weekend Warrior Wins",
     "description": "Dialing in weekends: brunch swaps, mocktails, and pre-logging. GLP-1 helping portion control.",
-    "tags": ["weekends", "mocktails", "prelog", "portions"],
+    "tags": [
+      "weekends",
+      "mocktails",
+      "prelog",
+      "portions"
+    ],
+    "user": "69388295e32546b9f338661e",
     "weeks": "6"
   },
   {
     "name": "Lift + Lose 12",
     "description": "12-week combo: progressive overload lifting, fiber 30g, and adequate sleep for recovery.",
-    "tags": ["lifting", "fiber", "sleep", "recovery"],
+    "tags": [
+      "lifting",
+      "fiber",
+      "sleep",
+      "recovery"
+    ],
+    "user": "69388295e32546b9f338661f",
     "weeks": "12"
   },
   {
     "name": "Sema & Soccer Mom",
     "description": "Busy evenings at the field. Pack protein boxes and electrolytes. Walk laps during practice.",
-    "tags": ["semaglutide", "parenting", "snacks", "electrolytes"],
+    "tags": [
+      "semaglutide",
+      "parenting",
+      "snacks",
+      "electrolytes"
+    ],
+    "user": "69388295e32546b9f3386620",
     "weeks": "9"
   },
   {
     "name": "Tirz Titration Track",
     "description": "Tracking tolerability as dose increases. Small frequent meals, ginger tea, and step goals.",
-    "tags": ["tirzepatide", "titration", "meals", "GI"],
+    "tags": [
+      "tirzepatide",
+      "titration",
+      "meals",
+      "GI"
+    ],
+    "user": "69388295e32546b9f338660e",
     "weeks": "8"
   },
   {
     "name": "Strength Over Scale",
     "description": "Focusing on non-scale victories. Heavier lifts, better sleep, and improved stamina on hikes.",
-    "tags": ["NSV", "strength", "sleep", "hiking"],
+    "tags": [
+      "NSV",
+      "strength",
+      "sleep",
+      "hiking"
+    ],
+    "user": "69388295e32546b9f3386622",
     "weeks": "16"
   },
   {
     "name": "Couch to 5K GLP-1",
     "description": "Run-walk intervals 3x/week. Fuel timing adjusted to avoid nausea with morning doses.",
-    "tags": ["running", "intervals", "fueling", "routine"],
+    "tags": [
+      "running",
+      "intervals",
+      "fueling",
+      "routine"
+    ],
+    "user": "69388295e32546b9f3386624",
     "weeks": "10"
   },
   {
     "name": "Macros Without Mayhem",
     "description": "Simple macro targets: protein anchored meals, plenty of veg, and flexible carbs around workouts.",
-    "tags": ["macros", "protein", "veg", "flexible-dieting"],
+    "tags": [
+      "macros",
+      "protein",
+      "veg",
+      "flexible-dieting"
+    ],
+    "user": "69388295e32546b9f338660f",
     "weeks": "14"
   },
   {
     "name": "Office Step-Up Squad",
     "description": "Stair breaks on the hour, water bottle at desk, and walking 1:1s. GLP-1 dampens grazing.",
-    "tags": ["office", "stairs", "hydration", "walking"],
+    "tags": [
+      "office",
+      "stairs",
+      "hydration",
+      "walking"
+    ],
+    "user": "69388295e32546b9f3386625",
     "weeks": "7"
   },
   {
     "name": "Plate Method Pro",
     "description": "Half plate veg, quarter protein, quarter carbs. Simple, repeatable meals for busy weeks.",
-    "tags": ["plate-method", "meal-plans", "simple", "repeatable"],
+    "tags": [
+      "plate-method",
+      "meal-plans",
+      "simple",
+      "repeatable"
+    ],
+    "user": "69388295e32546b9f3386626",
     "weeks": "5"
   },
   {
     "name": "Summer Cut Sprint",
     "description": "Short, focused deficit before vacation. Prioritizing sleep and steps to protect energy.",
-    "tags": ["cut", "vacation", "sleep", "steps"],
+    "tags": [
+      "cut",
+      "vacation",
+      "sleep",
+      "steps"
+    ],
+    "user": "69388295e32546b9f3386627",
     "weeks": "4"
   },
   {
     "name": "Protein Palooza",
     "description": "Exploring high-protein breakfasts: cottage cheese bowls, omelets, and overnight oats.",
-    "tags": ["breakfast", "protein", "recipes", "satiety"],
+    "tags": [
+      "breakfast",
+      "protein",
+      "recipes",
+      "satiety"
+    ],
+    "user": "69388295e32546b9f3386629",
     "weeks": "3"
   },
   {
     "name": "Wedding Party Prep",
     "description": "Bridesmaid timeline with fittings every 6 weeks. Sema supports hunger, lifting preserves curves.",
-    "tags": ["wedding", "timeline", "semaglutide", "lifting"],
+    "tags": [
+      "wedding",
+      "timeline",
+      "semaglutide",
+      "lifting"
+    ],
+    "user": "69388295e32546b9f3386628",
     "weeks": "18"
   },
   {
     "name": "Dad Bod to Strong",
     "description": "From 0 to 3 strength sessions weekly. Greener lunches, evening walks with kids.",
-    "tags": ["strength", "meal-prep", "family", "walking"],
+    "tags": [
+      "strength",
+      "meal-prep",
+      "family",
+      "walking"
+    ],
+    "user": "69388295e32546b9f338662b",
     "weeks": "15"
   },
   {
     "name": "NSV Photo Project",
     "description": "Weekly side-by-sides, measuring tape check-ins, and noting cravings improvements.",
-    "tags": ["photos", "measurements", "NSV", "cravings"],
+    "tags": [
+      "photos",
+      "measurements",
+      "NSV",
+      "cravings"
+    ],
+    "user": "69388295e32546b9f338662a",
     "weeks": "13"
   },
   {
     "name": "GI Gentle Reset",
     "description": "Low-fat cooking methods, smaller portions, and peppermint tea to ease escalation symptoms.",
-    "tags": ["GI", "low-fat", "portion", "peppermint"],
+    "tags": [
+      "GI",
+      "low-fat",
+      "portion",
+      "peppermint"
+    ],
+    "user": "69388295e32546b9f338662c",
     "weeks": "6"
   },
   {
     "name": "Holiday Hover Plan",
     "description": "Maintenance mindset: hold weight steady, prioritize protein at parties, move daily.",
-    "tags": ["maintenance", "holidays", "protein", "movement"],
+    "tags": [
+      "maintenance",
+      "holidays",
+      "protein",
+      "movement"
+    ],
+    "user": "69388295e32546b9f338662e",
     "weeks": "8"
   },
   {
     "name": "Sleep First Strategy",
     "description": "Targeting 7.5 hours nightly to curb hunger. Evening routine: screens down, tea up.",
-    "tags": ["sleep", "routine", "hunger", "recovery"],
+    "tags": [
+      "sleep",
+      "routine",
+      "hunger",
+      "recovery"
+    ],
+    "user": "69388295e32546b9f338662d",
     "weeks": "9"
   },
   {
     "name": "Glucose Steady Squad",
     "description": "Balancing meals: protein + fiber + fat. Post-meal walks and fewer sugary drinks.",
-    "tags": ["glucose", "fiber", "post-meal-walk", "habits"],
+    "tags": [
+      "glucose",
+      "fiber",
+      "post-meal-walk",
+      "habits"
+    ],
+    "user": "69388295e32546b9f338662f",
     "weeks": "11"
   },
   {
     "name": "Veggies Most Month",
     "description": "Add a veg at every meal. Air fryer experiments and Sunday farmer's market trips.",
-    "tags": ["veg", "air-fryer", "farmers-market", "meal-prep"],
+    "tags": [
+      "veg",
+      "air-fryer",
+      "farmers-market",
+      "meal-prep"
+    ],
+    "user": "69388295e32546b9f3386631",
     "weeks": "4"
   },
   {
     "name": "Back Pain Friendly Fit",
     "description": "Low-impact options: cycling, swimming, and core work. Avoiding trigger lifts while losing fat.",
-    "tags": ["low-impact", "cycling", "swimming", "core"],
+    "tags": [
+      "low-impact",
+      "cycling",
+      "swimming",
+      "core"
+    ],
+    "user": "69388295e32546b9f3386630",
     "weeks": "10"
   },
   {
     "name": "Desk Snack Defense",
     "description": "Replace candy bowl with jerky, nuts, and fruit. GLP-1 reduces mindless munching.",
-    "tags": ["snacks", "office", "protein", "satiety"],
+    "tags": [
+      "snacks",
+      "office",
+      "protein",
+      "satiety"
+    ],
+    "user": "69388295e32546b9f3386632",
     "weeks": "5"
   },
   {
     "name": "Hydration Habit Hack",
     "description": "80 oz water goal, electrolytes on workout days, and tea at night to curb cravings.",
-    "tags": ["hydration", "electrolytes", "tea", "cravings"],
+    "tags": [
+      "hydration",
+      "electrolytes",
+      "tea",
+      "cravings"
+    ],
+    "user": "69388295e32546b9f3386634",
     "weeks": "6"
   },
   {
     "name": "Diabetes Type 2 Tune-Up",
     "description": "Coordinating with endo. Monitoring CGM trends, moderating carbs, and strength training.",
-    "tags": ["T2D", "CGM", "carbs", "strength"],
+    "tags": [
+      "T2D",
+      "CGM",
+      "carbs",
+      "strength"
+    ],
+    "user": "69388295e32546b9f3386633",
     "weeks": "20"
   },
   {
     "name": "Morning Dose Crew",
     "description": "Moved dose to mornings. Testing breakfast timing and hydration to reduce nausea.",
-    "tags": ["dosing", "morning", "hydration", "nausea"],
+    "tags": [
+      "dosing",
+      "morning",
+      "hydration",
+      "nausea"
+    ],
+    "user": "69388295e32546b9f3386635",
     "weeks": "3"
   },
   {
     "name": "Evening Dose Routine",
     "description": "Evening injections with a hearty dinner. Lighter lunch and afternoon walk.",
-    "tags": ["dosing", "evening", "routine", "walk"],
+    "tags": [
+      "dosing",
+      "evening",
+      "routine",
+      "walk"
+    ],
+    "user": "69388295e32546b9f3386636",
     "weeks": "3"
   },
   {
     "name": "Trail Prep & Tirz",
     "description": "Weekend trail hikes building to a 10-mile loop. Fuel plan and blister prevention.",
-    "tags": ["hiking", "tirzepatide", "fueling", "endurance"],
+    "tags": [
+      "hiking",
+      "tirzepatide",
+      "fueling",
+      "endurance"
+    ],
+    "user": "69388295e32546b9f3386637",
     "weeks": "14"
   },
   {
     "name": "Strength + Steps 10k",
     "description": "10k steps on non-lift days. Rotating push/pull/legs and mobility flows.",
-    "tags": ["steps", "lifting", "mobility", "PPL"],
+    "tags": [
+      "steps",
+      "lifting",
+      "mobility",
+      "PPL"
+    ],
+    "user": "69388295e32546b9f338663a",
     "weeks": "12"
   },
   {
     "name": "Brunch Budget Blueprint",
     "description": "Smart brunch: protein plate, skip mimosas, and afternoon walk with friends.",
-    "tags": ["brunch", "protein", "social", "walk"],
+    "tags": [
+      "brunch",
+      "protein",
+      "social",
+      "walk"
+    ],
+    "user": "69388295e32546b9f3386638",
     "weeks": "4"
   },
   {
     "name": "Meal Prep Minimalist",
     "description": "Repeatable staples: rotisserie chicken, frozen veg, microwave rice. No-fuss success.",
-    "tags": ["meal-prep", "simple", "protein", "staples"],
+    "tags": [
+      "meal-prep",
+      "simple",
+      "protein",
+      "staples"
+    ],
+    "user": "69388295e32546b9f3386639",
     "weeks": "5"
   },
   {
     "name": "Athletic Mom Momentum",
     "description": "Carpool cardio and weekend kettlebells. GLP-1 supports appetite; strength maintains tone.",
-    "tags": ["parenting", "kettlebell", "cardio", "appetite"],
+    "tags": [
+      "parenting",
+      "kettlebell",
+      "cardio",
+      "appetite"
+    ],
+    "user": "69388295e32546b9f338663b",
     "weeks": "16"
   },
   {
     "name": "Desk to 10K Steps",
     "description": "Hourly stand alarms, lunch loops, and evening dog walks to hit 10k daily.",
-    "tags": ["steps", "walking", "office", "dog"],
+    "tags": [
+      "steps",
+      "walking",
+      "office",
+      "dog"
+    ],
+    "user": "69388295e32546b9f338663c",
     "weeks": "8"
   },
   {
     "name": "Protein + Plants Push",
     "description": "Aim for 25–35g protein per meal and veg at every plate. Sema helps keep portions steady.",
-    "tags": ["protein", "plants", "semaglutide", "portions"],
+    "tags": [
+      "protein",
+      "plants",
+      "semaglutide",
+      "portions"
+    ],
+    "user": "69388295e32546b9f338663d",
     "weeks": "9"
   },
   {
     "name": "Strength Cycle 1",
     "description": "Intro to barbell basics. Track loads weekly and prioritize form over ego.",
-    "tags": ["barbell", "beginner", "progressive-overload", "form"],
+    "tags": [
+      "barbell",
+      "beginner",
+      "progressive-overload",
+      "form"
+    ],
+    "user": "69388295e32546b9f338663e",
     "weeks": "8"
   },
   {
     "name": "Strength Cycle 2",
     "description": "Continuing barbell progress with added accessories. Deload in week 7.",
-    "tags": ["barbell", "accessories", "deload", "progression"],
+    "tags": [
+      "barbell",
+      "accessories",
+      "deload",
+      "progression"
+    ],
+    "user": "69388295e32546b9f338663f",
     "weeks": "8"
   },
   {
     "name": "Strength Cycle 3",
     "description": "Peaking lifts while keeping calorie deficit mild to maintain energy.",
-    "tags": ["barbell", "peaking", "energy", "recovery"],
+    "tags": [
+      "barbell",
+      "peaking",
+      "energy",
+      "recovery"
+    ],
+    "user": "69388295e32546b9f3386640",
     "weeks": "8"
   },
   {
     "name": "Nausea Navigation",
     "description": "Experimenting with bland breakfasts, midday dosing, and ginger chews to manage nausea.",
-    "tags": ["nausea", "dosing", "ginger", "breakfast"],
+    "tags": [
+      "nausea",
+      "dosing",
+      "ginger",
+      "breakfast"
+    ],
+    "user": "69388295e32546b9f3386623",
     "weeks": "5"
   },
   {
     "name": "Weekend Trail Runners",
     "description": "Building from 5k to 15k trail runs. Sips of electrolytes and protein-forward dinners.",
-    "tags": ["trail", "running", "electrolytes", "protein"],
+    "tags": [
+      "trail",
+      "running",
+      "electrolytes",
+      "protein"
+    ],
+    "user": "69388295e32546b9f3386643",
     "weeks": "13"
   },
   {
     "name": "Travel Treadmill Time",
     "description": "Hotel gym intervals and resistance bands in the carry-on. Stick to dosing schedule on the road.",
-    "tags": ["travel", "hotel-gym", "intervals", "bands"],
+    "tags": [
+      "travel",
+      "hotel-gym",
+      "intervals",
+      "bands"
+    ],
+    "user": "69388295e32546b9f3386621",
     "weeks": "6"
   },
   {
     "name": "CGM Curious",
     "description": "Testing CGM for a month to learn meal responses. Pair carbs with protein and walks.",
-    "tags": ["CGM", "experiments", "carbs", "protein"],
+    "tags": [
+      "CGM",
+      "experiments",
+      "carbs",
+      "protein"
+    ],
+    "user": "69388295e32546b9f3386644",
     "weeks": "4"
   },
   {
     "name": "Yoga & GLP-1 Flow",
     "description": "Gentle vinyasa twice weekly and restorative on Sundays. Focus on breath and recovery.",
-    "tags": ["yoga", "recovery", "breath", "mobility"],
+    "tags": [
+      "yoga",
+      "recovery",
+      "breath",
+      "mobility"
+    ],
+    "user": "69388295e32546b9f3386645",
     "weeks": "10"
   },
   {
     "name": "Prep for 10K Race",
     "description": "Run plan with tempo days, easy miles, and a Sunday long run. Fuel practice mid-cycle.",
-    "tags": ["10k", "tempo", "long-run", "fueling"],
+    "tags": [
+      "10k",
+      "tempo",
+      "long-run",
+      "fueling"
+    ],
+    "user": "69388295e32546b9f3386646",
     "weeks": "12"
   },
   {
     "name": "Busy Season Balance",
     "description": "Tax season hours. Short workouts, planned snacks, and a weekly meal kit delivery.",
-    "tags": ["busy-season", "short-workouts", "snacks", "meal-kit"],
+    "tags": [
+      "busy-season",
+      "short-workouts",
+      "snacks",
+      "meal-kit"
+    ],
+    "user": "69388295e32546b9f3386649",
     "weeks": "8"
   },
   {
     "name": "Grad School Grind",
     "description": "Evening classes: crockpot meals, campus walks, and weekend batch cooking.",
-    "tags": ["students", "batch-cook", "walking", "crockpot"],
+    "tags": [
+      "students",
+      "batch-cook",
+      "walking",
+      "crockpot"
+    ],
+    "user": "69388295e32546b9f3386648",
     "weeks": "16"
   },
   {
     "name": "Shift Work Sherpa",
     "description": "Rotating shifts. Anchor meals to sleep, hydrate, and avoid vending machine traps.",
-    "tags": ["shift-work", "sleep", "hydration", "planning"],
+    "tags": [
+      "shift-work",
+      "sleep",
+      "hydration",
+      "planning"
+    ],
+    "user": "69388295e32546b9f338664d",
     "weeks": "14"
   },
   {
     "name": "Menopause Momentum",
     "description": "Peri symptoms tracked. Prioritize resistance training, protein, and walking post-dinner.",
-    "tags": ["menopause", "resistance", "protein", "walking"],
+    "tags": [
+      "menopause",
+      "resistance",
+      "protein",
+      "walking"
+    ],
+    "user": "69388295e32546b9f338664c",
     "weeks": "20"
   },
   {
     "name": "Dad's Spring Reset",
     "description": "Yardwork cardio, weekend grilling with lean meats, and after-dinner neighborhood loops.",
-    "tags": ["spring", "grilling", "cardio", "loops"],
+    "tags": [
+      "spring",
+      "grilling",
+      "cardio",
+      "loops"
+    ],
+    "user": "69388295e32546b9f338664a",
     "weeks": "6"
   },
   {
     "name": "Coach Check-In Cadence",
     "description": "Weekly check-ins: hunger ratings, step counts, and training logs. Course corrections as needed.",
-    "tags": ["coaching", "check-in", "steps", "training-log"],
+    "tags": [
+      "coaching",
+      "check-in",
+      "steps",
+      "training-log"
+    ],
+    "user": "69388295e32546b9f3386647",
     "weeks": "12"
   },
   {
     "name": "Weekend Meal Prep Club",
     "description": "Two proteins, two veg, and a starch each Sunday. Keep it simple and repeatable.",
-    "tags": ["meal-prep", "Sunday", "protein", "veg"],
+    "tags": [
+      "meal-prep",
+      "Sunday",
+      "protein",
+      "veg"
+    ],
+    "user": "69388295e32546b9f338664b",
     "weeks": "9"
   },
   {
     "name": "Kitchen Skills Upgrade",
     "description": "Knife skills, sheet-pan dinners, and spice blends. Cooking at home 5 nights weekly.",
-    "tags": ["cooking", "sheet-pan", "spices", "home"],
+    "tags": [
+      "cooking",
+      "sheet-pan",
+      "spices",
+      "home"
+    ],
+    "user": "69388295e32546b9f338664f",
     "weeks": "5"
   },
   {
     "name": "Protein Coffee Crew",
     "description": "Add protein to morning coffee and ensure a real breakfast within 2 hours.",
-    "tags": ["breakfast", "protein-coffee", "routine", "satiety"],
+    "tags": [
+      "breakfast",
+      "protein-coffee",
+      "routine",
+      "satiety"
+    ],
+    "user": "69388295e32546b9f338664e",
     "weeks": "3"
   },
   {
     "name": "Sober Curious Sprint",
     "description": "Dry spell to improve sleep and reduce empty calories. Mocktails and social swaps.",
-    "tags": ["alcohol-free", "sleep", "calories", "mocktails"],
+    "tags": [
+      "alcohol-free",
+      "sleep",
+      "calories",
+      "mocktails"
+    ],
+    "user": "69388295e32546b9f3386650",
     "weeks": "4"
   },
   {
     "name": "Cardio Base Build",
     "description": "Zone 2 walks and rides 4x/week to build endurance and aid recovery.",
-    "tags": ["zone2", "walking", "cycling", "endurance"],
+    "tags": [
+      "zone2",
+      "walking",
+      "cycling",
+      "endurance"
+    ],
+    "user": "69388295e32546b9f3386652",
     "weeks": "10"
   },
   {
     "name": "Strength + Yoga Blend",
     "description": "Two strength days, one yoga flow, one long walk. Balanced and sustainable.",
-    "tags": ["strength", "yoga", "walk", "balance"],
+    "tags": [
+      "strength",
+      "yoga",
+      "walk",
+      "balance"
+    ],
+    "user": "69388295e32546b9f3386651",
     "weeks": "8"
   },
   {
     "name": "Vacation Ready Routine",
     "description": "Cut without chaos. Keep breakfast protein-rich, limit sugary drinks, walk everywhere.",
-    "tags": ["vacation", "protein", "drinks", "walking"],
+    "tags": [
+      "vacation",
+      "protein",
+      "drinks",
+      "walking"
+    ],
+    "user": "69388295e32546b9f3386653",
     "weeks": "6"
   },
   {
     "name": "Stairs Not Elevator",
     "description": "Take stairs whenever possible. Track floors climbed and celebrate weekly totals.",
-    "tags": ["stairs", "NEAT", "office", "habits"],
+    "tags": [
+      "stairs",
+      "NEAT",
+      "office",
+      "habits"
+    ],
+    "user": "69388295e32546b9f3386657",
     "weeks": "5"
   },
   {
     "name": "Morning Routine Reset",
     "description": "Consistent wake time, water, light breakfast, and a 10-minute mobility flow.",
-    "tags": ["morning", "hydration", "breakfast", "mobility"],
+    "tags": [
+      "morning",
+      "hydration",
+      "breakfast",
+      "mobility"
+    ],
+    "user": "69388295e32546b9f3386654",
     "weeks": "4"
   },
   {
     "name": "Sunday Strategy Board",
     "description": "Plan meals, schedule workouts, and set step targets every Sunday evening.",
-    "tags": ["planning", "meal-prep", "workouts", "steps"],
+    "tags": [
+      "planning",
+      "meal-prep",
+      "workouts",
+      "steps"
+    ],
+    "user": "69388295e32546b9f338665a",
     "weeks": "8"
   },
   {
     "name": "Simple Carb Swap",
     "description": "Swap refined carbs for whole grains and fruit. Pair with protein to steady energy.",
-    "tags": ["carb-swaps", "whole-grains", "fruit", "energy"],
+    "tags": [
+      "carb-swaps",
+      "whole-grains",
+      "fruit",
+      "energy"
+    ],
+    "user": "69388295e32546b9f3386655",
     "weeks": "7"
   },
   {
     "name": "Gut Friendly Fiber",
     "description": "Increase fiber gradually to 30g with oats, legumes, and leafy greens.",
-    "tags": ["fiber", "oats", "legumes", "greens"],
+    "tags": [
+      "fiber",
+      "oats",
+      "legumes",
+      "greens"
+    ],
+    "user": "69388295e32546b9f3386656",
     "weeks": "6"
   },
   {
     "name": "Protein at Every Plate",
     "description": "No naked carbs. Each meal anchored with 25–35g protein to support satiety and muscle.",
-    "tags": ["protein", "satiety", "muscle", "habit"],
+    "tags": [
+      "protein",
+      "satiety",
+      "muscle",
+      "habit"
+    ],
+    "user": "69388295e32546b9f3386658",
     "weeks": "9"
   },
   {
     "name": "Weekend Recovery Plan",
     "description": "If off-plan, resume normal meals, hydrate, and walk. No over-correction.",
-    "tags": ["mindset", "recovery", "hydration", "walking"],
+    "tags": [
+      "mindset",
+      "recovery",
+      "hydration",
+      "walking"
+    ],
+    "user": "69388295e32546b9f3386659",
     "weeks": "3"
   },
   {
     "name": "Family Food Flow",
     "description": "One dinner for all: protein + veg + starch. Kids serve themselves, parents set the menu.",
-    "tags": ["family", "dinner", "balanced", "structure"],
+    "tags": [
+      "family",
+      "dinner",
+      "balanced",
+      "structure"
+    ],
+    "user": "69388295e32546b9f338665b",
     "weeks": "12"
   },
   {
     "name": "High Protein Veggie",
     "description": "Vegetarian proteins: tofu, tempeh, seitan, eggs, Greek yogurt. Track iron and B12.",
-    "tags": ["vegetarian", "protein", "micros", "meal-prep"],
+    "tags": [
+      "vegetarian",
+      "protein",
+      "micros",
+      "meal-prep"
+    ],
+    "user": "69388295e32546b9f338665c",
     "weeks": "14"
   },
   {
     "name": "Sema Side Effect Log",
     "description": "Daily notes on appetite, nausea, and energy. Adjust meal sizes accordingly.",
-    "tags": ["semaglutide", "symptoms", "appetite", "energy"],
+    "tags": [
+      "semaglutide",
+      "symptoms",
+      "appetite",
+      "energy"
+    ],
+    "user": "69388295e32546b9f338665e",
     "weeks": "5"
   },
   {
     "name": "Tirz Training Tweak",
     "description": "Tweaking training days to match appetite and energy. Push lifts on higher appetite days.",
-    "tags": ["tirzepatide", "training", "appetite", "energy"],
+    "tags": [
+      "tirzepatide",
+      "training",
+      "appetite",
+      "energy"
+    ],
+    "user": "69388295e32546b9f338665d",
     "weeks": "8"
   },
   {
     "name": "Half Ironman Hopeful",
     "description": "Long-term base build while losing fat slowly. Dial in fueling and electrolytes.",
-    "tags": ["triathlon", "fueling", "electrolytes", "base"],
+    "tags": [
+      "triathlon",
+      "fueling",
+      "electrolytes",
+      "base"
+    ],
+    "user": "69388295e32546b9f338665f",
     "weeks": "24"
   },
   {
     "name": "Home Gym Habit",
     "description": "Dumbbells, bands, and a bench. 30–40 min sessions, 4 days a week.",
-    "tags": ["home-gym", "dumbbells", "bands", "routine"],
+    "tags": [
+      "home-gym",
+      "dumbbells",
+      "bands",
+      "routine"
+    ],
+    "user": "69388295e32546b9f3386660",
     "weeks": "10"
   },
   {
     "name": "Dog Walk Daily",
     "description": "Two 20-minute walks with the dog, rain or shine. Add a weekend hike.",
-    "tags": ["dog", "walking", "routine", "hiking"],
+    "tags": [
+      "dog",
+      "walking",
+      "routine",
+      "hiking"
+    ],
+    "user": "69388295e32546b9f3386661",
     "weeks": "7"
   },
   {
     "name": "Meal Kit Mastery",
     "description": "Use meal kits wisely: add extra veg, split portions, save leftovers for lunch.",
-    "tags": ["meal-kit", "veg", "leftovers", "portions"],
+    "tags": [
+      "meal-kit",
+      "veg",
+      "leftovers",
+      "portions"
+    ],
+    "user": "69388295e32546b9f3386662",
     "weeks": "6"
   },
   {
     "name": "Scale + Tape Combo",
     "description": "Weekly averages on the scale and monthly waist/hip measurements.",
-    "tags": ["weigh-in", "averages", "measurements", "progress"],
+    "tags": [
+      "weigh-in",
+      "averages",
+      "measurements",
+      "progress"
+    ],
+    "user": "69388295e32546b9f3386663",
     "weeks": "16"
   },
   {
     "name": "Body Recomp Basics",
     "description": "Lift heavy, eat enough protein, modest deficit. Photos every 4 weeks.",
-    "tags": ["recomp", "lifting", "protein", "photos"],
+    "tags": [
+      "recomp",
+      "lifting",
+      "protein",
+      "photos"
+    ],
+    "user": "69388295e32546b9f3386665",
     "weeks": "20"
   },
   {
     "name": "Runner's Strength Add-on",
     "description": "Add 2 days of strength to support knees and hips. Keep easy miles easy.",
-    "tags": ["running", "strength", "injury-prevention", "easy-miles"],
+    "tags": [
+      "running",
+      "strength",
+      "injury-prevention",
+      "easy-miles"
+    ],
+    "user": "69388295e32546b9f3386664",
     "weeks": "12"
   },
   {
     "name": "Travel Snack Stack",
     "description": "Pack shelf-stable protein: tuna packets, jerky, and shakes. Skip the pastry cart.",
-    "tags": ["travel", "snacks", "protein", "planning"],
+    "tags": [
+      "travel",
+      "snacks",
+      "protein",
+      "planning"
+    ],
+    "user": "69388295e32546b9f3386667",
     "weeks": "5"
   },
   {
     "name": "Backyard Bootcamp",
     "description": "Bodyweight circuits + bands, 25 minutes. Kids join for fun rounds.",
-    "tags": ["bodyweight", "bands", "family", "circuits"],
+    "tags": [
+      "bodyweight",
+      "bands",
+      "family",
+      "circuits"
+    ],
+    "user": "69388295e32546b9f3386668",
     "weeks": "8"
   },
   {
     "name": "Holidays to New Year",
     "description": "From Thanksgiving to New Year's: maintain, move, and enjoy mindfully.",
-    "tags": ["holidays", "maintenance", "mindful", "move"],
+    "tags": [
+      "holidays",
+      "maintenance",
+      "mindful",
+      "move"
+    ],
+    "user": "69388295e32546b9f3386666",
     "weeks": "7"
   },
   {
     "name": "Travel Dose Timing",
     "description": "Shift dosing across time zones gradually. Keep hydration high and meals simple.",
-    "tags": ["travel", "dosing", "time-zones", "hydration"],
+    "tags": [
+      "travel",
+      "dosing",
+      "time-zones",
+      "hydration"
+    ],
+    "user": "69388295e32546b9f3386669",
     "weeks": "4"
   },
   {
     "name": "Beach Readiness Ramp",
     "description": "Confidence-building cut: sunscreen, steps in sand, and protein at beach BBQs.",
-    "tags": ["summer", "beach", "steps", "protein"],
+    "tags": [
+      "summer",
+      "beach",
+      "steps",
+      "protein"
+    ],
+    "user": "69388295e32546b9f338666a",
     "weeks": "8"
   },
   {
     "name": "Winter Comfort Wins",
     "description": "Cozy meals: soups and stews loaded with veg and lean meats. Indoor step hacks.",
-    "tags": ["winter", "soups", "veg", "steps"],
+    "tags": [
+      "winter",
+      "soups",
+      "veg",
+      "steps"
+    ],
+    "user": "69388295e32546b9f338666d",
     "weeks": "10"
   },
   {
     "name": "Spring Race Ready",
     "description": "Build to a spring 5k with walk-run intervals and strength to support form.",
-    "tags": ["spring", "5k", "intervals", "strength"],
+    "tags": [
+      "spring",
+      "5k",
+      "intervals",
+      "strength"
+    ],
+    "user": "69388295e32546b9f3386641",
     "weeks": "12"
   },
   {
     "name": "Fall Hiking Fridays",
     "description": "Friday afternoon hikes as leaves change. Pack protein snacks and layers.",
-    "tags": ["fall", "hiking", "snacks", "layers"],
+    "tags": [
+      "fall",
+      "hiking",
+      "snacks",
+      "layers"
+    ],
+    "user": "69388295e32546b9f3386642",
     "weeks": "6"
   },
   {
     "name": "Soccer Season Steps",
     "description": "Walk laps during kids' games, bring chairs less, move more.",
-    "tags": ["parenting", "steps", "sports", "weekends"],
+    "tags": [
+      "parenting",
+      "steps",
+      "sports",
+      "weekends"
+    ],
+    "user": "69388295e32546b9f338666e",
     "weeks": "7"
   },
   {
     "name": "Better Breakfasts",
     "description": "Swap pastries for eggs, yogurt, or oats. Add fruit and a walk after.",
-    "tags": ["breakfast", "swap", "protein", "walk"],
+    "tags": [
+      "breakfast",
+      "swap",
+      "protein",
+      "walk"
+    ],
+    "user": "69388295e32546b9f338666f",
     "weeks": "5"
   },
   {
     "name": "Evening Snack Strategy",
     "description": "If hungry, choose protein + fruit or tea. Close the kitchen by 9pm.",
-    "tags": ["snacks", "evening", "protein", "routine"],
+    "tags": [
+      "snacks",
+      "evening",
+      "protein",
+      "routine"
+    ],
+    "user": "69388295e32546b9f3386670",
     "weeks": "4"
   },
   {
     "name": "Desk Stretch Series",
     "description": "Five-minute mobility snacks each hour: neck, hips, and thoracic rotations.",
-    "tags": ["mobility", "desk", "stretch", "habit"],
+    "tags": [
+      "mobility",
+      "desk",
+      "stretch",
+      "habit"
+    ],
+    "user": "69388295e32546b9f3386671",
     "weeks": "6"
   },
   {
     "name": "Weekend Grill Master",
     "description": "Lean grillables: chicken thighs, turkey burgers, shrimp skewers. Add veg sides.",
-    "tags": ["grilling", "lean", "protein", "veg"],
+    "tags": [
+      "grilling",
+      "lean",
+      "protein",
+      "veg"
+    ],
+    "user": "69388295e32546b9f3386672",
     "weeks": "6"
   },
   {
     "name": "Farmers Market Finds",
     "description": "Buy seasonal produce and plan meals around it. Try one new veg weekly.",
-    "tags": ["produce", "seasonal", "meal-plans", "veg"],
+    "tags": [
+      "produce",
+      "seasonal",
+      "meal-plans",
+      "veg"
+    ],
+    "user": "69388295e32546b9f3386673",
     "weeks": "8"
   },
   {
     "name": "Step Streak Squad",
     "description": "30-day step streak challenge with friends. Share wins and routes.",
-    "tags": ["steps", "challenge", "friends", "streak"],
+    "tags": [
+      "steps",
+      "challenge",
+      "friends",
+      "streak"
+    ],
+    "user": "69388295e32546b9f3386674",
     "weeks": "4"
   },
   {
     "name": "Protein Snack Pack",
     "description": "Stock fridge with boiled eggs, deli turkey, Greek yogurt, and cheese sticks.",
-    "tags": ["snacks", "protein", "fridge", "prep"],
+    "tags": [
+      "snacks",
+      "protein",
+      "fridge",
+      "prep"
+    ],
+    "user": "69388295e32546b9f3386675",
     "weeks": "3"
   },
   {
     "name": "Mindful Eating Month",
     "description": "Hunger/fullness journal, slow bites, and screens off at meals.",
-    "tags": ["mindful", "journal", "slow-eating", "screens-off"],
+    "tags": [
+      "mindful",
+      "journal",
+      "slow-eating",
+      "screens-off"
+    ],
+    "user": "69388295e32546b9f3386676",
     "weeks": "4"
   },
   {
     "name": "Pelvic Floor + Core",
     "description": "Postpartum recovery focus with PT-approved core work and walks.",
-    "tags": ["postpartum", "PT", "core", "walks"],
+    "tags": [
+      "postpartum",
+      "PT",
+      "core",
+      "walks"
+    ],
+    "user": "69388295e32546b9f3386678",
     "weeks": "8"
   },
   {
     "name": "Grocery List Level-Up",
     "description": "Shop the perimeter, read labels, and plan simple proteins + veg.",
-    "tags": ["grocery", "labels", "planning", "protein"],
+    "tags": [
+      "grocery",
+      "labels",
+      "planning",
+      "protein"
+    ],
+    "user": "69388295e32546b9f3386677",
     "weeks": "5"
   },
   {
     "name": "Sleep Hygiene Sprint",
     "description": "Wind-down routine: dim lights, hot shower, and cool room before bed.",
-    "tags": ["sleep", "hygiene", "routine", "recovery"],
+    "tags": [
+      "sleep",
+      "hygiene",
+      "routine",
+      "recovery"
+    ],
+    "user": "69388295e32546b9f338667a",
     "weeks": "3"
   },
   {
     "name": "HIIT + Lift Lite",
     "description": "Two short HIIT sessions and two strength days. Keep intensity sensible while cutting.",
-    "tags": ["HIIT", "strength", "intensity", "cut"],
+    "tags": [
+      "HIIT",
+      "strength",
+      "intensity",
+      "cut"
+    ],
+    "user": "69388295e32546b9f3386679",
     "weeks": "6"
   },
   {
     "name": "Neighborhood Nature Walks",
     "description": "Explore new routes, notice the seasons, and rack up steps without the treadmill.",
-    "tags": ["walking", "nature", "routes", "steps"],
+    "tags": [
+      "walking",
+      "nature",
+      "routes",
+      "steps"
+    ],
+    "user": "69388295e32546b9f338667b",
     "weeks": "10"
   },
   {
     "name": "Protein Pancake Project",
     "description": "Weekend protein pancakes with berries. Freeze leftovers for busy mornings.",
-    "tags": ["recipes", "breakfast", "protein", "prep"],
+    "tags": [
+      "recipes",
+      "breakfast",
+      "protein",
+      "prep"
+    ],
+    "user": "69388295e32546b9f338667c",
     "weeks": "4"
   },
   {
     "name": "Lunchbox Level-Up",
     "description": "Pack balanced lunches: protein, veg, fruit, and a fun extra.",
-    "tags": ["lunch", "balanced", "prep", "work"],
+    "tags": [
+      "lunch",
+      "balanced",
+      "prep",
+      "work"
+    ],
+    "user": "69388295e32546b9f338667e",
     "weeks": "5"
   },
   {
     "name": "Bike to Work Trial",
     "description": "Try bike commutes twice weekly. Prep clothes and lights the night before.",
-    "tags": ["cycling", "commute", "prep", "routine"],
+    "tags": [
+      "cycling",
+      "commute",
+      "prep",
+      "routine"
+    ],
+    "user": "69388295e32546b9f338667d",
     "weeks": "8"
   },
   {
     "name": "After-Dinner Loop",
     "description": "15-minute walk after dinner most nights to aid digestion and steps.",
-    "tags": ["walk", "evening", "digestion", "habit"],
+    "tags": [
+      "walk",
+      "evening",
+      "digestion",
+      "habit"
+    ],
+    "user": "69388295e32546b9f338667f",
     "weeks": "6"
   },
   {
     "name": "Semaglutide Starter Pack",
     "description": "Week 1–8 notes: appetite, hydration, and energy. Keep calories steady, not too low.",
-    "tags": ["semaglutide", "starter", "hydration", "energy"],
+    "tags": [
+      "semaglutide",
+      "starter",
+      "hydration",
+      "energy"
+    ],
+    "user": "69388295e32546b9f3386680",
     "weeks": "8"
   },
   {
     "name": "Tirzepatide Level-Up",
     "description": "Weeks 9–16: higher dose phase. Make meals protein-forward and keep fiber high.",
-    "tags": ["tirzepatide", "dose", "protein", "fiber"],
+    "tags": [
+      "tirzepatide",
+      "dose",
+      "protein",
+      "fiber"
+    ],
+    "user": "69388295e32546b9f3386682",
     "weeks": "8"
   },
   {
     "name": "Maintenance Mindset Month",
     "description": "Hold steady after a cut. Keep protein and steps high, add back some carbs.",
-    "tags": ["maintenance", "protein", "steps", "carbs"],
+    "tags": [
+      "maintenance",
+      "protein",
+      "steps",
+      "carbs"
+    ],
+    "user": "69388295e32546b9f3386683",
     "weeks": "4"
   },
   {
     "name": "Home Chef Habit",
     "description": "Cook at home 5 nights weekly. Rotate favorite high-protein meals.",
-    "tags": ["home", "cooking", "protein", "rotation"],
+    "tags": [
+      "home",
+      "cooking",
+      "protein",
+      "rotation"
+    ],
+    "user": "69388295e32546b9f3386681",
     "weeks": "6"
   },
   {
     "name": "Weekend Sports Crew",
     "description": "Adult rec leagues on Saturdays. Cross-train midweek and hydrate.",
-    "tags": ["sports", "rec-league", "cross-train", "hydrate"],
+    "tags": [
+      "sports",
+      "rec-league",
+      "cross-train",
+      "hydrate"
+    ],
+    "user": "69388295e32546b9f3386684",
     "weeks": "12"
   },
   {
     "name": "Park Run Prep",
     "description": "Build to a weekly parkrun. Focus on consistency over speed.",
-    "tags": ["parkrun", "consistency", "running", "routine"],
+    "tags": [
+      "parkrun",
+      "consistency",
+      "running",
+      "routine"
+    ],
+    "user": "69388295e32546b9f3386685",
     "weeks": "10"
   },
   {
     "name": "Hunger Scale Habits",
     "description": "Eat at 3–4, stop at 6–7. Track hunger before and after meals.",
-    "tags": ["hunger-scale", "mindful", "tracking", "habits"],
+    "tags": [
+      "hunger-scale",
+      "mindful",
+      "tracking",
+      "habits"
+    ],
+    "user": "69388295e32546b9f3386686",
     "weeks": "5"
   },
   {
     "name": "Fiber Focused 30",
     "description": "Hit 30g fiber daily with beans, berries, chia, and whole grains.",
-    "tags": ["fiber", "beans", "berries", "whole-grains"],
+    "tags": [
+      "fiber",
+      "beans",
+      "berries",
+      "whole-grains"
+    ],
+    "user": "69388295e32546b9f3386689",
     "weeks": "4"
   },
   {
     "name": "BBQ Season Strategy",
     "description": "Protein first at BBQs, skip the chips, and enjoy fruit for dessert.",
-    "tags": ["BBQ", "protein", "summer", "strategy"],
+    "tags": [
+      "BBQ",
+      "protein",
+      "summer",
+      "strategy"
+    ],
+    "user": "69388295e32546b9f3386688",
     "weeks": "6"
   },
   {
     "name": "Travel Jet Lag Fix",
     "description": "Light meals, sunlight exposure, and short walks to reset quickly.",
-    "tags": ["travel", "jet-lag", "sunlight", "walks"],
+    "tags": [
+      "travel",
+      "jet-lag",
+      "sunlight",
+      "walks"
+    ],
+    "user": "69388295e32546b9f3386687",
     "weeks": "3"
   },
   {
     "name": "Kitchen Gadget Gains",
     "description": "Use the air fryer and instant pot to make protein + veg easy and tasty.",
-    "tags": ["air-fryer", "instant-pot", "protein", "veg"],
+    "tags": [
+      "air-fryer",
+      "instant-pot",
+      "protein",
+      "veg"
+    ],
+    "user": "69388295e32546b9f338668a",
     "weeks": "5"
   },
   {
     "name": "Micros Matter Month",
     "description": "Focus on vitamins and minerals: colorful plates and a daily multi if needed.",
-    "tags": ["micros", "color", "veg", "multi"],
+    "tags": [
+      "micros",
+      "color",
+      "veg",
+      "multi"
+    ],
+    "user": "69388295e32546b9f338668c",
     "weeks": "4"
   },
   {
     "name": "Run-Commute Rookie",
     "description": "One run-commute per week. Pack a small backpack and plan a shower at work.",
-    "tags": ["running", "commute", "planning", "routine"],
+    "tags": [
+      "running",
+      "commute",
+      "planning",
+      "routine"
+    ],
+    "user": "69388295e32546b9f338668b",
     "weeks": "8"
   },
   {
     "name": "Birthday Goal Board",
     "description": "Countdown to birthday with weekly progress pics and step challenges.",
-    "tags": ["birthday", "photos", "steps", "challenge"],
+    "tags": [
+      "birthday",
+      "photos",
+      "steps",
+      "challenge"
+    ],
+    "user": "69388295e32546b9f338668d",
     "weeks": "8"
   },
   {
     "name": "Anniversary Adventure",
     "description": "Build endurance for a celebratory hike weekend. Keep nutrition simple and protein-forward.",
-    "tags": ["anniversary", "hiking", "endurance", "protein"],
+    "tags": [
+      "anniversary",
+      "hiking",
+      "endurance",
+      "protein"
+    ],
+    "user": "69388295e32546b9f338668e",
     "weeks": "10"
   },
   {
     "name": "Nurse Night Shift Plan",
     "description": "Pack protein-heavy meals, hydrate, and take stair breaks during charting.",
-    "tags": ["nurse", "night-shift", "protein", "stairs"],
+    "tags": [
+      "nurse",
+      "night-shift",
+      "protein",
+      "stairs"
+    ],
+    "user": "69388295e32546b9f338666b",
     "weeks": "12"
   },
   {
     "name": "Teacher Term Time",
     "description": "Back-to-school routine: lunch prep, hallway steps, and after-school walks.",
-    "tags": ["teachers", "prep", "steps", "walks"],
+    "tags": [
+      "teachers",
+      "prep",
+      "steps",
+      "walks"
+    ],
+    "user": "69388295e32546b9f338666c",
     "weeks": "16"
-  },
-  {
-    "name": "Bulk to Cut Bridge",
-    "description": "Transition from surplus to slight deficit carefully while keeping lifts strong.",
-    "tags": ["bulk", "cut", "transition", "strength"],
-    "weeks": "8"
-  },
-  {
-    "name": "Run Streak Lite",
-    "description": "A mile a day minimum, with strength twice weekly to support joints.",
-    "tags": ["running", "streak", "strength", "joints"],
-    "weeks": "6"
-  },
-  {
-    "name": "Kitchen Clean-Out",
-    "description": "Clear the pantry and restock with protein and produce-focused staples.",
-    "tags": ["pantry", "restock", "protein", "produce"],
-    "weeks": "3"
-  },
-  {
-    "name": "Sushi Night Smarts",
-    "description": "Order sashimi, edamame, and a roll with extra protein. Skip the tempura.",
-    "tags": ["dining-out", "sushi", "protein", "choices"],
-    "weeks": "4"
-  },
-  {
-    "name": "Mediterranean Month",
-    "description": "Mediterranean-inspired meals: fish, olive oil, legumes, and loads of veg.",
-    "tags": ["mediterranean", "fish", "olive-oil", "veg"],
-    "weeks": "4"
-  },
-  {
-    "name": "Protein Pasta Playbook",
-    "description": "High-protein pasta, lean meats, and extra veg in the sauce.",
-    "tags": ["pasta", "protein", "veg", "recipes"],
-    "weeks": "3"
-  },
-  {
-    "name": "Weekend Adventure Crew",
-    "description": "Kayak, hike, or bike each weekend. Pack protein snacks and lots of water.",
-    "tags": ["weekends", "kayak", "hike", "bike"],
-    "weeks": "8"
-  },
-  {
-    "name": "Protein + Produce Budget",
-    "description": "Healthy on a budget: frozen veg, canned tuna, and sales on lean meats.",
-    "tags": ["budget", "frozen", "tuna", "lean"],
-    "weeks": "6"
-  },
-  {
-    "name": "Kitchen Scale Skills",
-    "description": "Weigh protein portions for a few weeks to recalibrate eyeballing.",
-    "tags": ["portions", "skills", "protein", "calibration"],
-    "weeks": "4"
-  },
-  {
-    "name": "Sunday Soup Setup",
-    "description": "Make a big soup weekly: beans, chicken, or lentils with lots of veg.",
-    "tags": ["soup", "meal-prep", "veg", "protein"],
-    "weeks": "5"
-  },
-  {
-    "name": "Smoothie Smart Start",
-    "description": "Protein smoothies with greens and berries. Sip slowly; avoid chugging on GLP-1.",
-    "tags": ["smoothie", "protein", "greens", "berries"],
-    "weeks": "3"
-  },
-  {
-    "name": "Date Night Game Plan",
-    "description": "Share an entree, add a protein side, and enjoy a walk after dinner.",
-    "tags": ["date-night", "share", "protein", "walk"],
-    "weeks": "4"
-  },
-  {
-    "name": "Festival Food Strategy",
-    "description": "Find the skewer stand, skip fried, water between drinks, lots of steps.",
-    "tags": ["festival", "protein", "hydration", "steps"],
-    "weeks": "4"
-  },
-  {
-    "name": "Prep for Family Reunion",
-    "description": "Travel-friendly meals, plenty of water, and daily morning walks with cousins.",
-    "tags": ["family", "travel", "meals", "walks"],
-    "weeks": "7"
-  },
-  {
-    "name": "Weekend Reset Ritual",
-    "description": "Sunday reset: fridge clean, grocery run, and plan 4 dinners.",
-    "tags": ["reset", "grocery", "planning", "dinners"],
-    "weeks": "4"
-  },
-  {
-    "name": "Strength Garage Gang",
-    "description": "Garage gym crew lifting together twice weekly. Log PRs and celebrate.",
-    "tags": ["garage-gym", "PRs", "community", "strength"],
-    "weeks": "12"
-  },
-  {
-    "name": "Hike for Health",
-    "description": "Local trail every Saturday. Build distance slowly and enjoy the scenery.",
-    "tags": ["hike", "local", "distance", "scenery"],
-    "weeks": "10"
   }
 ]
