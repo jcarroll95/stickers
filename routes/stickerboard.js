@@ -9,6 +9,8 @@ const router = express.Router();
 // the stick router will handle it
 const stickRouter = require('./stix');
 router.use('/:belongsToBoard/stix', stickRouter)
+const reviewRouter = require('./reviews');
+router.use('/:belongsToBoard/reviews', reviewRouter);
 
 const { protect, authorize } = require('../middleware/auth');
 
