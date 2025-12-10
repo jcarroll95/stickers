@@ -23,6 +23,11 @@ const errorHandler = (err, req, res, next) => {
         error = new ErrorResponse(message, 400);
     }
 
+// Mongoose validation error
+    if (err.name === 'ValidationError') {
+        const messages = Object.values(err.errors).map(v => v.message);
+        error = new ErrorResponse(messages.join(', '), 400);
+    }
 
 // look for the statusCode attached to our ErrorResponse class
     res.status(error.statusCode || 500).json({

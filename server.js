@@ -8,7 +8,14 @@ const morgan = require('morgan');
 const connectDB = require('./config/db');
 const fileupload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
+const mongoSanitize = require('express-mongo-sanitize');
 const colors = require('colors');
+const helmet = require('helmet');
+const { xss } = require('express-xss-sanitizer');
+const bodyParser = require('body-parser');
+const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
+const cors = require('cors');
 
 // load environmental vars for dotenv
 // the path is passed as an object
@@ -34,6 +41,24 @@ if(process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
+// express xss clean middleware
+app.use(bodyParser.json({limit:'1kb'}));
+app.use(bodyParser.urlencoded({extended: true, limit:'1kb'}));
+app.use(xss());
+
+// rate limiting
+const limiter = rateLimit({
+    windowMs: 1000 * 60 * 1000, // 10 mins
+    max: 100
+});
+app.use(limiter);
+
+// prevent http param pollution
+app.use(hpp());
+
+// enable cors
+app.use(cors());
+
 // Cookie parser middleware
 app.use(cookieParser());
 
@@ -49,6 +74,19 @@ app.use('/api/v1/stix', stick);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/auth/users', users);
 app.use('/api/v1/reviews', reviews)
+
+// helmet
+app.use(helmet());
+
+// sanitize data (Express 5 has a getter-only req.query; use manual sanitizer to avoid reassigning req.query)
+app.use((req, res, next) => {
+    const opts = { allowDots: true };
+    if (req.body) mongoSanitize.sanitize(req.body, opts);
+    if (req.params) mongoSanitize.sanitize(req.params, opts);
+    if (req.headers) mongoSanitize.sanitize(req.headers, opts);
+    if (req.query) mongoSanitize.sanitize(req.query, opts); // mutate in place, do not reassign
+    next();
+});
 
 // set static folder
 app.use(express.static(path.join(__dirname, 'public')));
