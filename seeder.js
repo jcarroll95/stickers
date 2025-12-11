@@ -1,4 +1,4 @@
-// DB seeder
+// DB seeder script to load the database with test data or clear it out
 console.log(process.argv);
 const fs = require('fs');
 const mongoose = require('mongoose');
@@ -14,7 +14,7 @@ Stick = require('./models/Stick');
 User = require('./models/User');
 Review = require('./models/Review');
 
-// Connect to database
+// Connect to MongoDB database
 mongoose.connect(process.env.MONGO_URI);
 
 // Read JSON data files from our data folder
@@ -31,17 +31,7 @@ const reviews = JSON.parse(
     fs.readFileSync(`${__dirname}/data/reviews.json`, "utf-8")
 );
 
-
-
-// Import into db
-// The mongodb models have _id dependencies as they're created, so if you delete everything and then import everything
-// You'll create records of stix which are not associated to real stickerboard _id values, etc.
-// We'll fix this by creating users first, reading the _id values
-// then creating stickerboards, associating with user _id's
-// then creating stix, associating with stickerboard _id's
-// then creating reviews, associating with user _id's
-
-
+// Import into db the selected /data/ files
 const importData = async (cliFlag) => {
     try {
         if (cliFlag === 'stix') {
@@ -70,7 +60,7 @@ const importData = async (cliFlag) => {
     }
 }
 
-// Delete data
+// Delete selected data from the db
 const deleteData = async (cliFlag) => {
     try {
         // Mongo-created IDs will become desync'd so comment out what you don't want to delete
@@ -98,8 +88,9 @@ const deleteData = async (cliFlag) => {
     }
 }
 
-// when we call this with node seeder.js, we'll want an argument to be passed to specify create or delete
-
+// Node seeder.js -import/-delete cliFlag
+// argument [2] chooses import or delete
+// argument [3] chooses subset of data or all
 if (process.argv[2] === '-import') {
     if (!process.argv[3]) {
         importData('all');
@@ -112,7 +103,6 @@ if (process.argv[2] === '-import') {
     } else {
         deleteData(process.argv[3]);
     }
-
 } else {
     console.log(`Error: ${process.argv[2]} is not a valid command`);
     process.exit(1);

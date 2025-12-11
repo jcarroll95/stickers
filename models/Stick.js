@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const stickLocations = ['Stomach', 'Arm', 'Thigh', 'Other'];
 const stickLocMod = ['Left', 'Right', 'Upper', 'Upper Left', 'Upper Right', 'Lower', 'Lower Left', 'Lower Right'];
 
-
 const StickSchema = new mongoose.Schema({
     belongsToBoard: {
         type: mongoose.Schema.Types.ObjectId,
@@ -51,9 +50,6 @@ const StickSchema = new mongoose.Schema({
 });
 
 // Mongoose: statics are called on the actual model, methods are called on the document
-// Stick.myStaticMethod();
-// const stix = Stick.find()
-// stix.myMethod();
 StickSchema.statics.getAverageCost = async function(belongsToBoard) {
     //console.log('Calculating average cost for board: '.blue, belongsToBoard);
 
@@ -80,7 +76,6 @@ StickSchema.statics.getAverageCost = async function(belongsToBoard) {
         console.error('Error updating Stickerboard averageCost:', err);
     }
 }
-
 
 // Call getAverageCost after save
 StickSchema.post('save', function() {

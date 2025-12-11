@@ -1,4 +1,4 @@
-// WE'LL ACTUALLY INSTALL 'MORGAN' FOR MIDDLEWARE LOGGING
+// DEPRECATED - using morgan instead
 
 
 // logging middleware

@@ -10,13 +10,11 @@ const {
 } = require('../controllers/users');
 const user = require('../models/User');
 
-
 const advancedResults = require('../middleware/advancedResults');
 const { protect, authorize } = require('../middleware/auth');
 
 router.use(protect);
 router.use(authorize('admin'));
-// anything under here will use the protect and authorize middleware, ie, all routes require 'admin'
 
 router.route('/')
     .get(advancedResults(user), getUsers)

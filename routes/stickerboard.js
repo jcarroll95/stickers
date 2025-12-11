@@ -4,9 +4,6 @@ const express = require('express');
 const router = express.Router();
 
 // Include outside resource routers and send them to the right place
-// eg when this router sees a board id requesting the stix for that board
-// when the requested resource is /api/v1/stickerboards/9348f093fh3897fh3/stix, then
-// the stick router will handle it
 const stickRouter = require('./stix');
 router.use('/:belongsToBoard/stix', stickRouter)
 const reviewRouter = require('./reviews');

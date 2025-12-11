@@ -1,5 +1,3 @@
-// /middleware/error.js
-// This is written as middleware so we'll need to require('./middleware/error') and app.use() it in server.js
 // This will handle our mongoose errors. you can log the err object to the console to see all the data fields contained inside the error and establish, eg, what name is associated with the specific error so you can test for that name and handle it appropriately.
 
 const ErrorResponse = require('../utils/errorResponse');

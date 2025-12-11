@@ -1,3 +1,4 @@
+// routes for adding comments (reviews) to stickerboards
 const express = require('express');
 const {
     getReviews,

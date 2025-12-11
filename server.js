@@ -1,9 +1,10 @@
 // @desc Main application file for the server
 const path = require('path');
 const express = require('express');
-// dotenv is possibly not necessary with current node
+// dotenv should be removed in future version due to current node.js capabilities
 const dotenv = require('dotenv');
-const logger = require('./middleware/logger');
+// logger middleware has been deprecated for v1.0.0
+// const logger = require('./middleware/logger');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const fileupload = require('express-fileupload');
@@ -18,7 +19,6 @@ const hpp = require('hpp');
 const cors = require('cors');
 
 // load environmental vars for dotenv
-// the path is passed as an object
 dotenv.config({ path: './config/config.env' });
 
 // Connect to MongoDB
@@ -31,6 +31,7 @@ const auth = require('./routes/auth');
 const users = require('./routes/users');
 const reviews = require('./routes/reviews');
 
+// define express app
 const app = express();
 
 // Body parser middleware which lets our methods access json data in req.body
@@ -62,7 +63,7 @@ app.use(cors());
 // Cookie parser middleware
 app.use(cookieParser());
 
-// invoke our custom middleware with app.use
+// deprecated logger middleware
 // app.use(logger);
 
 // file upload for express

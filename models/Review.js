@@ -1,12 +1,5 @@
 const mongoose = require('mongoose');
-
-
 // reviews structure will be used to place comments under stickerboards, not stix which already have comments
-// belongsToBoard
-// belongsToUser
-// createdAt
-// 1-5 rating of review
-// the comment in the review
 const ReviewSchema = new mongoose.Schema({
     belongsToBoard: {
         type: mongoose.Schema.Types.ObjectId,
@@ -59,7 +52,6 @@ ReviewSchema.statics.getAverageRating = async function(belongsToBoard) {
     }
 }
 
-
 // Call getAverageCost after save
 ReviewSchema.post('save', function() {
     this.constructor.getAverageRating(this.belongsToBoard);
@@ -70,9 +62,7 @@ ReviewSchema.post('deleteOne', { document: true, query: false }, function() {
     this.constructor.getAverageRating(this.belongsToBoard);
 });
 
-
 // set it so that a given user can only add one comment per board - this is probably not what we want
-// but it's a good exercise
 ReviewSchema.index({ belongsToBoard: 1, user: 1 }, { unique: true });
 
 module.exports = mongoose.model('Review', ReviewSchema);

@@ -1,3 +1,4 @@
+// Routes for user authorization functions
 const express = require('express');
 const {
     register,

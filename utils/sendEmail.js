@@ -1,3 +1,4 @@
+// This utility lets us send password reset emails to registered users upon request
 const nodemailer = require('nodemailer');
 const querystring = require("node:querystring");
 
@@ -12,7 +13,7 @@ const sendEmail = async (options) => {
         }
     });
 
-    //send mail with transporter object
+    // send mail with transporter object
     const message = {
         from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
         to: options.email,
