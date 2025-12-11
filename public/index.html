@@ -391,48 +391,64 @@ return true;}
 String.prototype.replaceAll=function(replaceThis,withThis){var re=new RegExp(RegExp.quote(replaceThis),"g");return this.replace(re,withThis);};RegExp.quote=function(str){return str.replace(/([.?*+^$[\]\\(){}-])/g,"\\$1");};function syntaxHighlight(json){json=json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,function(match){var cls='number';if(/^"/.test(match)){if(/:$/.test(match)){cls='key';}else{cls='string';}}else if(/true|false/.test(match)){cls='boolean';}else if(/null/.test(match)){cls='null';}
 return '<span class="'+cls+'">'+match+'</span>';});}</script><br><br><footer class="navbar-default navbar-fixed-bottom"><div class=container-fluid><div class="span12 text-center"><span data-toggle=tooltip title="If the application help you, please feel free to give a star to the project in github. Your star inspire me to work more on open-source projects like this!">Generated at 2025-12-10 23:03:32 by <a href=https://github.com/thedevsaddam/docgen target=_blank class=text-muted>docgen</a></span></div></div></footer>
 
-<!-- Added for Bootstrap 5 collapse (and to keep existing jQuery-based scripts working) -->
-<script src="https://code.jquery.com/jquery-1.12.4.min.js"
-        integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
-        crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
 <script>
-  // Migrate Bootstrap 3 data attributes to Bootstrap 5 at runtime
-  (function() {
-    function upgradeCollapseToggles() {
-      document.querySelectorAll('[data-toggle="collapse"]').forEach(function(el){
-        // Switch to Bootstrap 5 attributes
-        el.setAttribute('data-bs-toggle','collapse');
-        var href = el.getAttribute('href');
-        if (href && href.charAt(0) === '#') {
-          el.setAttribute('data-bs-target', href);
+// Disable Bootstrap collapse behavior and show everything expanded by default
+(function() {
+  function expandAll() {
+    try {
+      // Show all collapsible sections
+      var collapses = document.querySelectorAll('.panel-collapse, .collapse');
+      collapses.forEach(function(el){
+        el.classList.remove('collapse');
+        el.classList.remove('collapsing');
+        // Bootstrap 3 uses class "in" to indicate expanded
+        el.classList.add('in');
+        el.style.display = 'block';
+        el.style.height = 'auto';
+        el.setAttribute('aria-expanded', 'true');
+      });
+
+      // Remove all collapse toggles so clicks do nothing
+      var toggles = document.querySelectorAll('[data-toggle="collapse"]');
+      toggles.forEach(function(t){
+        t.removeAttribute('data-toggle');
+        t.removeAttribute('data-parent');
+        // Keep the text but neutralize the anchor jump to hidden panels
+        if (t.getAttribute('href') && t.getAttribute('href').startsWith('#collapse-')) {
+          t.setAttribute('data-original-href', t.getAttribute('href'));
+          t.removeAttribute('href');
+          t.style.cursor = 'default';
         }
-        // Remove BS3 attributes to prevent double-binding by Bootstrap 3
-        el.removeAttribute('data-toggle');
+        var icon = t.querySelector('.glyphicon');
+        if (icon) {
+          icon.classList.remove('glyphicon-plus', 'glyphicon-minus');
+        }
       });
-      document.querySelectorAll('[data-parent]').forEach(function(el){
-        el.setAttribute('data-bs-parent', el.getAttribute('data-parent'));
-        el.removeAttribute('data-parent');
-      });
+
+      // Also disable any programmatic collapse triggers if Bootstrap JS initialized
+      if (typeof $ === 'function') {
+        try { $('.panel-collapse').collapse && $('.panel-collapse').collapse('show'); } catch(e) {}
+      }
+    } catch (e) {
+      // fail-safe: do nothing if any error
     }
-    function upgradeTooltips() {
-      document.querySelectorAll('[data-toggle="tooltip"]').forEach(function(el){
-        el.setAttribute('data-bs-toggle','tooltip');
-        el.removeAttribute('data-toggle');
-      });
-      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-      tooltipTriggerList.forEach(function(triggerEl){ new bootstrap.Tooltip(triggerEl); });
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function(){
-        upgradeCollapseToggles();
-        upgradeTooltips();
-      });
-    } else {
-      upgradeCollapseToggles();
-      upgradeTooltips();
-    }
-  })();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', expandAll);
+  } else {
+    expandAll();
+  }
+})();
 </script>
+
+
+<style>
+/* Force all collapsed sections to be visible and expanded */
+.collapse { display: block !important; height: auto !important; visibility: visible !important; }
+.panel-collapse { display: block !important; }
+/* Disable collapse toggle interactions */
+a[data-toggle="collapse"] { pointer-events: none; cursor: default; }
+/* Neutralize +/- icons if present */
+.glyphicon-plus:before, .glyphicon-minus:before { content: "" !important; }
+</style>
