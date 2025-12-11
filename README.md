@@ -10,6 +10,10 @@
 >
 >The backend v1.0.0 is completed, tested, documented, and deployed. Front end in progress.
 
+# Documentation
+>The server is live at https://www.stickerboards.app and displaying the documentation
+>It does not have a front end yet as of this push.
+
 # Usage
 >A sanitized config.env.env has been provided to outline the required environmental variables. Drop the second .env extension and fill in credentials for your database, mail server, and JWT secret.
 
