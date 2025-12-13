@@ -37,6 +37,8 @@ const app = express();
 // Body parser middleware which lets our methods access json data in req.body
 app.use(express.json());
 
+
+
 // Dev logging middleware for morgan
 if(process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
@@ -47,9 +49,12 @@ app.use(bodyParser.json({limit:'1kb'}));
 app.use(bodyParser.urlencoded({extended: true, limit:'1kb'}));
 app.use(xss());
 
+// If behind NGINX (reverse proxy), make Express respect X-Forwarded-For
+app.set('trust proxy', 1);
+
 // rate limiting
 const limiter = rateLimit({
-    windowMs: 1000 * 60 * 1000, // 10 mins
+    windowMs: 10 * 60 * 1000, // 10 mins
     max: 100
 });
 app.use(limiter);

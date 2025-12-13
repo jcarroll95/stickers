@@ -11,7 +11,8 @@
 >The backend v1.0.0 is completed, tested, documented, and deployed. Front end in progress.
 
 # Documentation
->The server is live at https://www.stickerboards.app and displaying the documentation
+>The server is live at https://www.stickerboards.app and displaying the documentation.
+> 
 >It does not have a front end yet as of this push.
 
 # Usage
