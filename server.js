@@ -21,8 +21,10 @@ const cors = require('cors');
 // load environmental vars for dotenv
 dotenv.config({ path: './config/config.env' });
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB (skip when running tests; tests manage their own in-memory DB connection)
+if (process.env.NODE_ENV !== 'test') {
+    connectDB();
+}
 
 // route files
 const stickerboard = require('./routes/stickerboard');
@@ -107,17 +109,21 @@ app.set('query parser', 'extended');
 // set port to config.env value or 5000 if not present
 const PORT = process.env.PORT || 5000;
 
-// We'll put app.listen into a variable so we can listen for unhandled promise rejections
-const server = app.listen(
-    PORT,
-    () => console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
-);
+// Only start the HTTP listener when this file is executed directly (not when required by tests)
+let server;
+if (require.main === module) {
+    // We'll put app.listen into a variable so we can listen for unhandled promise rejections
+    server = app.listen(
+        PORT,
+        () => console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
+    );
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-    console.log(`Error (unhandledRejection): ${err.message}`.underline.red.bold);
-    // close server and exit process if this happens so app doesn't stay running
-    server.close(() => process.exit(1));
-});
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (err) => {
+        console.log(`Error (unhandledRejection): ${err.message}`.underline.red.bold);
+        // close server and exit process if this happens so app doesn't stay running
+        server.close(() => process.exit(1));
+    });
+}
 
 module.exports = app;
