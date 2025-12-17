@@ -1,0 +1,1137 @@
+{
+  "info": {
+    "_postman_id": "cbf37483-7df7-4559-a571-2e6adeb35d5c",
+    "name": "Stix",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Stix Tests",
+      "item": [
+        {
+          "name": "GET single stick",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2c205b3f-4c07-452d-8c05-b9375b045485",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "24823e22-c214-4b6f-be10-9fba8c33c802",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "27bddde5-0aca-4854-8946-e36bd4cd76d8",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "localhost:5050/api/v1/stix/692c30eccca1ab4ea69c942c",
+              "host": [
+                "localhost"
+              ],
+              "port": "5050",
+              "path": [
+                "api",
+                "v1",
+                "stix",
+                "692c30eccca1ab4ea69c942c"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all stix in DB",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "94bfea78-3659-4949-9348-fd77269efe10",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "df5b5d3e-88b1-4a2b-80c7-07da123e46a8",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "localhost:5050/api/v1/stix?limit=5",
+              "host": [
+                "localhost"
+              ],
+              "port": "5050",
+              "path": [
+                "api",
+                "v1",
+                "stix"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create a new Stick",
+          "id": "f9cb18ff-3461-4504-a7e7-e7f55d124484",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"belongsToBoard\" : \"6933d12daecb068c9cfe8292\",\n    \"belongsToUser\" : \"John Dough\",\n    \"stickNumber\" : 18,\n    \"stickMed\" : \"Zepbound\",\n    \"stickLocation\" : \"Arm\",\n    \"stickLocMod\" : \"Right\",\n    \"description\" : \"ouchie mama!\",\n    \"cost\" : 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:5050/api/v1/stix/6933d12daecb068c9cfe8292",
+              "host": [
+                "localhost"
+              ],
+              "port": "5050",
+              "path": [
+                "api",
+                "v1",
+                "stix",
+                "6933d12daecb068c9cfe8292"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "UPDATE a Stick",
+          "id": "d3a26527-c180-4de2-a06a-ea31b176e157",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "localhost:5050/api/v1/stix/692c30eccca1ab4ea69c9420",
+              "host": [
+                "localhost"
+              ],
+              "port": "5050",
+              "path": [
+                "api",
+                "v1",
+                "stix",
+                "692c30eccca1ab4ea69c9420"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "37c1c336-eb30-4648-832f-b564e0bd210f",
+      "description": "These tests include our stick routing and control and all involved middleware for CRUD operations on a stick or stix."
+    },
+    {
+      "name": "Stickerboard Tests",
+      "item": [
+        {
+          "name": "GET all stickerboards",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2c205b3f-4c07-452d-8c05-b9375b045485",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "07d1c49d-d0cd-4087-94e8-1c10af8218da",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "34c97534-42fc-4dff-bfa4-481e4734fbdc",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:5050/api/v1/stickerboards",
+              "host": [
+                "localhost"
+              ],
+              "port": "5050",
+              "path": [
+                "api",
+                "v1",
+                "stickerboards"
+              ]
+            },
+            "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+          },
+          "response": []
+        },
+        {
+          "name": "CREATE a new stickerboard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7d9bf498-357a-489f-b41c-d9ba62d0b164",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "packages": {},
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "e231ebf9-74fb-4294-8954-c8eb359fd24e",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNiZWE2YjlkOWI2OGE5MGVmMWJiMCIsImlhdCI6MTc2NTAwMTMzMCwiZXhwIjoxNzY3NTkzMzMwfQ.KtjqKMFsOszhkUZ8LOajE8T9xbf4ConXdD5HKFLIVl0",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Dough Boyz2\",\n    \"description\": \"stab stab stab the flab flab flab\",\n    \"tags\": [\"tz\", \"let'sgooooo\"],\n    \"weeks\": \"1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:5050/api/v1/stickerboards",
+              "host": [
+                "localhost"
+              ],
+              "port": "5050",
+              "path": [
+                "api",
+                "v1",
+                "stickerboards"
+              ]
+            },
+            "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE specific stickerboard",
+          "id": "c1d2f5ac-a72e-439a-bc8a-26e8001dabd5",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "localhost:5050/api/v1/stickerboard/6929e851de56d2e533a7dd3b",
+              "host": [
+                "localhost"
+              ],
+              "port": "5050",
+              "path": [
+                "api",
+                "v1",
+                "stickerboard",
+                "6929e851de56d2e533a7dd3b"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e97623f1-f5ff-477d-9c34-ce788e864bd7",
+                "exec": [
+                  "pm.test(\"Successful DELETE request\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 202, 204]);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "9a6c5e10-3758-484a-9dd0-18c44d5e368b",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNkMGIyYWVjYjA2OGM5Y2ZlODI4ZCIsImlhdCI6MTc2NTAzNjk1MCwiZXhwIjoxNzY3NjI4OTUwfQ.x3zboCGj0c3qaInxXUzBlx3IxgTS4bvZpcmLE5-j-HA",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/stickerboards/6933d44b6777bc13f73b59f3",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "stickerboards",
+                "6933d44b6777bc13f73b59f3"
+              ]
+            },
+            "description": "This is a DELETE request, and it is used to delete data that was previously created via a POST request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful DELETE request typically returns a `200 OK`, `202 Accepted`, or `204 No Content` response code."
+          },
+          "response": []
+        },
+        {
+          "name": "Update data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2a5201b4-46f1-439d-89c7-05bcd92add71",
+                "exec": [
+                  "pm.test(\"Successful PUT request\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "7fda90c6-7fd8-4e7f-b136-53bb9b306c8d",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNkMGIyYWVjYjA2OGM5Y2ZlODI4ZCIsImlhdCI6MTc2NTAzNTYxNywiZXhwIjoxNzY3NjI3NjE3fQ.F60YtqTSxtmCc-N1oxRcBDgnGikDoS8CDCHteuc2__w",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"description\": \"Shake my body\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/stickerboards/6933d44b6777bc13f73b59f3",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "stickerboards",
+                "6933d44b6777bc13f73b59f3"
+              ]
+            },
+            "description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+          },
+          "response": []
+        },
+        {
+          "name": "Post data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Successful POST request\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "id": "ba6b567f-6b0d-4076-ada5-09242dee99d0",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"name\": \"Add your name in the body\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/info",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "info"
+              ]
+            },
+            "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+          },
+          "response": []
+        },
+        {
+          "name": "Photo Upload",
+          "id": "7fbbb65d-9dac-4639-afa9-ecedf04555d8",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/Users/jamescarroll/Downloads/274519787659.JPEG"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5050/api/v1/stickerboards/:id/photo",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5050",
+              "path": [
+                "api",
+                "v1",
+                "stickerboards",
+                ":id",
+                "photo"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "6932623e07365ebc21774759"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "228828e7-9648-4f9b-a8fa-8a140c94671d",
+      "description": "These tests include our stickerboard routing and control and all involved middleware for CRUD operations on a stickerboard."
+    },
+    {
+      "name": "Authentication Tests",
+      "item": [
+        {
+          "name": "Register New User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "3c3f953e-28ee-4690-b489-d92a39c02793",
+                "exec": [
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token)"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "cde5b780-f42d-427d-8379-dd01b8c29e9e",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\" : \"Kevin Smith\",\n    \"email\" : \"kevster@gmail.com\",\n    \"password\" : \"123456\",\n    \"role\" : \"vipuser\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/register",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "24e42e54-c270-4cfa-bf94-f3db229e72e4",
+                "exec": [
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token)",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "8bca681b-d1d7-475d-8c5b-a9fff7384818",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\" : \"john@gmail.com\",\n    \"password\" : \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/login",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Logged In User via Token",
+          "id": "eb491624-4708-4ef5-b16a-d9414c0a295e",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNiZWE2YjlkOWI2OGE5MGVmMWJiMCIsImlhdCI6MTc2NTAwMTMzMCwiZXhwIjoxNzY3NTkzMzMwfQ.KtjqKMFsOszhkUZ8LOajE8T9xbf4ConXdD5HKFLIVl0",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/me",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "id": "a3e4d0a5-07c3-4538-a373-3f9021039a46",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\" : \"john@gmail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/forgotpassword",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "forgotpassword"
+              ]
+            },
+            "description": "Generate password token and send email"
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "id": "95c8c408-0863-400a-aef4-80e9ef52a51b",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password\" : \"654321\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/resetpassword/9cc5fd1263847fd2e5fdaaa38f8b8ca1aa302ded",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "resetpassword",
+                "9cc5fd1263847fd2e5fdaaa38f8b8ca1aa302ded"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Details",
+          "id": "ad9fdc8a-85cf-4e72-80fe-4cdd9a93b972",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNkMGIyYWVjYjA2OGM5Y2ZlODI4ZCIsImlhdCI6MTc2NTI1OTMzNSwiZXhwIjoxNzY3ODUxMzM1fQ.Q6oKbDv-gjc2Qw6InClJUVvOPgVdsk1KrA80Z2woqwU",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\" : \"john@gmail.com\",\n    \"name\" : \"John St James Smithe\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/updatedetails",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "updatedetails"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Password",
+          "id": "1fdf56d2-d8c0-4ecc-90dd-ffacbeb8a7c7",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNkMGIyYWVjYjA2OGM5Y2ZlODI4ZCIsImlhdCI6MTc2NTI1OTMzNSwiZXhwIjoxNzY3ODUxMzM1fQ.Q6oKbDv-gjc2Qw6InClJUVvOPgVdsk1KrA80Z2woqwU",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"currentPassword\" : \"654321\",\n    \"newPassword\" : \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/updatepassword",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "updatepassword"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "f5d2596c-c8cd-4422-a61a-472e25d1daa4",
+      "description": "These tests include our User routing and control and all involved middleware for user authentication functions."
+    },
+    {
+      "name": "User Admin",
+      "item": [
+        {
+          "name": "Get All Users",
+          "id": "f74d458a-554a-4f48-9b79-8c0f51767867",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNkMGIyYWVjYjA2OGM5Y2ZlODI4ZCIsImlhdCI6MTc2NTI2NDAwOSwiZXhwIjoxNzY3ODU2MDA5fQ.5tas1vrHrPyEEqn-MmPuGbl2xndt8b2SoV_KTPAvDFI",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/users",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get One User",
+          "id": "402ecbee-a274-4156-9e1e-1ca4db9f4f1e",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNkMGIyYWVjYjA2OGM5Y2ZlODI4ZCIsImlhdCI6MTc2NTI2MjkxNywiZXhwIjoxNzY3ODU0OTE3fQ.rERTRsCxAqytFaePIYM4-ntjlJeSMpvqZpiNgKz0Fy4",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/users/69384711b2b478fdcba2cce5",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "users",
+                "69384711b2b478fdcba2cce5"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create A User",
+          "id": "0608bf93-d340-4b45-a8f1-6490bba37525",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNkMGIyYWVjYjA2OGM5Y2ZlODI4ZCIsImlhdCI6MTc2NTI2MjkxNywiZXhwIjoxNzY3ODU0OTE3fQ.rERTRsCxAqytFaePIYM4-ntjlJeSMpvqZpiNgKz0Fy4",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\" : \"Stella Artois\",\n    \"email\" : \"stell@bell.com\",\n    \"password\" : \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/users",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update A User",
+          "id": "b1eaaeee-6bb3-44a9-86d2-4a30cf18111b",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNkMGIyYWVjYjA2OGM5Y2ZlODI4ZCIsImlhdCI6MTc2NTI2MjkxNywiZXhwIjoxNzY3ODU0OTE3fQ.rERTRsCxAqytFaePIYM4-ntjlJeSMpvqZpiNgKz0Fy4",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\" : \"Stella Bella\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/users/69384711b2b478fdcba2cce5",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "users",
+                "69384711b2b478fdcba2cce5"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete A User",
+          "id": "3ba2870f-f526-4805-b1b1-b078456297c9",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MzNkMGIyYWVjYjA2OGM5Y2ZlODI4ZCIsImlhdCI6MTc2NTI2MjkxNywiZXhwIjoxNzY3ODU0OTE3fQ.rERTRsCxAqytFaePIYM4-ntjlJeSMpvqZpiNgKz0Fy4",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "Application/json",
+                "description": "JSON Type",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/users/69384711b2b478fdcba2cce5",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "users",
+                "69384711b2b478fdcba2cce5"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "645b63d5-4303-4f08-ba88-9382f6b51148",
+      "description": "These tests include our admin functions for managing the collection of Users."
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Get All Reviews",
+          "id": "361bf5ce-7ef5-4896-aa3d-11fbd91ce20b",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ],
+      "id": "08c6d638-03e7-4abd-a16a-4cfc239e4ca4",
+      "description": "These tests are for CRUD operations on stickerboard comments, aka \"Reviews\"."
+    }
+  ]
+}
