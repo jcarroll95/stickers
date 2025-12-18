@@ -40,10 +40,15 @@ npm start
 
 ## Next Steps
 -Deploy front end
+
 -Add Sticker visual functionality (React/Konva)
+
 -Move documentation off the main page
+
 -Project issue tracking (Jira)
+
 -Weight, half-life, progress photo functionality
+
 -VIP User LLM functions: API calls to Gemini with RAG of stix and side effects for trend analysis and expectations
 
 - Version: 1.0.0
