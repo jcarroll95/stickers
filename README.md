@@ -36,15 +36,15 @@ npm start
 ## Currently Working On
 >Developing a frontend concept in Figma. 
 
-<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://embed.figma.com/proto/EomyE97ISZshep51Vn2x8F/Untitled?node-id=1-2&p=f&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&embed-host=share" allowfullscreen></iframe>
+<img src="public/figmatest.jpeg">
 
 ## Next Steps
->Deploy front end
->Add Sticker visual functionality (React/Konva)
->Move documentation off the main page
->Project issue tracking (Jira)
->Weight, half-life, progress photo functionality
->VIP User LLM functions: API calls to Gemini with RAG of stix and side effects for trend analysis and expectations
+-Deploy front end
+-Add Sticker visual functionality (React/Konva)
+-Move documentation off the main page
+-Project issue tracking (Jira)
+-Weight, half-life, progress photo functionality
+-VIP User LLM functions: API calls to Gemini with RAG of stix and side effects for trend analysis and expectations
 
 - Version: 1.0.0
 - License: MIT
