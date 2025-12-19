@@ -24,10 +24,10 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  /* Ensure page content starts below the fixed Navbar (60px high) */
+  padding-top: 60px;
 }
 
 h1 {
@@ -67,6 +67,5 @@ button:focus-visible {
   }
 }
 
-.main-content {
-    margin-top: 70px;
-}
+/* No extra top margin needed now that body has padding-top */
+.main-content { margin-top: 0; }

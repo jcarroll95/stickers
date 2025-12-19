@@ -33,6 +33,11 @@
     color: #007bff;
 }
 
+.auth {
+    display: flex;
+    align-items: center;
+}
+
 .button {
     padding: 8px 16px;
     background-color: #007bff;
@@ -44,4 +49,102 @@
 
 .button:hover {
     background-color: #0056b3;
+}
+
+/* User dropdown */
+.userMenu {
+    position: relative;
+}
+
+.userName {
+    padding: 8px 12px;
+    background: #444;
+    border-radius: 4px;
+    cursor: default;
+}
+
+.dropdown {
+    position: absolute;
+    right: 0;
+    margin-top: 8px;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 6px;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 1001;
+    overflow: hidden;
+}
+
+.dropdownItem,
+.dropdownItemButton {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 14px;
+    color: #fff;
+    background: transparent;
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dropdownItem:hover,
+.dropdownItemButton:hover {
+    background: #333;
+}
+
+/* Login dropdown form */
+.loginForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+}
+
+.formRow {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.input {
+    padding: 8px 10px;
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.error {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    padding: 8px 10px;
+    border-radius: 4px;
+}
+
+.submitButton {
+    padding: 8px 12px;
+    background: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.submitButton:disabled {
+    opacity: 0.7;
+    cursor: default;
 }
