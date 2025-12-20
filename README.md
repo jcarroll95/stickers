@@ -45,6 +45,8 @@ npm start
 
 -Move documentation off the main page
 
+-Add integration and end-to-end testing for more meaningful coverage
+
 -Project issue tracking (Jira)
 
 -Weight, half-life, progress photo functionality

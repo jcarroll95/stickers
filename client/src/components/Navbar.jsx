@@ -163,13 +163,15 @@ const Navbar = () => {
 
     return (
         <nav className={styles.nav}>
-            <div className={styles.logo}>Stickerboards</div>
+
             <ul className={styles.navLinks}>
                 <li className={styles.link}>My Board</li>
                 <li className={styles.link}>Explore</li>
                 <li className={styles.link}>Cheer!</li>
                 <li className={styles.link}>Developer Docs</li>
             </ul>
+
+
             <div className={styles.auth}>
                 {!user ? (
                     <div className={styles.userMenu} ref={loginMenuRef}>
