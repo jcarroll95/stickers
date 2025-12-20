@@ -7,6 +7,7 @@ const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     // unauthenticated login dropdown state
     const [loginOpen, setLoginOpen] = useState(false);
+    const [navigatingMyBoard, setNavigatingMyBoard] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loggingIn, setLoggingIn] = useState(false);
@@ -46,17 +47,89 @@ const Navbar = () => {
         };
     }, []);
 
+    // Helper to safely extract a user id from various shapes
+    const getUserId = (u) => u?.__id || u?._id || u?.id || u?.data?.__id || u?.data?._id || u?.data?.id || null;
+
+    // Navigate to the currently logged-in user's stickerboard
+    const handleGoToMyBoard = async () => {
+        if (navigatingMyBoard) return;
+        setNavigatingMyBoard(true);
+        try {
+            // Ensure we have the current user (and a token/cookie)
+            let currentUser = user;
+            const token = localStorage.getItem('token');
+            if (!currentUser) {
+                const meRes = await fetch('/api/v1/auth/me', {
+                    method: 'GET',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    credentials: 'include'
+                });
+                if (!meRes.ok) {
+                    // Not authenticated – open login dropdown
+                    setLoginOpen(true);
+                    return;
+                }
+                const meData = await meRes.json();
+                currentUser = meData?.data || null;
+                setUser(currentUser);
+            }
+
+            const uid = getUserId(currentUser);
+            if (!uid) {
+                // Couldn't determine user id, prompt login as fallback
+                setLoginOpen(true);
+                return;
+            }
+
+            // Fetch this user's stickerboard(s). Limit to first.
+            const sbRes = await fetch(`/api/v1/stickerboards?user=${encodeURIComponent(uid)}&limit=1`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (!sbRes.ok) {
+                // If unauthorized, show login; otherwise, just no-op
+                if (sbRes.status === 401) setLoginOpen(true);
+                return;
+            }
+            const sbData = await sbRes.json();
+            const board = sbData?.data?.[0] || null;
+            if (!board) {
+                // No board exists yet for user. Route to a generic board page or creation page if exists.
+                // For now, send to the generic board route the app already links to.
+                window.location.hash = '#/board';
+                return;
+            }
+
+            // Prefer slug route if available, else id. Keep hash-based routing consistent with app.
+            const boardToken = board.slug || board._id || board.id;
+            if (boardToken) {
+                window.location.hash = `#/board/${boardToken}`;
+            } else {
+                window.location.hash = '#/board';
+            }
+        } catch (_) {
+            // Swallow errors to avoid breaking nav; optionally open login
+        } finally {
+            setNavigatingMyBoard(false);
+        }
+    };
+
     const handleLogout = async () => {
         try {
             // Clear any locally stored bearer token
             localStorage.removeItem('token');
             // Best-effort request to backend to clear cookie (if used)
-            await fetch('/api/v1/auth/logout');
+            await fetch('/api/v1/auth/logout', { credentials: 'include' });
         } catch (_) {
             // ignore
         } finally {
             setUser(null);
             setMenuOpen(false);
+            // Navigate to a neutral public route so private data is not shown
+            window.location.hash = '#/';
+            // Broadcast a logout event so any views can react immediately
+            try { window.dispatchEvent(new CustomEvent('auth:logout')); } catch (_) {}
         }
     };
 
@@ -165,7 +238,21 @@ const Navbar = () => {
         <nav className={styles.nav}>
 
             <ul className={styles.navLinks}>
-                <li className={styles.link}>My Board</li>
+                <li
+                    className={styles.link}
+                    role="button"
+                    tabIndex={0}
+                    aria-disabled={navigatingMyBoard}
+                    onClick={handleGoToMyBoard}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleGoToMyBoard();
+                        }
+                    }}
+                >
+                    {navigatingMyBoard ? 'My Board…' : 'My Board'}
+                </li>
                 <li className={styles.link}>Explore</li>
                 <li className={styles.link}>Cheer!</li>
                 <li className={styles.link}>Developer Docs</li>
@@ -244,7 +331,17 @@ const Navbar = () => {
                         </div>
                         {menuOpen && (
                             <div id="user-dropdown" className={styles.dropdown}>
-                                <a className={styles.dropdownItem} href="#/board">My Board</a>
+                                <a
+                                    className={styles.dropdownItem}
+                                    href="#/board"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setMenuOpen(false);
+                                        handleGoToMyBoard();
+                                    }}
+                                >
+                                    {navigatingMyBoard ? 'My Board…' : 'My Board'}
+                                </a>
                                 <a className={styles.dropdownItem} href="#/settings">Settings</a>
                                 <button className={styles.dropdownItemButton} onClick={handleLogout}>Logout</button>
                             </div>

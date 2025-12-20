@@ -1,13 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './index.css';
 import Navbar from './components/Navbar.jsx';
-import StickerboardsDemo from './StickerboardsDemo.jsx';
+import Router from './components/Router.jsx';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <Navbar />
         <div className="main-content">
-            <StickerboardsDemo />
+            <Router />
         </div>
     </React.StrictMode>
 );
