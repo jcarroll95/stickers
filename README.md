@@ -33,7 +33,7 @@ npm run dev
 ```
 Node seeder <-import> [stix/reviews/users/stickerboard]
 ```
->Note: data provided here includes an example test set with hard-coded _id values that won't deploy correctly for you, recommend you use sanatized versions.
+>Note: data provided here includes an example test set with hard-coded _id values that won't deploy correctly for you, recommend you use sanitized versions.
 > 
 ### Scrub the database sections of all data ***NO SAFETY CHECK***
 ```
