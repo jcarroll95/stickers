@@ -1,0 +1,688 @@
+openapi: 3.0.3
+info:
+  title: Stickerboards API
+  version: 0.1.0
+  description: |
+    First‑pass OpenAPI for the Stickerboards backend, generated from Express routes without code changes.
+    Refine request/response schemas using the Mongoose models and controllers as needed.
+servers:
+  - url: http://localhost:5050/api/v1
+    description: Local dev
+  - url: https://www.stickerboards.app/api/v1
+    description: Production
+
+tags:
+  - name: Stickerboards
+  - name: Stix
+  - name: Reviews
+  - name: Auth
+  - name: Users (Admin)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    StickerboardId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+      description: Stickerboard ID
+    BelongsToBoard:
+      name: belongsToBoard
+      in: path
+      required: true
+      schema: { type: string }
+      description: Stickerboard ID (parent board)
+    StickId:
+      name: stickId
+      in: path
+      required: true
+      schema: { type: string }
+      description: Stick ID
+    ReviewId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+      description: Review ID
+    ResetToken:
+      name: resettoken
+      in: path
+      required: true
+      schema: { type: string }
+      description: Password reset token
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: {}
+        count: { type: integer, minimum: 0 }
+        pagination:
+          type: object
+          nullable: true
+          properties:
+            next: { type: object, nullable: true }
+            prev: { type: object, nullable: true }
+    Error:
+      type: object
+      properties:
+        success: { type: boolean, default: false }
+        error: { type: string }
+        message: { type: string }
+    Stickerboard:
+      type: object
+      description: Placeholder; derive from models/Stickerboard.js
+      properties:
+        _id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        photo: { type: string, description: URL or filename, nullable: true }
+        createdAt: { type: string, format: date-time }
+    Stick:
+      type: object
+      description: Placeholder; derive from models/Stick.js
+      properties:
+        _id: { type: string }
+        title: { type: string }
+        text: { type: string }
+        belongsToBoard: { type: string }
+        createdAt: { type: string, format: date-time }
+    Review:
+      type: object
+      description: Placeholder; derive from models/Review.js
+      properties:
+        _id: { type: string }
+        title: { type: string }
+        text: { type: string }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        belongsToBoard: { type: string }
+        createdAt: { type: string, format: date-time }
+    User:
+      type: object
+      description: Placeholder; derive from models/User.js
+      properties:
+        _id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [user, vipuser, admin] }
+        createdAt: { type: string, format: date-time }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+        role: { type: string, enum: [user, vipuser, admin], nullable: true }
+    TokenResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        token: { type: string, description: JWT }
+    UpdateDetailsRequest:
+      type: object
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+    UpdatePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword: { type: string, format: password }
+        newPassword: { type: string, format: password }
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email }
+    ResetPasswordRequest:
+      type: object
+      required: [password]
+      properties:
+        password: { type: string, format: password }
+
+paths:
+  /stickerboards:
+    get:
+      tags: [Stickerboards]
+      summary: List stickerboards
+      parameters:
+        - in: query
+          name: select
+          schema: { type: string }
+          description: Comma-separated fields to select
+        - in: query
+          name: sort
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Stickerboard' }
+        default:
+          description: Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    post:
+      tags: [Stickerboards]
+      summary: Create a stickerboard
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Stickerboard' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponse' }
+        default:
+          description: Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /stickerboards/{id}:
+    parameters: [ { $ref: '#/components/parameters/StickerboardId' } ]
+    get:
+      tags: [Stickerboards]
+      summary: Get a stickerboard by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Stickerboard' }
+        '404': { description: Not found }
+    put:
+      tags: [Stickerboards]
+      summary: Update a stickerboard
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Stickerboard' }
+      responses:
+        '200': { description: Updated }
+        default:
+          description: Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [Stickerboards]
+      summary: Delete a stickerboard
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+        '404': { description: Not found }
+
+  /stickerboards/{id}/photo:
+    parameters: [ { $ref: '#/components/parameters/StickerboardId' } ]
+    put:
+      tags: [Stickerboards]
+      summary: Upload/update stickerboard photo (vipuser)
+      description: Requires role `vipuser` (and above). File upload via multipart/form-data is expected by controller.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200': { description: Photo updated }
+        '400': { description: Bad request }
+
+  # Stix top-level
+  /stix:
+    get:
+      tags: [Stix]
+      summary: List stix
+      parameters:
+        - in: query
+          name: select
+          schema: { type: string }
+        - in: query
+          name: sort
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Stick' }
+    post:
+      tags: [Stix]
+      summary: Create a stick
+      description: Creates a stick; when called on this top-level route, pass `belongsToBoard` in the body.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Stick' }
+      responses:
+        '201': { description: Created }
+
+  /stix/{belongsToBoard}:
+    parameters: [ { $ref: '#/components/parameters/BelongsToBoard' } ]
+    post:
+      tags: [Stix]
+      summary: Create a stick for a given stickerboard (alt form)
+      description: Alternate POST form that passes `belongsToBoard` as path param.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Stick' }
+      responses:
+        '201': { description: Created }
+
+  /stix/{stickId}:
+    parameters: [ { $ref: '#/components/parameters/StickId' } ]
+    get:
+      tags: [Stix]
+      summary: Get a stick by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Stick' }
+        '404': { description: Not found }
+    put:
+      tags: [Stix]
+      summary: Update a stick
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Stick' }
+      responses:
+        '200': { description: Updated }
+
+  # Nested Stix under a stickerboard
+  /stickerboards/{belongsToBoard}/stix:
+    parameters: [ { $ref: '#/components/parameters/BelongsToBoard' } ]
+    get:
+      tags: [Stix]
+      summary: List stix for a stickerboard
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Stick' }
+    post:
+      tags: [Stix]
+      summary: Create a stick for a stickerboard
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Stick' }
+      responses:
+        '201': { description: Created }
+
+  # Reviews top-level
+  /reviews:
+    get:
+      tags: [Reviews]
+      summary: List reviews
+      parameters:
+        - in: query
+          name: select
+          schema: { type: string }
+        - in: query
+          name: sort
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Review' }
+    post:
+      tags: [Reviews]
+      summary: Create a review
+      description: Requires role user, vipuser, or admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Review' }
+      responses:
+        '201': { description: Created }
+
+  /reviews/{id}:
+    parameters: [ { $ref: '#/components/parameters/ReviewId' } ]
+    get:
+      tags: [Reviews]
+      summary: Get a review by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Review' }
+    put:
+      tags: [Reviews]
+      summary: Update a review
+      description: Requires role user, vipuser, or admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Review' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [Reviews]
+      summary: Delete a review
+      description: Requires role user, vipuser, or admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+
+  # Nested Reviews under a stickerboard
+  /stickerboards/{belongsToBoard}/reviews:
+    parameters: [ { $ref: '#/components/parameters/BelongsToBoard' } ]
+    get:
+      tags: [Reviews]
+      summary: List reviews for a stickerboard
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Review' }
+    post:
+      tags: [Reviews]
+      summary: Create a review for a stickerboard
+      description: Requires role user, vipuser, or admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Review' }
+      responses:
+        '201': { description: Created }
+
+  # Auth
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '200':
+          description: Registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenResponse' }
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Logged in
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenResponse' }
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/User' }
+  /auth/forgotPassword:
+    post:
+      tags: [Auth]
+      summary: Initiate password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ForgotPasswordRequest' }
+      responses:
+        '200': { description: Email sent (or OK)
+        }
+  /auth/resetPassword/{resettoken}:
+    parameters: [ { $ref: '#/components/parameters/ResetToken' } ]
+    put:
+      tags: [Auth]
+      summary: Reset password with token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResetPasswordRequest' }
+      responses:
+        '200': { description: Password updated }
+  /auth/updatedetails:
+    put:
+      tags: [Auth]
+      summary: Update profile details
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateDetailsRequest' }
+      responses:
+        '200': { description: Updated }
+  /auth/updatepassword:
+    put:
+      tags: [Auth]
+      summary: Update password
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePasswordRequest' }
+      responses:
+        '200': { description: Updated }
+  /auth/logout:
+    get:
+      tags: [Auth]
+      summary: Logout
+      responses:
+        '200': { description: Logged out }
+
+  # Users (Admin only; router mounted at /auth/users)
+  /auth/users:
+    get:
+      tags: [Users (Admin)]
+      summary: List users (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: select
+          schema: { type: string }
+        - in: query
+          name: sort
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/User' }
+    post:
+      tags: [Users (Admin)]
+      summary: Create a user (admin)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User' }
+      responses:
+        '201': { description: Created }
+  /auth/users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Users (Admin)]
+      summary: Get a user by ID (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/User' }
+    put:
+      tags: [Users (Admin)]
+      summary: Update a user (admin)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [Users (Admin)]
+      summary: Delete a user (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }

@@ -91,19 +91,21 @@ const deleteData = async (cliFlag) => {
 // Node seeder.js -import/-delete cliFlag
 // argument [2] chooses import or delete
 // argument [3] chooses subset of data or all
-if (process.argv[2] === '-import') {
-    if (!process.argv[3]) {
-        importData('all');
+if (process.env.NODE_ENV === 'development') {
+    if (process.argv[2] === '-import') {
+        if (!process.argv[3]) {
+            importData('all');
+        } else {
+            importData(process.argv[3]);
+        }
+    } else if (process.argv[2] === '-delete') {
+        if (!process.argv[3]) {
+            deleteData('all');
+        } else {
+            deleteData(process.argv[3]);
+        }
     } else {
-        importData(process.argv[3]);
+        console.log(`Error: ${process.argv[2]} is not a valid command`);
+        process.exit(1);
     }
-} else if (process.argv[2] === '-delete') {
-    if (!process.argv[3]) {
-        deleteData('all');
-    } else {
-        deleteData(process.argv[3]);
-    }
-} else {
-    console.log(`Error: ${process.argv[2]} is not a valid command`);
-    process.exit(1);
 }

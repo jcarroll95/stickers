@@ -39,13 +39,13 @@ const StickerboardSchema = new mongoose.Schema({
     },
 );
 
-// Let's introduce slugify middleware - create a stickerboard slug from the name.
+// create a stickerboard slug from the name.
 StickerboardSchema.pre('save', function () {
     this.slug = slugify(this.name, { lower: true });
     console.log('Slugify ran', this.name.yellow.bold);
 });
 
-// Cascade delete courses when a stickerboard is deleted
+// Cascade delete stix when a stickerboard is deleted
 StickerboardSchema.pre('deleteOne', { document: true, query: false },async function (next) {
     console.log(`Stickerboard ___ deleted, stix associated with id ___ deleted`.red.inverse);
     await this.model('Stick').deleteMany( { belongsToBoard: this._id });
