@@ -7,7 +7,7 @@ The full [MVP spec](/docs/mvpspec.md) is available in [/docs](/docs)
 ## Architecture Goals:
 - Backend: Node/Express, MongoDB, JWT + HttpOnly cookies, OpenAPI docs, rate‑limit, helmet, xss, mongo‑sanitize.
 - Frontend: Vite + React 19, React Router, React Query for data fetching/caching, simple state for canvas tool, Konva for board, lightweight UI kit.
-- Infra: GitHub Actions for both frontend and backend, Preview deployments, production on current server + static hosting/CDN for frontend.
+- Infra: GitHub Actions for both frontend and backend, Preview deployments, production on digital ocean.
 
 ## Current Status
 The API is finished and deployed as a Node.js / Express app, connected to MongoDB. The server is live at https://www.stickerboards.app and displaying the API documentation.
