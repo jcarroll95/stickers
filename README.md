@@ -29,6 +29,18 @@ npm install
 npm run dev
 ```
 
+### Fill the database sections with LLM-generated test data
+```
+Node seeder <-import> [stix/reviews/users/stickerboard]
+```
+>Note: data provided here includes an example test set with hard-coded _id values that won't deploy correctly for you, recommend you use sanatized versions.
+> 
+### Scrub the database sections of all data ***NO SAFETY CHECK***
+```
+Node seeder <-delete> [stix/reviews/users/stickerboard]
+```
+>Note: This is a dev convenience. I've wrapped the logic in an NODE_ENV=development check but you still should not deploy this function to the production server.
+
 ### Run in Production Mode
 ```
 npm start

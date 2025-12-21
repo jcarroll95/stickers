@@ -111,7 +111,7 @@ Feature: User authentication
     Then the response status is 200
 ```
 
-See also Postman collection: ../postman/
+See also Postman collection: [../postman/](../postman)
 
 #### Users (admin only, existing)
 - GET `/api/v1/auth/users` — List users (admin)
