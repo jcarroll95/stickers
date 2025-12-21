@@ -3,8 +3,8 @@
 ## Problem and goal overview
 >GLP‑1 medicine users may struggle to consistently log dosages and side effects. The MVP for this project helps them: (1) record doses and side effects quickly, (2) identify side-effect trends and mitigation strategies, and (3) stay engaged with a playful social sticker board.
 >The full MVP spec is available in /docs
->
-> Architecture Goals:
+
+### Architecture Goals:
 - Backend: Node/Express, MongoDB, JWT + HttpOnly cookies, OpenAPI docs, rate‑limit, helmet, xss, mongo‑sanitize.
 - Frontend: Vite + React 19, React Router, React Query for data fetching/caching, simple state for canvas tool, Konva for board, lightweight UI kit.
 - Infra: GitHub Actions for both frontend and backend, Preview deployments, production on your current server + static hosting/CDN for frontend.
