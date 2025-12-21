@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
+import StickerInterface from '../stickerInterface/StickerInterface.jsx'
 // Displays a specific stickerboard given a token (id or slug).
 // Fetch strategy:
 // 1) Try GET /api/v1/stickerboards/:token (works for MongoDB ObjectId)
@@ -68,6 +68,7 @@ export default function BoardView({ token }) {
   return (
     <div style={{ padding: '1rem' }}>
       <h2>{board.name || 'Board'}</h2>
+        <StickerInterface board={board} boardId={board._id || board.id} />
       <pre style={{ textAlign: 'left', background: '#111', color: '#0f0', padding: '1rem', borderRadius: 8 }}>
         {JSON.stringify(board, null, 2)}
       </pre>

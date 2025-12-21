@@ -1,34 +1,34 @@
-# Stickerboards API
+# Stickerboards 
 
->Hi! 
+## Problem and goal overview
+>GLP‑1 medicine users may struggle to consistently log dosages and side effects. The MVP for this project helps them: (1) record doses and side effects quickly, (2) identify side-effect trends and mitigation strategies, and (3) stay engaged with a playful social sticker board.
+>The full MVP spec is available in /docs
 >
->This project is the API for a Node.js / Express system using MongoDB. 
->
->The website it implements is a shot and side effect tracker for GLP-1 medicine users, where weekly injections and associated information can be recorded and recalled.
->
->This backend contains endpoints for creating doses, collections of doses, comments, ratings, and statistics. It implements basic user account creation and administration, authentication and security.
+> Architecture Goals:
+- Backend: Node/Express, MongoDB, JWT + HttpOnly cookies, OpenAPI docs, rate‑limit, helmet, xss, mongo‑sanitize.
+- Frontend: Vite + React 19, React Router, React Query for data fetching/caching, simple state for canvas tool, Konva for board, lightweight UI kit.
+- Infra: GitHub Actions for both frontend and backend, Preview deployments, production on your current server + static hosting/CDN for frontend.
+
+
+## Current Status
+>The API is finished and deployed as a Node.js / Express app, connected to MongoDB. The server is live at https://www.stickerboards.app and displaying the API documentation.
 >
 >The backend v1.0.0 is completed, tested, documented, and deployed. Front end in progress.
 
-# Documentation
->The server is live at https://www.stickerboards.app and displaying the documentation.
-> 
->It does not have a front end yet as of this push.
-
-# Usage
+## Usage
 >A sanitized config.env.env has been provided to outline the required environmental variables. Drop the second .env extension and fill in credentials for your database, mail server, and JWT secret.
 
-## Install Dependencies
+### Install Dependencies
 ```
 npm install
 ```
 
-## Run In Dev Mode
+### Run In Dev Mode
 ```
 npm run dev
 ```
 
-## Run in Production Mode
+### Run in Production Mode
 ```
 npm start
 ```

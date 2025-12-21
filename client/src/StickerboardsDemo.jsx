@@ -4,6 +4,8 @@ export default function StickerboardsDemo() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // adding konva canvas for board
+
 
     useEffect(() => {
         let cancelled = false;
@@ -31,6 +33,7 @@ export default function StickerboardsDemo() {
                 if (!cancelled) setLoading(false);
             }
         }
+
 
         load();
         return () => { cancelled = true; };
