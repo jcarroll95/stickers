@@ -16,6 +16,33 @@ The MVP helps them: (1) record doses and side effects quickly, (2) gain insight 
 - I receive fun stickers as rewards for adherence streaks or consistent logging.
 - I can view a dashboard with basic charts: adherence percentage, symptom trend.
 
+#### Acceptance criteria (per user story)
+
+- Authentication and session
+  - Given I provide a unique email, name, and valid password, when I POST to `/api/v1/auth/register`, then I receive a `200` with a token and a user in the response.
+  - Given valid credentials, when I POST to `/api/v1/auth/login`, then I receive `200`, a HttpOnly cookie is set, and the body includes `{ success: true }`.
+  - Given no token, when I GET `/api/v1/auth/me`, then I receive `401` and an error body.
+  - Given an expired or invalid token, when I access any protected route, then I receive `401`.
+
+- Create a stickerboard and place stickers
+  - Given I am authenticated, when I POST `/api/v1/stickerboards` with `{ name, description }`, then I receive `201` and a Stickerboard object.
+  - Given I am authenticated as the owner, when I POST `/api/v1/stickerboards/{boardId}/stix` with a valid stick payload, then I receive `201` and the stick belongs to `{boardId}`.
+  - Given I am not authenticated, when I POST `/api/v1/stickerboards/{boardId}/stix`, then I receive `401`.
+  - Given I am not the owner, when I PUT `/api/v1/stickerboards/{boardId}`, then I receive `403`.
+
+- Log a dose and view adherence over time
+  - Given I am authenticated, when I POST `/api/v1/doses` with required fields, then I receive `201` and the dose reflects my user as owner.
+  - Given I am authenticated, when I GET `/api/v1/doses?from=...&to=...`, then I receive `200` and only my doses within range.
+  - Given I am not the owner, when I DELETE `/api/v1/doses/{id}`, then I receive `403`.
+
+- Log side effects and see trends
+  - Given I am authenticated, when I POST `/api/v1/side-effects` with required fields, then I receive `201` and the side effect is linked to my user.
+  - Given I am authenticated, when I GET `/api/v1/side-effects?effectType=nausea`, then I receive `200` and only the filtered results.
+
+- Rewards and dashboard
+  - Given I log consistently, when I request analytics `/api/v1/analytics/adherence?bucket=week`, then I receive `200` with streak and adherence percentage fields present.
+  - Given I have side effect logs, when I GET `/api/v1/analytics/side-effects/trend?bucket=day`, then I receive `200` with a time series including `avgSeverity`.
+
 #### Out of scope (v1)
 - Social graph and following friends, comments beyond simple board reviews.
 - Notifications/Reminders (push/email/SMS).
@@ -56,12 +83,70 @@ Note: v1.0.0 endpoints included first followed by proposed additions for doses, 
 - PUT `/api/v1/auth/updatepassword` (protected)
 - GET `/api/v1/auth/logout` — Clears cookie
 
+Acceptance tests
+
+```gherkin
+Feature: User authentication
+  Scenario: Register a new user
+    Given I have a unique email and valid password
+    When I POST /api/v1/auth/register with { name, email, password }
+    Then the response status is 200
+    And the response has { success: true, token }
+
+  Scenario: Login sets auth cookie
+    Given an existing user with valid credentials
+    When I POST /api/v1/auth/login
+    Then the response status is 200
+    And a HttpOnly cookie "token" is set
+    And the body includes { success: true }
+
+  Scenario: Protected route requires JWT
+    When I GET /api/v1/auth/me without a token
+    Then the response status is 401
+    And the body matches the Error schema
+
+  Scenario: Password reset flow
+    Given I request a reset token
+    When I PUT /api/v1/auth/resetPassword/{resettoken} with a valid new password
+    Then the response status is 200
+```
+
+See also Postman collection: ../postman/
+
 #### Users (admin only, existing)
 - GET `/api/v1/auth/users` — List users (admin)
 - POST `/api/v1/auth/users` — Create user (admin)
 - GET `/api/v1/auth/users/:id` — Get (admin)
 - PUT `/api/v1/auth/users/:id` — Update (admin)
 - DELETE `/api/v1/auth/users/:id` — Delete (admin)
+
+Acceptance tests
+
+```gherkin
+Feature: Admin users management
+  Scenario: Only admin can list users
+    Given I am authenticated as role "user"
+    When I GET /api/v1/auth/users
+    Then status is 403
+
+  Scenario: Admin can list users
+    Given I am authenticated as role "admin"
+    When I GET /api/v1/auth/users
+    Then status is 200 and body.data is an array of User
+
+  Scenario: Admin can CRUD users
+    Given I am authenticated as role "admin"
+    When I POST /api/v1/auth/users with a valid user payload
+    Then status is 201
+    When I GET /api/v1/auth/users/{id}
+    Then status is 200
+    When I PUT /api/v1/auth/users/{id}
+    Then status is 200
+    When I DELETE /api/v1/auth/users/{id}
+    Then status is 200
+```
+
+See also Postman collection: [../postman/](../postman)
 
 #### Stickerboards (existing)
 - GET `/api/v1/stickerboards` — List with `advancedResults` (supports population of `stix`)
@@ -72,6 +157,38 @@ Note: v1.0.0 endpoints included first followed by proposed additions for doses, 
     - Body (extend for MVP): `{ name?, description?, layout? }` where `layout` is array of sticker states
 - DELETE `/api/v1/stickerboards/:id` (protected) — Delete (cascades delete of stix via pre hook)
 - PUT `/api/v1/stickerboards/:id/photo` (protected, role `vipuser`) — Upload board photo
+
+Acceptance tests
+
+```gherkin
+Feature: Stickerboards CRUD
+  Scenario: Create board (authorized)
+    Given I am authenticated as role "user"
+    When I POST /api/v1/stickerboards with { name, description }
+    Then status is 201 and body.data is a Stickerboard
+
+  Scenario: Update board (owner only)
+    Given I am authenticated but not the owner of the board
+    When I PUT /api/v1/stickerboards/{id}
+    Then status is 403
+
+  Scenario: List supports pagination
+    Given more than 20 boards exist
+    When I GET /api/v1/stickerboards?page=2&limit=10&sort=name
+    Then status is 200 and pagination is present
+
+  Scenario: Upload board photo requires vipuser
+    Given I am authenticated as role "user"
+    When I PUT /api/v1/stickerboards/{id}/photo with a valid image
+    Then status is 403
+
+  Scenario: Photo upload validation
+    Given I am authenticated as role "vipuser"
+    When I upload a file larger than the maximum size or with an invalid mime type
+    Then status is 400
+```
+
+See also Postman collection: [../postman/](../postman)
 
 Nested routers under `stickerboards`:
 - Stix (mounted at `/:belongsToBoard/stix`)
@@ -89,8 +206,54 @@ Recommended small additions for MVP persistence convenience:
     - Body: `{ belongsToBoard, items: [ { id?, assetKey, x, y, width, height, rotation, zIndex, ... } ] }`
     - 200 → `{ success: true, data: { upserted: n } }`
 
+Acceptance tests
+
+```gherkin
+Feature: Stix nested routes
+  Scenario: List stix for a board
+    When I GET /api/v1/stickerboards/{belongsToBoard}/stix
+    Then status is 200 and each item.belongsToBoard == {belongsToBoard}
+
+  Scenario: Add stick requires auth
+    When I POST /api/v1/stickerboards/{belongsToBoard}/stix without a token
+    Then status is 401
+
+  Scenario: Update stick (owner only)
+    Given I am authenticated but not the owner
+    When I PUT /api/v1/stix/{stickId}
+    Then status is 403
+
+  Scenario: Batch upsert (optional)
+    Given I am authenticated as the board owner
+    When I POST /api/v1/stix/batch with a valid batch payload
+    Then status is 200 and response indicates upserted count
+```
+
+See also Postman collection: [../postman/](../postman)
+
 #### Reviews (existing)
 - Mounted under stickerboards: `/api/v1/stickerboards/:belongsToBoard/reviews` CRUD (already integrated). Optional for MVP; can keep minimal.
+
+Acceptance tests
+
+```gherkin
+Feature: Reviews access control
+  Scenario: Create review as regular user
+    Given I am authenticated as role "user"
+    When I POST /api/v1/stickerboards/{boardId}/reviews { title, text, rating }
+    Then status is 201
+
+  Scenario: Update review requires author or role
+    Given I am authenticated but not the review author
+    When I PUT /api/v1/reviews/{id}
+    Then status is 403
+
+  Scenario: List reviews for a board
+    When I GET /api/v1/stickerboards/{boardId}/reviews
+    Then status is 200
+```
+
+See also Postman collection: [../postman/](../postman)
 
 #### Doses (new)
 - POST `/api/v1/doses` (protected)
@@ -102,6 +265,28 @@ Recommended small additions for MVP persistence convenience:
 - DELETE `/api/v1/doses/:id` (protected, owner‑only)
     - 200 → `{ success: true }`
 
+Acceptance tests
+
+```gherkin
+Feature: Doses
+  Scenario: Create dose (authorized)
+    Given I am authenticated
+    When I POST /api/v1/doses with { medication, amount, unit, takenAt }
+    Then status is 201 and the dose owner is me
+
+  Scenario: List doses (date range)
+    Given I have multiple doses
+    When I GET /api/v1/doses?from=2025-01-01&to=2025-02-01
+    Then status is 200 and all items are within range
+
+  Scenario: Delete dose (owner only)
+    Given I am not the owner
+    When I DELETE /api/v1/doses/{id}
+    Then status is 403
+```
+
+See also Postman collection: [../postman/](../postman)
+
 #### Side effects (new)
 - POST `/api/v1/side-effects` (protected)
     - Body: `{ effectType, severity, occurredAt, notes?, linkedDoseId? }`
@@ -111,6 +296,28 @@ Recommended small additions for MVP persistence convenience:
     - 200 → `{ success: true, data: [sideEffect], pagination }`
 - DELETE `/api/v1/side-effects/:id` (protected, owner‑only)
 
+Acceptance tests
+
+```gherkin
+Feature: Side effects
+  Scenario: Create side effect (authorized)
+    Given I am authenticated
+    When I POST /api/v1/side-effects with { effectType, severity, occurredAt }
+    Then status is 201 and the owner is me
+
+  Scenario: List side effects (filter and paginate)
+    Given I have multiple side effects
+    When I GET /api/v1/side-effects?effectType=nausea&page=1&limit=10
+    Then status is 200 and only items with effectType=nausea are returned
+
+  Scenario: Delete side effect (owner only)
+    Given I am not the owner
+    When I DELETE /api/v1/side-effects/{id}
+    Then status is 403
+```
+
+See also Postman collection: [../postman/](../postman)
+
 #### Analytics (new)
 - GET `/api/v1/analytics/adherence` (protected)
     - Query: `from`, `to`, `bucket=day|week`
@@ -119,25 +326,68 @@ Recommended small additions for MVP persistence convenience:
     - Query: `from`, `to`, `bucket`
     - 200 → `{ success: true, data: [ { date, avgSeverity } ] }`
 
+Acceptance tests
+
+```gherkin
+Feature: Analytics
+  Scenario: Adherence analytics
+    Given I have logged doses across multiple days
+    When I GET /api/v1/analytics/adherence?from=...&to=...&bucket=day
+    Then status is 200 and data includes streak.current, streak.best, adherencePct, and series
+
+  Scenario: Side-effects trend
+    Given I have side effect logs
+    When I GET /api/v1/analytics/side-effects/trend?from=...&to=...&bucket=week
+    Then status is 200 and data is a time series of avgSeverity
+```
+
+See also Postman collection: [../postman/](../postman)
+
 #### Errors and conventions
 - Error shape (consistent): `{ success: false, error: { code, message, details? } }`
 - Pagination via headers: `X-Total-Count`; body includes `pagination`.
 - Security: all write/read of private resources require `protect` and ownership checks.
 
+Security & robustness acceptance tests
+
+```gherkin
+Feature: Security and resilience
+  Scenario: Input sanitization
+    When I attempt a NoSQL injection via query parameters
+    Then the server responds safely (no injection executed) and returns 400 or 200 with sanitized query
+
+  Scenario: XSS sanitization
+    When I POST JSON containing HTML/JS in text fields
+    Then the stored value is sanitized and responses do not reflect active scripts
+
+  Scenario: Rate limiting
+    Given I send more than 100 requests within 10 minutes from the same IP
+    When I continue calling any endpoint
+    Then I receive 429 Too Many Requests
+
+  Scenario: CORS enforcement
+    Given I call the API from an unapproved origin
+    Then the browser enforces CORS and the request is blocked (preflight fails or response lacks CORS headers)
+```
+
 ---
 
 ### Minimal JSON examples
 - Create stickerboard
-```json
+```http
 POST /api/v1/stickerboards
-{
-  "name": "Week 1 Journey",
-  "description": "My GLP-1 start week"
-}
+Content-Type: application/json
 ```
-- Batch save stix
 ```json
+{ "name": "Week 1 Journey", "description": "My GLP-1 start week" }
+```
+
+- Batch save stix
+```http
 POST /api/v1/stix/batch
+Content-Type: application/json
+```
+```json
 {
   "belongsToBoard": "66f...",
   "items": [
@@ -145,14 +395,22 @@ POST /api/v1/stix/batch
   ]
 }
 ```
+
 - Log dose
-```json
+```http
 POST /api/v1/doses
+Content-Type: application/json
+```
+```json
 { "medication": "semaglutide", "amount": 0.25, "unit": "mg", "takenAt": "2025-12-20T14:00:00Z" }
 ```
+
 - Log side effect
-```json
+```http
 POST /api/v1/side-effects
+Content-Type: application/json
+```
+```json
 { "effectType": "nausea", "severity": 3, "occurredAt": "2025-12-20T18:30:00Z", "notes": "mild in evening" }
 ```
 ---

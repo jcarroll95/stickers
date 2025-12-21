@@ -17,7 +17,7 @@ A Postman collection for testing every deployed endpoint is available in [/postm
 The backend v1.0.0 is completed, tested, documented, and deployed. Front end in progress.
 
 ## Usage
->A sanitized config.env.env has been provided to outline the required environmental variables. Drop the second .env extension and fill in credentials for your database, mail server, and JWT secret.
+A sanitized config.env.env has been provided to outline the required environmental variables. Drop the second .env extension and fill in credentials for your database, mail server, and JWT secret.
 
 ### Install Dependencies
 ```
@@ -35,7 +35,7 @@ npm start
 ```
 
 ## Currently Working On
->Developing a frontend concept in Figma. 
+Developing a frontend concept in Figma. 
 
 <img src="public/figmatest.jpeg">
 
