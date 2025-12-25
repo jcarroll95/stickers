@@ -1,3 +1,4 @@
+[![CI](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml) [![Deploy (PM2)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml/badge.svg)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml)
 # Stickerboards 
 
 [![Build & Test](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml) [![Deploy](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml/badge.svg)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml)
@@ -9,7 +10,7 @@ The full [MVP spec](/docs/mvpspec.md) is available in [/docs](/docs)
 ## Architecture Goals:
 - Backend: Node/Express, MongoDB, JWT + HttpOnly cookies, OpenAPI docs, rate‑limit, helmet, xss, mongo‑sanitize.
 - Frontend: Vite + React 19, React Router, React Query for data fetching/caching, simple state for canvas tool, Konva for board, lightweight UI kit.
-- Infra: GitHub Actions for both frontend and backend, Preview deployments, production on current server + static hosting/CDN for frontend.
+- Infra: GitHub Actions for both frontend and backend, Preview deployments, production on digital ocean.
 
 ## Current Status
 The API is finished and deployed as a Node.js / Express app, connected to MongoDB. The server is live at https://www.stickerboards.app and displaying the API documentation.
