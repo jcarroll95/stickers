@@ -1,3 +1,4 @@
+[![CI](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml) [![Deploy (PM2)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml/badge.svg)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml)
 # Stickerboards 
 
 ## Problem and goal overview
