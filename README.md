@@ -1,5 +1,7 @@
 # Stickerboards 
 
+[![CI](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml) [![Deploy (PM2)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml/badge.svg)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml)
+
 ## Problem and goal overview
 GLP‑1 medicine users may struggle to consistently log dosages and side effects. The MVP for this project helps them: (1) record doses and side effects quickly, (2) identify side-effect trends and mitigation strategies, and (3) stay engaged with a playful social sticker board.
 The full [MVP spec](/docs/mvpspec.md) is available in [/docs](/docs)
