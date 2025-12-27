@@ -1,0 +1,113 @@
+.container {
+  padding: var(--space-4);
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+.title {
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  margin: 0 0 var(--space-1) 0;
+  letter-spacing: 0.01em;
+}
+
+.description {
+  margin: 0 0 var(--space-4) 0;
+  color: var(--color-muted);
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.tag {
+  display: inline-block;
+  padding: calc(var(--space-1) - 1px) var(--space-2);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-primary) 10%, var(--color-surface));
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  font-size: 0.85rem;
+}
+
+.error {
+  color: var(--color-error);
+}
+
+/* Header row to place title and action button */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.addButton {
+  background: var(--color-primary, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Simple modal styling */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem; /* ensures breathing room on very small viewports */
+}
+
+.modalDialog {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  /* Switch to a column layout so header can stay visible and body can scroll */
+  display: flex;
+  flex-direction: column;
+  max-width: 760px;
+  width: min(760px, 100% - 2rem);
+  max-height: min(90vh, 100% - 2rem);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  overflow: hidden; /* clip inner scroll area rounded corners */
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.modalClose {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Scrollable body so the dialog never exceeds the viewport */
+.modalBody {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: var(--space-4);
+}

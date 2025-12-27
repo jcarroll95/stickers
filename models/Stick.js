@@ -14,9 +14,11 @@ const StickSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    belongsToUser: String,
     stickNumber: Number,
-    stickMed: String,
+    stickMed: {
+        type: String,
+        maxlength: [50, 'Max medicine type length is 50 characters']
+    },
     stickLocation: {
         type: String,
         enum: stickLocations,
@@ -39,12 +41,23 @@ const StickSchema = new mongoose.Schema({
         required: [true, 'Please describe this stick'],
         maxlength: [500, 'Max description length is 500 characters']
     },
+    nsv: {
+        type: String,
+        maxlength: [500, 'Max description length is 500 characters']
+    },
+    weight: {
+        type: Number,
+        minimum: 0,
+        maximum: 999
+    },
     createdAt: {
         type: Date,
         default: Date.now
     },
     cost: {
         type: Number,
+        minimum: 0,
+        maximum: 9999,
         default: 0
     }
 });
