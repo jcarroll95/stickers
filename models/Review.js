@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-// reviews structure will be used to place comments under stickerboards, not stix which already have comments
+// reviews structure will be used to place motivational comments under stickerboards, not stix which already have comments
 const ReviewSchema = new mongoose.Schema({
     belongsToBoard: {
         type: mongoose.Schema.Types.ObjectId,

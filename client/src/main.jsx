@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import '../styles/globals.css';
+import './styles/base.css';
 import './index.css';
 import Navbar from './components/Navbar.jsx';
 import Router from './components/Router.jsx';

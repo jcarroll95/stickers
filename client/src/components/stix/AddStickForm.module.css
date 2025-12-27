@@ -1,0 +1,122 @@
+.form {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  /* Extra bottom padding so the last fields aren't obscured by sticky actions */
+  padding-bottom: 88px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  max-width: 720px;
+}
+
+.title {
+  margin: 0 0 12px 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .grid2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.input,
+.select,
+.textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #fff;
+}
+
+.textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+.help {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.errorText {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #b91c1c;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  /* Keep actions visible when the form content scrolls inside a modal */
+  position: sticky;
+  bottom: 0;
+  background: #ffffff;
+  padding: 12px 0 4px 0;
+  border-top: 1px solid #e5e7eb;
+  z-index: 1;
+}
+
+.buttonPrimary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.buttonSecondary {
+  background: #f3f4f6;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.buttonPrimary:disabled,
+.buttonSecondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.statusError {
+  color: #b91c1c;
+}
+
+.statusSuccess {
+  color: #065f46;
+}
