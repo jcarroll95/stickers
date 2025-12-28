@@ -28,6 +28,15 @@ const UserSchema = new mongoose.Schema({
         minlength: 6,
         select: false
     },
+    // Email verification fields
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verifyEmailToken: String,
+    verifyEmailExpire: Date,
+    verifyEmailAttempts: { type: Number, default: 0 },
+    lastVerificationSentAt: Date,
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     createdAt: {
@@ -70,6 +79,25 @@ UserSchema.methods.getResetPasswordToken = function() {
 
     // the original token not the hashed versiom
     return resetToken;
+}
+
+// Generate and hash a 6-digit email verification code
+UserSchema.methods.getVerifyEmailToken = function() {
+    // generate a 6-digit numeric code using crypto.randomInt for better entropy
+    const numeric = (crypto.randomInt(0, 1000000)).toString().padStart(6, '0');
+
+    // hash code and store
+    this.verifyEmailToken = crypto
+        .createHash('sha256')
+        .update(numeric)
+        .digest('hex');
+
+    // expire in 15 minutes
+    this.verifyEmailExpire = Date.now() + 15 * 60 * 1000;
+    this.verifyEmailAttempts = 0;
+    this.lastVerificationSentAt = new Date();
+
+    return numeric; // return plain code for emailing (not stored)
 }
 
 module.exports = mongoose.models.User || mongoose.model('User', UserSchema);

@@ -37,6 +37,7 @@
 .auth {
     display: flex;
     align-items: center;
+    gap: var(--space-3);
 }
 
 .button {
@@ -50,6 +51,25 @@
 }
 
 .button:hover {
+    filter: brightness(1.05);
+}
+
+/* Specific variants for top-right auth buttons */
+.loginButton {
+    background-color: #f59e0b; /* orange-500 */
+    color: #111827;            /* near-black text for contrast */
+}
+
+.loginButton:hover {
+    filter: brightness(1.05);
+}
+
+.createAccountButton {
+    background-color: #22c55e; /* green-500 */
+    color: #111827;            /* near-black text for contrast */
+}
+
+.createAccountButton:hover {
     filter: brightness(1.05);
 }
 
