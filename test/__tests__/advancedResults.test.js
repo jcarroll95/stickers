@@ -23,9 +23,8 @@ async function createBoard({ name, description, userToken }) {
 }
 
 async function registerAndLogin({ name = 'User', email, password = 'Pass123!', role = 'vipuser' } = {}) {
-  await request(appServer).post('/api/v1/auth/register').send({ name, email, password, role }).expect(200);
-  const login = await request(appServer).post('/api/v1/auth/login').send({ email, password }).expect(200);
-  return login.body.token;
+  const reg = await request(appServer).post('/api/v1/auth/register').send({ name, email, password, role }).expect(200);
+  return reg.body.token;
 }
 
 describe('middleware/advancedResults unit coverage', () => {

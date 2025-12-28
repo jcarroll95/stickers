@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../../server');
+const User = require('../../models/User');
 
 describe('Auth edge branches', () => {
   test('login sets Secure cookie when NODE_ENV=production', async () => {
@@ -14,6 +15,8 @@ describe('Auth edge branches', () => {
       .send({ name: 'SC', email, password, role: 'user' })
       .expect(200);
 
+    // Verify before login to satisfy new flow
+    await User.updateOne({ email }, { isVerified: true });
     const login = await request(app)
       .post('/api/v1/auth/login')
       .send({ email, password })
