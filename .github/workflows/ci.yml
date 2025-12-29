@@ -22,7 +22,9 @@
           run: npm ci
 
         - name: Run tests with coverage gate
-          run: npm run test:coverage
+          run: npm test -- --runInBand
+          env:
+            CI: true
 
         - name: Upload coverage artifact (HTML report)
           uses: actions/upload-artifact@v4
