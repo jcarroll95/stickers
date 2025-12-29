@@ -3,9 +3,8 @@ const mongoose = require('mongoose');
 const app = require('../../server');
 
 async function registerAndLogin({ email }) {
-  await request(app).post('/api/v1/auth/register').send({ name: 'SB404', email, password: 'Pass123!', role: 'user' }).expect(200);
-  const login = await request(app).post('/api/v1/auth/login').send({ email, password: 'Pass123!' }).expect(200);
-  return login.body.token;
+  const reg = await request(app).post('/api/v1/auth/register').send({ name: 'SB404', email, password: 'Pass123!', role: 'user' }).expect(200);
+  return reg.body.token;
 }
 
 describe('Stickerboard 404 branches for update/delete', () => {

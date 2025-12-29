@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import StickerboardsDemo from '../StickerboardsDemo.jsx';
 import BoardView from './board/BoardView.jsx';
+import RegisterVerify from './auth/RegisterVerify.jsx';
 
 // Tiny hash-based router. It listens to window.location.hash and renders
 // the correct view. Routes supported:
@@ -21,9 +22,12 @@ export default function Router() {
     const h = hash.startsWith('#') ? hash : `#/${hash}`;
     // Remove leading '#'
     const path = h.slice(1);
-    const parts = path.split('/').filter(Boolean); // ["", "board", ...] → ["board", ...]
+    // Separate query if present (e.g., #/register/verify?email=x@y.z)
+    const [pathOnly, queryString] = path.split('?');
+    const parts = pathOnly.split('/').filter(Boolean); // ["", "board", ...] → ["board", ...]
+    const searchParams = new URLSearchParams(queryString || '');
 
-    return { parts };
+    return { parts, searchParams };
   }, [hash]);
 
   // Routing logic
@@ -32,6 +36,15 @@ export default function Router() {
   }
 
   const [first, second] = route.parts;
+
+  if (first === 'register') {
+    // Public registration routes
+    if (second === 'verify') {
+      const initialEmail = route.searchParams.get('email') || '';
+      return <RegisterVerify mode="verify" initialEmail={initialEmail} />;
+    }
+    return <RegisterVerify />;
+  }
 
   if (first === 'board' && !second) {
     // #/board

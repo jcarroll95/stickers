@@ -2,19 +2,13 @@ const request = require('supertest');
 const app = require('../../server');
 
 async function registerAndLogin({ name = 'Bob', email, password = 'Pass123!' } = {}) {
-  // register
-  await request(app)
+  // New flow: registration returns a JWT token; login requires email verification now.
+  const reg = await request(app)
     .post('/api/v1/auth/register')
     .send({ name, email, password, role: 'user' })
     .expect(200);
 
-  // login
-  const login = await request(app)
-    .post('/api/v1/auth/login')
-    .send({ email, password })
-    .expect(200);
-
-  return login.body.token;
+  return reg.body.token;
 }
 
 describe('Stickerboard routes', () => {

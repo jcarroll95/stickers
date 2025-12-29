@@ -17,6 +17,8 @@ describe('Auth routes', () => {
     expect(reg.body.token).toBeDefined();
 
     // Login
+    // New flow requires verified email before login
+    await User.updateOne({ email }, { isVerified: true });
     const login = await request(app)
       .post('/api/v1/auth/login')
       .send({ email, password })
@@ -62,6 +64,9 @@ describe('Auth routes', () => {
       .post('/api/v1/auth/register')
       .send({ name: 'Dave', email, password, role: 'user' })
       .expect(200);
+
+    // Mark user as verified to allow login
+    await User.updateOne({ email }, { isVerified: true });
 
     const login = await request(app)
       .post('/api/v1/auth/login')

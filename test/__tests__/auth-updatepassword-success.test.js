@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../../server');
+const User = require('../../models/User');
 
 describe('Auth updatePassword success path', () => {
   test('updates password when currentPassword is correct (200)', async () => {
@@ -14,6 +15,8 @@ describe('Auth updatePassword success path', () => {
       .expect(200);
 
     // Login
+    // New auth flow requires verified email before login
+    await User.updateOne({ email }, { isVerified: true });
     const login = await request(app)
       .post('/api/v1/auth/login')
       .send({ email, password: oldPass })

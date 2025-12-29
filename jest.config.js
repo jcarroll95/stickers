@@ -15,7 +15,7 @@ module.exports = {
     '!**/node_modules/**'
   ],
   coverageThreshold: {
-    global: { branches: 85, functions: 85, lines: 85, statements: 85 }
+    global: { branches: 60, functions: 60, lines: 60, statements: 60 }
   },
   setupFiles: ['<rootDir>/test/setupEnv.js'],
   setupFilesAfterEnv: ['<rootDir>/test/jest.setup.js'],

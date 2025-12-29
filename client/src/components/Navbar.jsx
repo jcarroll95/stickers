@@ -15,6 +15,12 @@ const Navbar = () => {
     const loginMenuRef = useRef(null);
     const userMenuRef = useRef(null);
 
+    const handleCreateAccount = () => {
+        // Close any open login dropdown and navigate to registration
+        setLoginOpen(false);
+        window.location.hash = '#/register';
+    };
+
     // Attempt to fetch the current user using the backend's protect middleware
     useEffect(() => {
         let cancelled = false;
@@ -261,56 +267,65 @@ const Navbar = () => {
 
             <div className={styles.auth}>
                 {!user ? (
-                    <div className={styles.userMenu} ref={loginMenuRef}>
+                    <>
                         <button
-                            className={styles.button}
-                            onClick={() => setLoginOpen((v) => !v)}
-                            aria-expanded={loginOpen}
-                            aria-controls="login-dropdown"
+                            className={`${styles.button} ${styles.createAccountButton}`}
+                            onClick={handleCreateAccount}
+                            aria-label="Create Account"
                         >
-                            Login
+                            Create Account
                         </button>
-                        {loginOpen && (
-                            <div id="login-dropdown" className={styles.dropdown}>
-                                <form className={styles.loginForm} onSubmit={handleLoginSubmit}>
-                                    <div className={styles.formRow}>
-                                        <label className={styles.label} htmlFor="login-email">Email</label>
-                                        <input
-                                            id="login-email"
-                                            type="email"
-                                            className={styles.input}
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="you@email.com"
-                                            required
-                                        />
-                                    </div>
-                                    <div className={styles.formRow}>
-                                        <label className={styles.label} htmlFor="login-password">Password</label>
-                                        <input
-                                            id="login-password"
-                                            type="password"
-                                            className={styles.input}
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            placeholder="••••••••"
-                                            required
-                                        />
-                                    </div>
-                                    {loginError && (
-                                        <div className={styles.error}>{loginError}</div>
-                                    )}
-                                    <button
-                                        type="submit"
-                                        className={styles.submitButton}
-                                        disabled={loggingIn}
-                                    >
-                                        {loggingIn ? 'Signing in…' : 'Submit'}
-                                    </button>
-                                </form>
-                            </div>
-                        )}
-                    </div>
+                        <div className={styles.userMenu} ref={loginMenuRef}>
+                            <button
+                                className={`${styles.button} ${styles.loginButton}`}
+                                onClick={() => setLoginOpen((v) => !v)}
+                                aria-expanded={loginOpen}
+                                aria-controls="login-dropdown"
+                            >
+                                Login
+                            </button>
+                            {loginOpen && (
+                                <div id="login-dropdown" className={styles.dropdown}>
+                                    <form className={styles.loginForm} onSubmit={handleLoginSubmit}>
+                                        <div className={styles.formRow}>
+                                            <label className={styles.label} htmlFor="login-email">Email</label>
+                                            <input
+                                                id="login-email"
+                                                type="email"
+                                                className={styles.input}
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                placeholder="you@email.com"
+                                                required
+                                            />
+                                        </div>
+                                        <div className={styles.formRow}>
+                                            <label className={styles.label} htmlFor="login-password">Password</label>
+                                            <input
+                                                id="login-password"
+                                                type="password"
+                                                className={styles.input}
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder="••••••••"
+                                                required
+                                            />
+                                        </div>
+                                        {loginError && (
+                                            <div className={styles.error}>{loginError}</div>
+                                        )}
+                                        <button
+                                            type="submit"
+                                            className={styles.submitButton}
+                                            disabled={loggingIn}
+                                        >
+                                            {loggingIn ? 'Signing in…' : 'Submit'}
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
+                        </div>
+                    </>
                 ) : (
                     <div className={styles.userMenu} ref={userMenuRef}>
                         <div

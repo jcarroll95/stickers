@@ -5,6 +5,22 @@ const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const User = require('../models/User');
 
+// Helper: basic email normalization
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+// Helper: minimal validators (keep deps minimal)
+function assertValidEmailAndPassword(email, password) {
+  const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/;
+  if (!email || !emailRegex.test(email)) {
+    throw new ErrorResponse('Please provide a valid email address', 400);
+  }
+  if (!password || String(password).length < 6) {
+    throw new ErrorResponse('Password must be at least 6 characters', 400);
+  }
+}
+
 // @desc    Register User
 // @route   POST /api/v1/auth/register
 // @access  Public
@@ -51,6 +67,11 @@ exports.login = asyncHandler(async (req, res, next) => {
 
     if (!isMatch) {
         return next(new ErrorResponse('Invalid credentials', 401));
+    }
+
+    // If email not verified, block login
+    if (!user.isVerified) {
+        return next(new ErrorResponse('Please verify your email address before logging in.', 403));
     }
 
     sendTokenResponse(user, 200, res);
@@ -111,7 +132,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
         // if it works:
         res.status(200).json({ success: true, data: 'Password reset email sent' });
-    } catch (err) {
+  } catch (err) {
         // sendEmail failed, we need to remove the reset token from the user's record'
         console.log(err);
         user.resetPasswordToken = undefined;
@@ -175,6 +196,121 @@ const sendTokenResponse = (user, statusCode, res) => {
             token
         });
 }
+
+// =======================
+// Email verification flow
+// =======================
+
+// @desc    Start registration (send verification code)
+// @route   POST /api/v1/auth/register-start
+// @access  Public
+exports.registerStart = asyncHandler(async (req, res, next) => {
+  const email = normalizeEmail(req.body.email);
+  const password = req.body.password;
+  const name = (req.body.name || '').toString().trim() || 'New User';
+
+  assertValidEmailAndPassword(email, password);
+
+  let user = await User.findOne({ email });
+
+  // If user exists and is verified, respond with generic success to avoid enumeration
+  if (user && user.isVerified) {
+    return res.status(200).json({ success: true });
+  }
+
+  // Create pending user if not exists
+  if (!user) {
+    user = await User.create({ name, email, password, isVerified: false });
+  } else {
+    // User exists but unverified: update password if provided (optional), but do not fail
+    if (password) user.password = password; // will be hashed on save
+  }
+
+  // Cooldown: avoid spamming email sends (60s)
+  const now = Date.now();
+  const lastSent = user.lastVerificationSentAt ? user.lastVerificationSentAt.getTime() : 0;
+  if (lastSent && now - lastSent < 60 * 1000) {
+    // Silently accept without resending to prevent abuse
+    return res.status(200).json({ success: true });
+  }
+
+  const code = user.getVerifyEmailToken(); // sets token+expiry+timestamps
+  await user.save({ validateBeforeSave: false });
+
+  const message = `Your verification code is ${code}. It expires in 15 minutes.`;
+  await sendEmail({ email: user.email, subject: 'Your verification code', message });
+
+  return res.status(200).json({ success: true });
+});
+
+// @desc    Verify email with code and complete registration
+// @route   POST /api/v1/auth/register-verify
+// @access  Public
+exports.registerVerify = asyncHandler(async (req, res, next) => {
+  const email = normalizeEmail(req.body.email);
+  const code = String(req.body.code || '');
+
+  if (!email || !code) {
+    return next(new ErrorResponse('Email and code are required', 400));
+  }
+
+  const user = await User.findOne({ email }).select('+password');
+  if (!user || user.isVerified) {
+    return next(new ErrorResponse('Invalid or expired verification code', 400));
+  }
+
+  // Lockout after too many attempts
+  const attempts = user.verifyEmailAttempts || 0;
+  if (attempts >= 5) {
+    return next(new ErrorResponse('Too many incorrect attempts. Please request a new code later.', 429));
+  }
+
+  const hashed = crypto.createHash('sha256').update(code).digest('hex');
+  if (!user.verifyEmailToken || user.verifyEmailToken !== hashed || !user.verifyEmailExpire || Date.now() > user.verifyEmailExpire) {
+    user.verifyEmailAttempts = attempts + 1;
+    await user.save({ validateBeforeSave: false });
+    return next(new ErrorResponse('Invalid or expired verification code', 400));
+  }
+
+  // Success: verify account
+  user.isVerified = true;
+  user.verifyEmailToken = undefined;
+  user.verifyEmailExpire = undefined;
+  user.verifyEmailAttempts = 0;
+  await user.save();
+
+  // Issue JWT like login
+  sendTokenResponse(user, 200, res);
+});
+
+// @desc    Resend verification code
+// @route   POST /api/v1/auth/register-resend
+// @access  Public
+exports.registerResend = asyncHandler(async (req, res, next) => {
+  const email = normalizeEmail(req.body.email);
+  if (!email) return next(new ErrorResponse('Email is required', 400));
+
+  const user = await User.findOne({ email });
+  if (!user || user.isVerified) {
+    // Do not enumerate
+    return res.status(200).json({ success: true });
+  }
+
+  // Respect cooldown of 60s
+  const now = Date.now();
+  const lastSent = user.lastVerificationSentAt ? user.lastVerificationSentAt.getTime() : 0;
+  if (lastSent && now - lastSent < 60 * 1000) {
+    return res.status(200).json({ success: true });
+  }
+
+  const code = user.getVerifyEmailToken();
+  await user.save({ validateBeforeSave: false });
+
+  const message = `Your verification code is ${code}. It expires in 15 minutes.`;
+  await sendEmail({ email: user.email, subject: 'Your verification code', message });
+
+  return res.status(200).json({ success: true });
+});
 
 // @desc    Update user details
 // @route   PUT /api/v1/auth/updatedetails

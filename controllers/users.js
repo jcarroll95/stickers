@@ -33,7 +33,7 @@ exports.createUser = asyncHandler(async (req, res, next) => {
     });
 })
 
-// @desc    Create user
+// @desc    Update user
 // @route   PUT /api/v1/auth/users/:id
 // @access  Private/Admin
 exports.updateUser = asyncHandler(async (req, res, next) => {

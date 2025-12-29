@@ -25,6 +25,8 @@ describe('Auth controller additional branches', () => {
   test('login wrong password → 401', async () => {
     const email = 'wrongpass@example.com';
     await register({ name: 'Wrong', email });
+    // mark verified so login path proceeds beyond verification check
+    await User.updateOne({ email }, { isVerified: true });
     await request(app)
       .post('/api/v1/auth/login')
       .send({ email, password: 'Wrong!' })
@@ -70,7 +72,8 @@ describe('Auth controller additional branches', () => {
     const email = 'details@example.com';
     const password = 'Pass123!';
     await register({ name: 'Details', email, password });
-
+    // verify before login
+    await User.updateOne({ email }, { isVerified: true });
     const login = await request(app)
       .post('/api/v1/auth/login')
       .send({ email, password })

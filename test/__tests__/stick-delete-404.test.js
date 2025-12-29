@@ -7,15 +7,11 @@ describe('Stick delete: non-existent id returns 404', () => {
     const fakeId = new mongoose.Types.ObjectId().toHexString();
     // Need to be authenticated because route is protected; create a quick user/token
     const email = `sd404-${Date.now()}@ex.com`;
-    await request(app)
+    const reg = await request(app)
       .post('/api/v1/auth/register')
       .send({ name: 'X', email, password: 'Pass123!', role: 'user' })
       .expect(200);
-    const login = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email, password: 'Pass123!' })
-      .expect(200);
-    const token = login.body.token;
+    const token = reg.body.token;
 
     await request(app)
       .delete(`/api/v1/stix/${fakeId}`)
