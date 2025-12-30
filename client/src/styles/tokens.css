@@ -31,10 +31,20 @@
   --color-text: var(--foreground);               /* base text */
   --color-muted: var(--muted-foreground);        /* secondary text */
   --color-primary: var(--primary);               /* primary accents */
+  --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);                 /* optional accent */
+  --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);                 /* borders/dividers */
   --color-ring: var(--ring);                     /* focus ring */
   --color-error: var(--destructive);             /* errors */
+
+  /* Extended semantic roles */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
 
   /* Radii mapped to Figma radius */
   --radius-sm: calc(var(--radius) - 4px);

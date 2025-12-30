@@ -87,6 +87,52 @@ exports.addStick = asyncHandler(async (req, res, next) => {
     // mongoose .create IAW our stick model, creating a document that contains the data in our req.body
     const stick = await Stick.create(req.body);
 
+    // Also add a new sticker entry to the stickerboard's stickers[] palette
+    try {
+        // Ensure stickers array exists
+        if (!Array.isArray(stickerboard.stickers)) {
+            stickerboard.stickers = [];
+        }
+
+        // Determine preferred stickerId between 0-9 that is not yet used
+        const used = new Set(
+            stickerboard.stickers
+                .map((s) => (typeof s?.stickerId === 'number' ? s.stickerId : null))
+                .filter((n) => n != null)
+        );
+        let chosenId = 0;
+        for (let i = 0; i <= 9; i++) {
+            if (!used.has(i)) {
+                chosenId = i;
+                break;
+            }
+            // If all 0-9 are used, chosenId will remain 9 after the loop; adjust below
+            if (i === 9) {
+                // fallback: reuse 0 (any) if all are present
+                chosenId = 0;
+            }
+        }
+
+        const now = new Date();
+        const newSticker = {
+            stickerId: chosenId,
+            x: 0,
+            y: 0,
+            scale: 1,
+            rotation: 0,
+            zIndex: 0,
+            stuck: false, // ensure initial state is not placed yet
+            createdAt: now
+        };
+
+        stickerboard.stickers.push(newSticker);
+        await stickerboard.save();
+    } catch (e) {
+        // If updating the palette fails, do not fail stick creation; log error and continue
+        // eslint-disable-next-line no-console
+        console.error('Failed to update stickerboard palette after stick creation:', e);
+    }
+
     res.status(200).json({
         success: true,
         data: stick

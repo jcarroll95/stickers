@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import StickerInterface from '../stickerInterface/StickerInterface.jsx'
 import AddStickForm from '../stix/AddStickForm.jsx';
 import styles from './BoardView.module.css';
+import ReviewList from '../reviews/ReviewList.jsx';
+import AddReviewForm from '../reviews/AddReviewForm.jsx';
 // Displays a specific stickerboard given a token (id or slug).
 // Fetch strategy:
 // 1) Try GET /api/v1/stickerboards/:token (works for MongoDB ObjectId)
@@ -11,6 +13,28 @@ export default function BoardView({ token }) {
   const [error, setError] = useState('');
   const [board, setBoard] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [me, setMe] = useState(null);
+  const [reviewsVersion, setReviewsVersion] = useState(0); // bump to refresh list after add
+
+  // Fetch the current logged-in user (to determine ownership)
+  const loadMe = useCallback(async () => {
+    try {
+      const tokenStr = localStorage.getItem('token');
+      const res = await fetch('/api/v1/auth/me', {
+        method: 'GET',
+        headers: tokenStr ? { 'Authorization': `Bearer ${tokenStr}` } : {},
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        setMe(null);
+        return;
+      }
+      const json = await res.json();
+      setMe(json?.data || null);
+    } catch (_) {
+      setMe(null);
+    }
+  }, []);
 
   const loadBoard = useCallback(async () => {
     let cancelled = false;
@@ -62,8 +86,21 @@ export default function BoardView({ token }) {
     let disposed = false;
     // call and ignore the cleanup return of loadBoard
     loadBoard();
+    loadMe();
     return () => { disposed = true; };
-  }, [loadBoard]);
+  }, [loadBoard, loadMe]);
+
+  // Reload board after a sticker is finalized from the interface
+  useEffect(() => {
+    const handler = (e) => {
+      if (!e?.detail?.boardId) return;
+      if ((board?._id || board?.id) === e.detail.boardId) {
+        loadBoard();
+      }
+    };
+    window.addEventListener('stickerboard:finalized', handler);
+    return () => window.removeEventListener('stickerboard:finalized', handler);
+  }, [board?._id, board?.id, loadBoard]);
 
     // Determine the next stick number: 1 + highest valid numeric stickNumber on this board
     const nextStickNumber = useMemo(() => {
@@ -80,7 +117,11 @@ export default function BoardView({ token }) {
   if (error) return <p className={`${styles.container} ${styles.error}`}>Error: {error}</p>;
   if (!board) return <p className={styles.container}>No board found.</p>;
 
-
+  // Determine ownership
+  const meId = me?.__id || me?._id || me?.id || me?.data?.__id || me?.data?._id || me?.data?.id || null;
+  const boardUser = board?.user;
+  const boardOwnerId = typeof boardUser === 'string' ? boardUser : (boardUser?._id || boardUser?.id || null);
+  const isOwner = !!(meId && boardOwnerId && String(meId) === String(boardOwnerId));
 
   //  presentation of the stickerboard
   return (
@@ -90,9 +131,11 @@ export default function BoardView({ token }) {
         <h1 className={styles.title}>
           {board.name || 'Stickerboard'}
         </h1>
-        <button type="button" className={styles.addButton} onClick={() => setShowAddModal(true)}>
-          + Add Stick
-        </button>
+        {isOwner && (
+          <button type="button" className={styles.addButton} onClick={() => setShowAddModal(true)}>
+            + Add Stick
+          </button>
+        )}
       </div>
 
       {/* Description */}
@@ -117,10 +160,97 @@ export default function BoardView({ token }) {
       )}
 
       {/* Main board interface */}
-      <StickerInterface board={board} boardId={board._id || board.id} />
+      {(() => {
+        // Determine Konva background image source from board.photo
+        // If photo is one of our predefined files (e.g., "sb0.png".."sb8.png"), serve from /assets
+        // If photo looks like a full URL, use as-is. Otherwise fallback to a default asset.
+        const p = String(board?.photo || '').trim();
+        const isHttp = /^https?:\/\//i.test(p);
+        const isSbPng = /^sb[0-9]+\.png$/i.test(p);
+        const boardSrc = isHttp ? p : (isSbPng ? `/assets/${p}` : '/assets/sb0.png');
+        const sharedProps = {
+          board,
+          boardId: board._id || board.id,
+          boardSrc,
+          stickers: Array.isArray(board.stickers) ? board.stickers : [],
+          persistedStickers: Array.isArray(board.stickers) ? board.stickers : [],
+        };
+        if (isOwner) {
+          return (
+            <StickerInterface
+              {...sharedProps}
+              onPlaceSticker={async (next /* full array */, placed, index) => {
+                try {
+                  const tokenStr = localStorage.getItem('token');
+                  const headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    ...(tokenStr ? { Authorization: `Bearer ${tokenStr}` } : {}),
+                  };
+                  const res = await fetch(`/api/v1/stickerboards/${encodeURIComponent(board._id || board.id)}`, {
+                    method: 'PUT',
+                    headers,
+                    credentials: 'include',
+                    body: JSON.stringify({ stickers: next }),
+                  });
+                  if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(`HTTP ${res.status}: ${text}`);
+                  }
+                  try {
+                    window.dispatchEvent(new CustomEvent('stickerboard:finalized', { detail: { boardId: board._id || board.id, sticker: placed, index } }));
+                  } catch (_) {
+                    // ignore
+                  }
+                  await loadBoard();
+                } catch (err) {
+                  // eslint-disable-next-line no-alert
+                  alert(`Failed to save sticker placement: ${err.message || String(err)}`);
+                }
+              }}
+              onClearStickers={async (next /* full array with stuck=false */) => {
+                try {
+                  const tokenStr = localStorage.getItem('token');
+                  const headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    ...(tokenStr ? { Authorization: `Bearer ${tokenStr}` } : {}),
+                  };
+                  const res = await fetch(`/api/v1/stickerboards/${encodeURIComponent(board._id || board.id)}`, {
+                    method: 'PUT',
+                    headers,
+                    credentials: 'include',
+                    body: JSON.stringify({ stickers: next }),
+                  });
+                  if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(`HTTP ${res.status}: ${text}`);
+                  }
+                  try {
+                    window.dispatchEvent(new CustomEvent('stickerboard:cleared', { detail: { boardId: board._id || board.id } }));
+                  } catch (_) {
+                    // ignore
+                  }
+                  await loadBoard();
+                } catch (err) {
+                  // eslint-disable-next-line no-alert
+                  alert(`Failed to clear stickers: ${err.message || String(err)}`);
+                }
+              }}
+            />
+          );
+        }
+        // Non-owner: read-only view
+        return (
+          <StickerInterface
+            {...sharedProps}
+            readonly
+          />
+        );
+      })()}
 
-      {/* Render reverse-populated stix for this board (sorted by descending stickNumber) */}
-      {Array.isArray(board.stix) && (
+      {/* Owner-only: Render reverse-populated stix for this board (sorted by descending stickNumber) */}
+      {isOwner && Array.isArray(board.stix) && (
         <section>
           <h2>Stix</h2>
           {board.stix.length === 0 ? (
@@ -177,8 +307,8 @@ export default function BoardView({ token }) {
         </section>
       )}
 
-      {/* Modal for adding a stick */}
-      {showAddModal && (
+      {/* Owner-only: Modal for adding a stick */}
+      {isOwner && showAddModal && (
         <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="add-stick-title">
           <div className={styles.modalDialog}>
             <div className={styles.modalHeader}>
@@ -199,6 +329,20 @@ export default function BoardView({ token }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Non-owner: Reviews section */}
+      {!isOwner && (
+        <section style={{ marginTop: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ margin: 0 }}>Reviews</h2>
+            <AddReviewForm
+              boardId={board._id || board.id}
+              onSubmitted={() => setReviewsVersion((v) => v + 1)}
+            />
+          </div>
+          <ReviewList key={`reviews-${reviewsVersion}`} boardId={board._id || board.id} />
+        </section>
       )}
 
     </div>

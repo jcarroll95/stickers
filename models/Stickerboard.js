@@ -32,7 +32,22 @@ const StickerboardSchema = new mongoose.Schema({
     },
     totalCost: Number,
     averageRating: Number,
-    averageCost: Number
+    averageCost: Number,
+    backgroundFile: String,      // references a predefined asset
+    width: Number,             // logical width (e.g. 1000)
+    height: Number,            // logical height (e.g. 700)
+    stickers: [
+        {
+            stickerId: Number,     // predefined asset id
+            x: Number,             // normalized or absolute coordinates
+            y: Number,
+            scale: Number,
+            rotation: Number,
+            zIndex: Number,
+            stuck: Boolean,
+            createdAt: Date
+        }
+    ]
 },
     {
         toJSON: { virtuals: true }

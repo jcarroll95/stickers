@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import StickerboardsDemo from '../StickerboardsDemo.jsx';
 import BoardView from './board/BoardView.jsx';
+import Explore from './explore/Explore.jsx';
 import RegisterVerify from './auth/RegisterVerify.jsx';
+import CreateStickerboard from './board/CreateStickerboard.jsx';
 
 // Tiny hash-based router. It listens to window.location.hash and renders
 // the correct view. Routes supported:
@@ -49,6 +51,23 @@ export default function Router() {
   if (first === 'board' && !second) {
     // #/board
     return <StickerboardsDemo />;
+  }
+
+  if (first === 'explore') {
+    // Public explore page: paginated thumbnails of stickerboards
+    return <Explore />;
+  }
+
+  if (first === 'board' && second === 'create') {
+    // #/board/create — requires auth
+    const hasToken = !!localStorage.getItem('token');
+    if (!hasToken) {
+      if (window.location.hash !== '#/') {
+        window.location.hash = '#/';
+      }
+      return <Home />;
+    }
+    return <CreateStickerboard />;
   }
 
   if (first === 'board' && second) {

@@ -15,7 +15,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   /* Ensure page content starts below the fixed Navbar (64px high) */
-  padding-top: 64px;
+  padding-top: 128px;
 }
 
 /* Headings use component/module CSS or base tokens */
@@ -26,3 +26,4 @@ body {
 
 /* No extra top margin needed now that body has padding-top */
 .main-content { margin-top: 0; }
+
