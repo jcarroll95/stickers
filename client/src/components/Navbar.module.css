@@ -56,8 +56,8 @@
 
 /* Specific variants for top-right auth buttons */
 .loginButton {
-    background-color: #f59e0b; /* orange-500 */
-    color: #111827;            /* near-black text for contrast */
+    background-color: var(--color-accent);
+    color: var(--color-accent-foreground, #111827);
 }
 
 .loginButton:hover {
@@ -65,8 +65,8 @@
 }
 
 .createAccountButton {
-    background-color: #22c55e; /* green-500 */
-    color: #111827;            /* near-black text for contrast */
+    background-color: var(--color-success, var(--color-primary));
+    color: var(--color-success-foreground, #111827);
 }
 
 .createAccountButton:hover {
@@ -160,8 +160,8 @@
 
 .submitButton {
     padding: var(--space-2) var(--space-4);
-    background: color-mix(in oklab, #28a745 85%, var(--color-surface));
-    color: var(--color-text);
+    background: var(--color-success);
+    color: var(--color-success-foreground, #fff);
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
     cursor: pointer;

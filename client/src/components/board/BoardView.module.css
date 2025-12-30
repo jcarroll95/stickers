@@ -69,10 +69,13 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* start below navbar instead of centering under it */
   justify-content: center;
   z-index: 50;
-  padding: 1rem; /* ensures breathing room on very small viewports */
+  /* Side/bottom padding for breathing room */
+  padding: var(--space-4);
+  /* Top padding accounts for navbar height plus a small gap */
+  padding-top: calc(var(--navbar-height, 56px) + var(--space-4));
 }
 
 .modalDialog {
@@ -84,7 +87,8 @@
   flex-direction: column;
   max-width: 760px;
   width: min(760px, 100% - 2rem);
-  max-height: min(90vh, 100% - 2rem);
+  /* Fit within viewport minus overlay top/bottom paddings (incl. navbar gap) */
+  max-height: calc(100vh - (var(--navbar-height, 56px) + var(--space-4) + var(--space-4)));
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);
   overflow: hidden; /* clip inner scroll area rounded corners */
 }

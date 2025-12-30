@@ -1,6 +1,6 @@
 .form {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 12px;
   padding: 16px;
   /* Extra bottom padding so the last fields aren't obscured by sticky actions */
@@ -13,7 +13,7 @@
   margin: 0 0 12px 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-text, #111827);
 }
 
 .grid {
@@ -37,19 +37,19 @@
 
 .label {
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--color-muted, #374151);
   margin-bottom: 6px;
 }
 
 .input,
 .select,
 .textarea {
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border, #d1d5db);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 0.95rem;
-  color: #111827;
-  background: #fff;
+  color: var(--color-text, #111827);
+  background: var(--color-surface, #fff);
 }
 
 .textarea {
@@ -60,13 +60,13 @@
 .help {
   margin-top: 4px;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--color-muted, #6b7280);
 }
 
 .errorText {
   margin-top: 6px;
   font-size: 0.8rem;
-  color: #b91c1c;
+  color: var(--color-error, #b91c1c);
 }
 
 .actions {
@@ -76,15 +76,15 @@
   /* Keep actions visible when the form content scrolls inside a modal */
   position: sticky;
   bottom: 0;
-  background: #ffffff;
+  background: var(--color-surface, #ffffff);
   padding: 12px 0 4px 0;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border, #e5e7eb);
   z-index: 1;
 }
 
 .buttonPrimary {
-  background: #2563eb;
-  color: #fff;
+  background: var(--color-primary, #2563eb);
+  color: var(--color-primary-foreground, #fff);
   border: none;
   border-radius: 8px;
   padding: 10px 14px;
@@ -93,9 +93,9 @@
 }
 
 .buttonSecondary {
-  background: #f3f4f6;
-  color: #111827;
-  border: 1px solid #e5e7eb;
+  background: var(--color-surface-2, #f3f4f6);
+  color: var(--color-text, #111827);
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 8px;
   padding: 10px 14px;
   font-weight: 600;
@@ -114,9 +114,9 @@
 }
 
 .statusError {
-  color: #b91c1c;
+  color: var(--color-error, #b91c1c);
 }
 
 .statusSuccess {
-  color: #065f46;
+  color: var(--color-success, #065f46);
 }

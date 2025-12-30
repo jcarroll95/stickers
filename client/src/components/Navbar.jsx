@@ -101,9 +101,8 @@ const Navbar = () => {
             const sbData = await sbRes.json();
             const board = sbData?.data?.[0] || null;
             if (!board) {
-                // No board exists yet for user. Route to a generic board page or creation page if exists.
-                // For now, send to the generic board route the app already links to.
-                window.location.hash = '#/board';
+                // No board exists yet for user. Route to creation flow.
+                window.location.hash = '#/board/create';
                 return;
             }
 
@@ -259,7 +258,20 @@ const Navbar = () => {
                 >
                     {navigatingMyBoard ? 'My Board…' : 'My Board'}
                 </li>
-                <li className={styles.link}>Explore</li>
+                <li
+                    className={styles.link}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => { window.location.hash = '#/explore'; }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            window.location.hash = '#/explore';
+                        }
+                    }}
+                >
+                    Explore
+                </li>
                 <li className={styles.link}>Cheer!</li>
                 <li className={styles.link}>Developer Docs</li>
             </ul>

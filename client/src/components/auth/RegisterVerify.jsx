@@ -150,6 +150,43 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
       try { localStorage.removeItem(PENDING_KEY); } catch {}
       setMessage('Verification successful!');
       if (onSuccess) onSuccess(data);
+
+      // After verification, check if user already has a stickerboard.
+      // If not, route to creation page before first board view.
+      try {
+        const token = data.token || localStorage.getItem('token');
+        // Get current user
+        const meRes = await fetch('/api/v1/auth/me', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: 'include'
+        });
+        const me = await meRes.json().catch(() => ({}));
+        const uid = me?.data?.__id || me?.data?._id || me?.data?.id || null;
+
+        if (uid) {
+          const sbRes = await fetch(`/api/v1/stickerboards?user=${encodeURIComponent(uid)}&limit=1`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            credentials: 'include'
+          });
+          if (sbRes.ok) {
+            const sb = await sbRes.json().catch(() => ({}));
+            const board = sb?.data?.[0] || null;
+            if (!board) {
+              window.location.hash = '#/board/create';
+              return;
+            }
+            const boardToken = board.slug || board._id || board.id;
+            if (boardToken) {
+              window.location.hash = `#/board/${boardToken}`;
+              return;
+            }
+          }
+        }
+        // Fallback
+        window.location.hash = '#/board';
+      } catch (_) {
+        window.location.hash = '#/board';
+      }
     } catch (err) {
       setError(err.message || 'Verification failed');
     } finally {
