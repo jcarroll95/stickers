@@ -31,7 +31,9 @@ jobs:
           git pull --ff-only origin main
           export NODE_ENV=production
           npm ci --omit=dev
-          cd client && npm ci && npm run build
+          cd client
+          npm ci
+          npm run build
           rsync -avz client/dist/ root@server:/root/apps/stickers/client/
           sudo nginx -t && sudo systemctl reload nginx
           pm2 reload stickers || pm2 start server.js --name stickers
