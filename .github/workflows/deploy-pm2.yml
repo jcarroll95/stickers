@@ -29,10 +29,12 @@ jobs:
           git fetch --all
           git checkout main
           git pull --ff-only origin main
+          git reset --hard origin/main
+          git clean -fd
           export NODE_ENV=production
           npm ci --omit=dev
           cd client
-          npm ci
+          npm ci --include=dev
           npm run build
           cd ..
           sudo nginx -t && sudo systemctl reload nginx
