@@ -31,6 +31,7 @@ jobs:
           git pull --ff-only origin main
           export NODE_ENV=production
           npm ci --omit=dev
+          cd client && npm ci && npm run build
           pm2 reload stickers || pm2 start server.js --name stickers
           pm2 save
           EOF
