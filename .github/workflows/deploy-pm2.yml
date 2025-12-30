@@ -33,9 +33,12 @@ jobs:
           git clean -fd
           export NODE_ENV=production
           npm ci --omit=dev
+          # now we'll build the vite files on the server, must include=dev since vite is dev dep
           cd client
           npm ci --include=dev
           npm run build
+          # now we'll copy the client/dist vite files to our public /var/www/stickerboards that nginx serves
+          rsync -a --delete /root/apps/stickers/client/dist/ /var/www/stickerboards/
           cd ..
           sudo nginx -t && sudo systemctl reload nginx
           pm2 reload stickers || pm2 start server.js --name stickers
