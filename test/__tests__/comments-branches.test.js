@@ -15,37 +15,37 @@ async function createBoard(token, { name, description } = {}) {
   return res.body.data;
 }
 
-describe('Reviews additional branches', () => {
-  test('global GET /api/v1/reviews returns advancedResults structure', async () => {
+describe('Comments additional branches', () => {
+  test('global GET /api/v1/comments returns advancedResults structure', async () => {
     const token = await registerAndLogin({ email: `rev-global-${Date.now()}@ex.com` });
     const board = await createBoard(token, { name: `RB-global-${Date.now()}`, description: 'desc' });
 
     await request(app)
-      .post(`/api/v1/stickerboards/${board._id}/reviews`)
+      .post(`/api/v1/stickerboards/${board._id}/comments`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ comment: 'Ok', reviewRating: 4 })
+      .send({ comment: 'Ok', commentRating: 4 })
       .expect(201);
 
-    const res = await request(app).get('/api/v1/reviews').expect(200);
+    const res = await request(app).get('/api/v1/comments').expect(200);
     expect(res.body.success).toBe(true);
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(typeof res.body.count).toBe('number');
   });
 
-  test('deleteReview by non-owner returns 401', async () => {
+  test('deleteComment by non-owner returns 401', async () => {
     const ownerToken = await registerAndLogin({ email: `rev-owner-${Date.now()}@ex.com` });
     const intruderToken = await registerAndLogin({ email: `rev-intr-${Date.now()}@ex.com` });
     const board = await createBoard(ownerToken, { name: `RB-no-${Date.now()}`, description: 'desc' });
 
     const created = await request(app)
-      .post(`/api/v1/stickerboards/${board._id}/reviews`)
+      .post(`/api/v1/stickerboards/${board._id}/comments`)
       .set('Authorization', `Bearer ${ownerToken}`)
-      .send({ comment: 'Mine', reviewRating: 5 })
+      .send({ comment: 'Mine', commentRating: 5 })
       .expect(201);
-    const reviewId = created.body.data._id;
+    const commentId = created.body.data._id;
 
     await request(app)
-      .delete(`/api/v1/reviews/${reviewId}`)
+      .delete(`/api/v1/comments/${commentId}`)
       .set('Authorization', `Bearer ${intruderToken}`)
       .expect(401);
   });

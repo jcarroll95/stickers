@@ -1,40 +1,40 @@
-// routes for adding comments (reviews) to stickerboards
+// routes for adding comments to stickerboards
 const express = require('express');
 const {
-    getReviews,
-    getReview,
-    addReview,
-    updateReview,
-    deleteReview
-} = require('../controllers/reviews');
+    getComments,
+    getComment,
+    addComment,
+    updateComment,
+    deleteComment
+} = require('../controllers/comments');
 const router = express.Router({ mergeParams : true } );
-const Review = require('../models/Review');
+const Comment = require('../models/Comment');
 const advancedResults = require('../middleware/advancedResults');
 const { protect, authorize } = require('../middleware/auth');
 
 router
     .route('/')
     .get(
-        advancedResults(Review, {
+        advancedResults(Comment, {
             path: 'belongsToBoard',
             select: 'name description'
         }),
-        getReviews
+        getComments
     )
     .post(
         protect,
         authorize('user', 'vipuser', 'admin'),
-        addReview
+        addComment
     );
 
 router
     .route('/:id')
-    .get(getReview)
-    .put(protect, authorize('user', 'vipuser', 'admin'), updateReview)
+    .get(getComment)
+    .put(protect, authorize('user', 'vipuser', 'admin'), updateComment)
     .delete(
         protect,
         authorize('user', 'vipuser', 'admin'),
-        deleteReview
+        deleteComment
     );
 
 module.exports = router;

@@ -6,8 +6,8 @@ const router = express.Router();
 // Include outside resource routers and send them to the right place
 const stickRouter = require('./stix');
 router.use('/:belongsToBoard/stix', stickRouter)
-const reviewRouter = require('./reviews');
-router.use('/:belongsToBoard/reviews', reviewRouter);
+const commentRouter = require('./comments');
+router.use('/:belongsToBoard/comments', commentRouter);
 
 const { protect, authorize } = require('../middleware/auth');
 

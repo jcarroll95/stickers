@@ -11,6 +11,7 @@ const RegisterVerify = lazy(() => import('./auth/RegisterVerify.jsx'));
 const CreateStickerboard = lazy(() => import('./board/CreateStickerboard.jsx'));
 const MetricsDashboard = lazy(() => import('./admin/MetricsDashboard.jsx'));
 const UserManager = lazy(() => import('./admin/UserManager.jsx'));
+const UserSettings = lazy(() => import('./user/UserSettings.jsx'));
 
 /**
  * Router Component
@@ -90,6 +91,14 @@ export default function Router() {
     if (first === 'explore') {
       // Public explore page: paginated thumbnails of stickerboards
       return <Explore />;
+    }
+
+    if (first === 'settings') {
+      // #/settings — require auth
+      if (!isAuthenticated) {
+        return <Home />;
+      }
+      return <UserSettings />;
     }
 
     if (first === 'board' && second === 'create') {

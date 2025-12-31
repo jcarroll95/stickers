@@ -60,16 +60,23 @@ StickerboardSchema.pre('save', function () {
     console.log('Slugify ran', this.name.yellow.bold);
 });
 
-// Cascade delete stix when a stickerboard is deleted
+// Cascade delete stix and comments when a stickerboard is deleted
 StickerboardSchema.pre('deleteOne', { document: true, query: false },async function (next) {
-    console.log(`Stickerboard ___ deleted, stix associated with id ___ deleted`.red.inverse);
+    console.log(`Stickerboard ${this._id} deleted, stix and comments associated with it deleted`.red.inverse);
     await this.model('Stick').deleteMany( { belongsToBoard: this._id });
-    //next();
+    await this.model('Comment').deleteMany( { belongsToBoard: this._id });
 });
 
 // Reverse population with virtual fields
 StickerboardSchema.virtual('stix', {
     ref: 'Stick',
+    localField: '_id',
+    foreignField: 'belongsToBoard',
+    justOne: false
+});
+
+StickerboardSchema.virtual('comments', {
+    ref: 'Comment',
     localField: '_id',
     foreignField: 'belongsToBoard',
     justOne: false

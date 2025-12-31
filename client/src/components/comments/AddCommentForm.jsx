@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 import apiClient from '../../services/apiClient';
 
 /**
- * AddReviewForm Component
- * Inline button + form to add a new review (comment) to a stickerboard.
+ * AddCommentForm Component
+ * Inline button + form to add a new comment to a stickerboard.
  * 
  * @param {Object} props - Component properties
- * @param {string|number} props.boardId - The ID of the board to review
+ * @param {string|number} props.boardId - The ID of the board to comment on
  * @param {Function} [props.onSubmitted] - Callback after successful submission
  */
-export default function AddReviewForm({ boardId, onSubmitted }) {
+export default function AddCommentForm({ boardId, onSubmitted }) {
   const [open, setOpen] = useState(false);
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(''); // optional 1..5
@@ -46,16 +46,17 @@ export default function AddReviewForm({ boardId, onSubmitted }) {
         comment: comment.trim(),
       };
       const r = parseInt(rating, 10);
-      if (!isNaN(r) && r >= 1 && r <= 5) body.reviewRating = r;
+      if (!isNaN(r) && r >= 1 && r <= 5) body.commentRating = r;
 
-      await apiClient.post(`/stickerboards/${encodeURIComponent(boardId)}/reviews`, body);
+      await apiClient.post(`/stickerboards/${encodeURIComponent(boardId)}/comments`, body);
 
       setOkMsg('Comment added!');
       if (typeof onSubmitted === 'function') onSubmitted();
       reset();
       setOpen(false);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || String(err));
+      const rawError = err.response?.data?.error || err.message || String(err);
+      setError(`Comment failed - ${rawError}`);
     } finally {
       setPosting(false);
     }
@@ -105,7 +106,7 @@ export default function AddReviewForm({ boardId, onSubmitted }) {
   );
 }
 
-AddReviewForm.propTypes = {
+AddCommentForm.propTypes = {
   boardId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   onSubmitted: PropTypes.func,
 };

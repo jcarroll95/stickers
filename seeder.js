@@ -12,7 +12,7 @@ dotenv.config({ path: './config/config.env' });
 Stickerboard = require('./models/Stickerboard');
 Stick = require('./models/Stick');
 User = require('./models/User');
-Review = require('./models/Review');
+Comment = require('./models/Comment');
 
 // Connect to MongoDB database
 mongoose.connect(process.env.MONGO_URI);
@@ -27,8 +27,8 @@ const stix = JSON.parse(
 const users = JSON.parse(
     fs.readFileSync(`${__dirname}/data/users.json`, "utf-8")
 );
-const reviews = JSON.parse(
-    fs.readFileSync(`${__dirname}/data/reviews.json`, "utf-8")
+const comments = JSON.parse(
+    fs.readFileSync(`${__dirname}/data/comments.json`, "utf-8")
 );
 
 // Import into db the selected /data/ files
@@ -36,8 +36,8 @@ const importData = async (cliFlag) => {
     try {
         if (cliFlag === 'stix') {
             await Stick.create(stix);
-        } else if (cliFlag === 'reviews') {
-            await Review.create(reviews);
+        } else if (cliFlag === 'comments') {
+            await Comment.create(comments);
         } else if (cliFlag === 'users') {
             await User.create(users);
         } else if (cliFlag === 'stickerboards') {
@@ -47,7 +47,7 @@ const importData = async (cliFlag) => {
             await Stickerboard.create(stickerboards);
             await Stick.create(stix);
             await User.create(users);
-            await Review.create(reviews);
+            await Comment.create(comments);
             cliFlag = 'all'
         }
        // console.log(`Data imported: ${stickerboards.length} stickerboards`.green.inverse);
@@ -66,8 +66,8 @@ const deleteData = async (cliFlag) => {
         // Mongo-created IDs will become desync'd so comment out what you don't want to delete
         if (cliFlag === 'stix') {
             await Stick.deleteMany();
-        } else if (cliFlag === 'reviews') {
-            await Review.deleteMany();
+        } else if (cliFlag === 'comments') {
+            await Comment.deleteMany();
         } else if (cliFlag === 'users') {
             await User.deleteMany();
         } else if (cliFlag === 'stickerboards') {
@@ -76,7 +76,7 @@ const deleteData = async (cliFlag) => {
             await Stickerboard.deleteMany();
             await Stick.deleteMany();
             await User.deleteMany();
-            await Review.deleteMany();
+            await Comment.deleteMany();
             cliFlag = 'all';
         }
         console.log(`Data destroyed: ${cliFlag}`.red.inverse);

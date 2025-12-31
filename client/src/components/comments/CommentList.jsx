@@ -4,13 +4,13 @@ import DOMPurify from 'dompurify';
 import apiClient from '../../services/apiClient';
 
 /**
- * ReviewList Component
- * Lists reviews for a given stickerboard. Read-only.
+ * CommentList Component
+ * Lists comments for a given stickerboard. Read-only.
  * 
  * @param {Object} props - Component properties
- * @param {string|number} props.boardId - The ID of the board whose reviews to display
+ * @param {string|number} props.boardId - The ID of the board whose comments to display
  */
-export default function ReviewList({ boardId }) {
+export default function CommentList({ boardId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [items, setItems] = useState([]);
@@ -20,7 +20,7 @@ export default function ReviewList({ boardId }) {
     try {
       setLoading(true);
       setError('');
-      const response = await apiClient.get(`/stickerboards/${encodeURIComponent(boardId)}/reviews`);
+      const response = await apiClient.get(`/stickerboards/${encodeURIComponent(boardId)}/comments`);
       // Standard unwrapping of JSend envelope or direct data
       const list = response.data || response;
       if (!cancelled) setItems(Array.isArray(list) ? list : []);
@@ -36,18 +36,18 @@ export default function ReviewList({ boardId }) {
     load();
   }, [load]);
 
-  if (loading) return <p>Loading reviews…</p>;
+  if (loading) return <p>Loading comments…</p>;
   if (error) return <p style={{ color: 'crimson' }}>Error: {error}</p>;
 
   if (!items.length) {
-    return <p>No reviews yet. Be the first to leave a comment!</p>;
+    return <p>No comments yet. Be the first to leave a comment!</p>;
   }
 
   return (
     <ul style={{ listStyle: 'none', padding: 0, marginTop: 12 }}>
       {items.map((r) => {
         const created = r.createdAt ? new Date(r.createdAt) : null;
-        const rating = typeof r.reviewRating === 'number' && r.reviewRating > 0 ? r.reviewRating : null;
+        const rating = typeof r.commentRating === 'number' && r.commentRating > 0 ? r.commentRating : null;
         const author = r.belongsToUser && (r.belongsToUser.name || r.belongsToUser.email || r.belongsToUser._id || r.belongsToUser.id);
         return (
           <li key={r._id || r.id} style={{
@@ -80,6 +80,6 @@ export default function ReviewList({ boardId }) {
   );
 }
 
-ReviewList.propTypes = {
+CommentList.propTypes = {
   boardId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 };
