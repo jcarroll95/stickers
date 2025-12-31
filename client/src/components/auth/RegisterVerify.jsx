@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 import styles from './RegisterVerify.module.css';
 import apiClient from '../../services/apiClient';
 
+import { toast } from 'react-hot-toast';
+import { parseError } from '../../utils/errorUtils';
+
 /**
  * RegisterVerify Component
  * Handles the two-step registration flow:
@@ -149,12 +152,9 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
         code: codeStr
       });
 
-      if (!data?.success || !data?.token) {
+      if (!data?.success) {
         throw new Error('Invalid or expired code');
       }
-
-      // store token like login does
-      localStorage.setItem('token', data.token);
 
       // Clear pending registration on success
       localStorage.removeItem(PENDING_KEY);
@@ -209,7 +209,8 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
         email: email.trim().toLowerCase() 
       });
 
-      setMessage('If the email is eligible, a new code has been sent.');
+      toast.success('A new code has been sent.');
+      setMessage('A new code has been sent.');
       setCooldown(60);
       // Update persisted cooldown (and optionally extend expiry if your backend resets it)
       try {

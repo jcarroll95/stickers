@@ -75,7 +75,7 @@ describe('apiClient', () => {
     try {
       await apiClient.get('/test-network-error');
     } catch (err) {
-      // Expected
+      expect(err).toBeDefined();
     }
 
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('[API Network Error]'));

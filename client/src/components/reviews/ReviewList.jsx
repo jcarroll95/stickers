@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import DOMPurify from 'dompurify';
 import apiClient from '../../services/apiClient';
 
 /**
@@ -65,7 +66,10 @@ export default function ReviewList({ boardId }) {
             {rating != null && (
               <div style={{ color: '#374151', marginTop: 4 }}>Rating: {rating} / 5</div>
             )}
-            <p style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>{r.comment}</p>
+            <p 
+              style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(r.comment) }}
+            />
             {author && (
               <div style={{ color: '#6b7280', fontSize: 12 }}>by {String(author)}</div>
             )}

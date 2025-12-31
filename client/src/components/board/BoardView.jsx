@@ -1,11 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
+import { toast } from 'react-hot-toast';
+import DOMPurify from 'dompurify';
 import StickerInterface from '../stickerInterface/StickerInterface.jsx'
 import AddStickForm from '../stix/AddStickForm.jsx';
 import styles from './BoardView.module.css';
 import ReviewList from '../reviews/ReviewList.jsx';
 import AddReviewForm from '../reviews/AddReviewForm.jsx';
 import apiClient from '../../services/apiClient';
+import LoadingSpinner from '../common/LoadingSpinner.jsx';
+import { parseError } from '../../utils/errorUtils';
 
 /**
  * BoardView Component
@@ -29,7 +33,8 @@ export default function BoardView({ token }) {
       // apiClient.get returns response.data
       const userData = response.data || response;
       setMe(userData || null);
-    } catch (_) {
+    } catch (err) {
+      console.warn('[BoardView] Could not load user profile:', err.message);
       setMe(null);
     }
   }, []);
@@ -67,11 +72,9 @@ export default function BoardView({ token }) {
   }, [token]);
 
   useEffect(() => {
-    let disposed = false;
     // call and ignore the cleanup return of loadBoard
     loadBoard();
     loadMe();
-    return () => { disposed = true; };
   }, [loadBoard, loadMe]);
 
   // Reload board after a sticker is finalized from the interface
@@ -97,8 +100,13 @@ export default function BoardView({ token }) {
         return max + 1;
     }, [board?.stix]);
 
-  if (loading) return <p className={styles.container}>Loading board…</p>;
-  if (error) return <p className={`${styles.container} ${styles.error}`}>Error: {error}</p>;
+  if (loading) return <LoadingSpinner message="Loading board…" />;
+  if (error) return (
+    <div className={`${styles.container} ${styles.error}`}>
+      <p>Error: {error}</p>
+      <button onClick={() => loadBoard()} className={styles.retryButton}>Retry</button>
+    </div>
+  );
   if (!board) return <p className={styles.container}>No board found.</p>;
 
   // Determine ownership
@@ -112,9 +120,10 @@ export default function BoardView({ token }) {
     <div className={styles.container}>
       {/* Header with title and action */}
       <div className={styles.headerRow}>
-        <h1 className={styles.title}>
-          {board.name || 'Stickerboard'}
-        </h1>
+        <h1 
+          className={styles.title}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(board.name || 'Stickerboard') }}
+        />
         {isOwner && (
           <button type="button" className={styles.addButton} onClick={() => setShowAddModal(true)}>
             + Add Stick
@@ -124,9 +133,10 @@ export default function BoardView({ token }) {
 
       {/* Description */}
       {board.description && (
-        <p className={styles.description}>
-          {board.description}
-        </p>
+        <p 
+          className={styles.description}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(board.description) }}
+        />
       )}
 
       {/* Tags */}
@@ -164,37 +174,39 @@ export default function BoardView({ token }) {
             <StickerInterface
               {...sharedProps}
               onPlaceSticker={async (next /* full array */, placed, index) => {
+                const saveToast = toast.loading('Saving sticker placement...');
                 try {
                   await apiClient.put(`/stickerboards/${encodeURIComponent(board._id || board.id)}`, {
                     stickers: next
                   });
                   try {
                     window.dispatchEvent(new CustomEvent('stickerboard:finalized', { detail: { boardId: board._id || board.id, sticker: placed, index } }));
-                  } catch (_) {
-                    // ignore
+                  } catch (e) {
+                    console.error('[BoardView] Failed to dispatch finalized event:', e);
                   }
                   await loadBoard();
+                  toast.success('Sticker placement saved!', { id: saveToast });
                 } catch (err) {
-                  const errorMsg = err.response?.data?.error || err.message || String(err);
-                  // eslint-disable-next-line no-alert
-                  alert(`Failed to save sticker placement: ${errorMsg}`);
+                  const errorMsg = parseError(err);
+                  toast.error(`Failed to save sticker placement: ${errorMsg}`, { id: saveToast });
                 }
               }}
               onClearStickers={async (next /* full array with stuck=false */) => {
+                const clearToast = toast.loading('Clearing stickers...');
                 try {
                   await apiClient.put(`/stickerboards/${encodeURIComponent(board._id || board.id)}`, {
                     stickers: next
                   });
                   try {
                     window.dispatchEvent(new CustomEvent('stickerboard:cleared', { detail: { boardId: board._id || board.id } }));
-                  } catch (_) {
-                    // ignore
+                  } catch (e) {
+                    console.error('[BoardView] Failed to dispatch cleared event:', e);
                   }
                   await loadBoard();
+                  toast.success('Stickers cleared!', { id: clearToast });
                 } catch (err) {
-                  const errorMsg = err.response?.data?.error || err.message || String(err);
-                  // eslint-disable-next-line no-alert
-                  alert(`Failed to clear stickers: ${errorMsg}`);
+                  const errorMsg = parseError(err);
+                  toast.error(`Failed to clear stickers: ${errorMsg}`, { id: clearToast });
                 }
               }}
             />

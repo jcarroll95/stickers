@@ -14,7 +14,6 @@ describe('authStore', () => {
     // Reset Zustand store state before each test
     useAuthStore.setState({
       user: null,
-      token: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -23,17 +22,14 @@ describe('authStore', () => {
     localStorage.clear();
   });
 
-  it('should initialize with no user if no token exists', async () => {
+  it('should initialize with no user if /auth/me fails', async () => {
+    apiClient.get.mockRejectedValueOnce(new Error('Unauthorized'));
     await useAuthStore.getState().initialize();
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
     expect(useAuthStore.getState().user).toBe(null);
   });
 
-  it('should initialize with user if valid token exists', async () => {
-    localStorage.setItem('token', 'valid-token');
-    // Ensure the store knows about the token before initialize
-    useAuthStore.setState({ token: 'valid-token' });
-    
+  it('should initialize with user if /auth/me succeeds', async () => {
     const mockUser = { id: '1', name: 'Test User' };
     apiClient.get.mockResolvedValueOnce({ success: true, data: mockUser });
 
@@ -45,39 +41,28 @@ describe('authStore', () => {
   });
 
   it('should clear session if initialize fails', async () => {
-    localStorage.setItem('token', 'invalid-token');
-    useAuthStore.setState({ token: 'invalid-token' });
-    
     apiClient.get.mockRejectedValueOnce(new Error('Unauthorized'));
 
     await useAuthStore.getState().initialize();
 
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
-    expect(useAuthStore.getState().token).toBe(null);
-    expect(localStorage.getItem('token')).toBe(null);
   });
 
   it('should update state on login', () => {
     const mockUser = { id: '1', name: 'Test User' };
-    const token = 'new-token';
 
-    useAuthStore.getState().login(mockUser, token);
+    useAuthStore.getState().login(mockUser);
 
     expect(useAuthStore.getState().isAuthenticated).toBe(true);
     expect(useAuthStore.getState().user).toEqual(mockUser);
-    expect(useAuthStore.getState().token).toBe(token);
-    expect(localStorage.getItem('token')).toBe(token);
   });
 
   it('should handle auth:unauthorized event', async () => {
-    localStorage.setItem('token', 'token');
-    useAuthStore.setState({ isAuthenticated: true, token: 'token' });
+    useAuthStore.setState({ isAuthenticated: true });
     
     // Manual trigger of initialize to ensure event listener is registered
     const store = useAuthStore.getState();
     
-    // We need to wait for the next tick to ensure the listener is registered
-    // Or we can just call initialize and let it finish
     apiClient.get.mockResolvedValueOnce({ success: true, data: { name: 'User' } });
     await store.initialize();
     
@@ -88,7 +73,6 @@ describe('authStore', () => {
     
     // Verify logout logic was triggered
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
-    expect(localStorage.getItem('token')).toBe(null);
   });
 
   it('should update user via setUser', () => {
@@ -105,8 +89,7 @@ describe('authStore', () => {
   });
 
   it('should clear state on logout', async () => {
-    localStorage.setItem('token', 'token');
-    useAuthStore.setState({ isAuthenticated: true, user: { name: 'User' }, token: 'token' });
+    useAuthStore.setState({ isAuthenticated: true, user: { name: 'User' } });
 
     apiClient.get.mockResolvedValueOnce({ success: true });
 
@@ -115,7 +98,6 @@ describe('authStore', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/auth/logout');
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
     expect(useAuthStore.getState().user).toBe(null);
-    expect(localStorage.getItem('token')).toBe(null);
     expect(window.location.hash).toBe('#/');
   });
 });

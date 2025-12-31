@@ -14,20 +14,15 @@ import apiClient from '../services/apiClient';
  */
 const useAuthStore = create((set, get) => ({
   user: null,
-  token: localStorage.getItem('token') || null,
-  isAuthenticated: !!localStorage.getItem('token'),
-  isLoading: false,
+  isAuthenticated: false, // Initial state, will be updated by initialize()
+  isLoading: true, // Start as true while we verify session
   error: null,
 
   /**
    * Initialize the store: Check if the token is valid and fetch the user profile.
    */
   initialize: async () => {
-    const { token, logout } = get();
-    if (!token) {
-      set({ isAuthenticated: false, user: null });
-      return;
-    }
+    const { logout } = get();
 
     // Listen for unauthorized events from the API client
     const handleUnauthorized = () => {
@@ -45,23 +40,19 @@ const useAuthStore = create((set, get) => ({
     } catch (err) {
       console.warn('[AuthStore] Initial session verification failed:', err.message);
       // If /me fails, the token might be expired or invalid
-      set({ user: null, isAuthenticated: false, token: null });
-      localStorage.removeItem('token');
+      set({ user: null, isAuthenticated: false });
     } finally {
       set({ isLoading: false });
     }
   },
 
   /**
-   * Log in the user and persist the token.
+   * Log in the user. Token persistence is handled by HttpOnly cookies.
    * @param {Object} userData - The user profile object.
-   * @param {string} token - The JWT token.
    */
-  login: (userData, token) => {
-    localStorage.setItem('token', token);
+  login: (userData) => {
     set({
       user: userData,
-      token,
       isAuthenticated: true,
       error: null,
     });
@@ -72,15 +63,13 @@ const useAuthStore = create((set, get) => ({
    */
   logout: async () => {
     try {
-      // Best-effort logout request to backend
+      // Best-effort logout request to backend (clears HttpOnly cookie)
       await apiClient.get('/auth/logout');
     } catch (err) {
       console.warn('[AuthStore] Logout request to server failed:', err.message);
     } finally {
-      localStorage.removeItem('token');
       set({
         user: null,
-        token: null,
         isAuthenticated: false,
         error: null,
       });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import StickerboardsDemo from './StickerboardsDemo';
 import { server } from './test/setup';
 import { http, HttpResponse } from 'msw';
@@ -8,7 +8,7 @@ import { http, HttpResponse } from 'msw';
 describe('StickerboardsDemo', () => {
   it('should render loading state initially', () => {
     render(<StickerboardsDemo />);
-    expect(screen.getByText(/loading…/i)).toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('should render data on success', async () => {

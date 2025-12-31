@@ -66,7 +66,10 @@ app.use(limiter);
 app.use(hpp());
 
 // enable cors
-app.use(cors());
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true
+}));
 
 // Cookie parser middleware
 app.use(cookieParser());

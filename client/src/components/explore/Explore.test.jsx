@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import Explore from './Explore';
 import { server } from '../../test/setup';
@@ -24,7 +24,7 @@ describe('Explore', () => {
 
     render(<Explore />);
     
-    expect(screen.getByText(/loading…/i)).toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText('Board 1')).toBeInTheDocument();

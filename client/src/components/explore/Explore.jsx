@@ -1,7 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, Suspense } from 'react';
+import DOMPurify from 'dompurify';
 import styles from './Explore.module.css';
 import ThumbnailBoard from './ThumbnailBoard.jsx';
 import apiClient from '../../services/apiClient';
+import LoadingSpinner from '../common/LoadingSpinner.jsx';
+import { parseError } from '../../utils/errorUtils';
 
 /**
  * Explore Component
@@ -37,8 +40,7 @@ export default function Explore() {
       }
     } catch (e) {
       if (!cancelled) {
-        const errorMsg = e.response?.data?.error || e.message || String(e);
-        setError(errorMsg);
+        setError(parseError(e));
       }
     } finally {
       if (!cancelled) setLoading(false);
@@ -67,18 +69,36 @@ export default function Explore() {
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Explore Stickerboards</h2>
-      {loading && <p>Loading…</p>}
-      {error && <p style={{ color: 'crimson' }}>Error: {error}</p>}
+      {loading && <LoadingSpinner message="Loading stickerboards…" />}
+      {error && (
+        <div style={{ color: 'crimson', margin: '1rem 0', textAlign: 'center' }}>
+          <p>Error: {error}</p>
+          <button onClick={() => loadPage(page)} style={{ 
+            marginTop: '0.5rem', 
+            padding: '4px 12px', 
+            cursor: 'pointer',
+            border: '1px solid #dc2626',
+            color: '#dc2626',
+            backgroundColor: 'transparent',
+            borderRadius: '4px'
+          }}>Retry</button>
+        </div>
+      )}
 
       <div className={styles.grid}>
         {items.map((b) => (
           <div key={b._id || b.id} className={styles.card}>
-            <h3 className={styles.cardTitle} title={b.name || 'Untitled'}>
-              {b.name || 'Untitled'}
-            </h3>
+            <h3 
+              className={styles.cardTitle} 
+              title={b.name || 'Untitled'}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(b.name || 'Untitled') }}
+            />
             <div className={styles.thumb} onClick={() => cardClick(b)} role="button" tabIndex={0}
-                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cardClick(b); } }}>
-              <ThumbnailBoard board={b} />
+                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cardClick(b); } }}
+                 style={{ minHeight: 200 }}>
+              <Suspense fallback={<div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: 8 }}>Loading thumbnail...</div>}>
+                <ThumbnailBoard board={b} />
+              </Suspense>
             </div>
           </div>
         ))}

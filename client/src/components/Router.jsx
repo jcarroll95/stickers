@@ -1,11 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, Suspense, lazy } from 'react';
 import PropTypes from 'prop-types';
-import StickerboardsDemo from '../StickerboardsDemo.jsx';
-import BoardView from './board/BoardView.jsx';
-import Explore from './explore/Explore.jsx';
-import RegisterVerify from './auth/RegisterVerify.jsx';
-import CreateStickerboard from './board/CreateStickerboard.jsx';
 import useAuthStore from '../store/authStore';
+import LoadingSpinner from './common/LoadingSpinner.jsx';
+
+// Lazy load major route components
+const StickerboardsDemo = lazy(() => import('../StickerboardsDemo.jsx'));
+const BoardView = lazy(() => import('./board/BoardView.jsx'));
+const Explore = lazy(() => import('./explore/Explore.jsx'));
+const RegisterVerify = lazy(() => import('./auth/RegisterVerify.jsx'));
+const CreateStickerboard = lazy(() => import('./board/CreateStickerboard.jsx'));
 
 /**
  * Router Component
@@ -42,57 +45,71 @@ export default function Router() {
     return { parts, searchParams };
   }, [hash]);
 
-  // Routing logic
-  if (route.parts.length === 0) {
-    return <Home />;
-  }
-
   const [first, second] = route.parts;
 
-  if (first === 'register') {
-    // Public registration routes
-    if (second === 'verify') {
-      const initialEmail = route.searchParams.get('email') || '';
-      return <RegisterVerify mode="verify" initialEmail={initialEmail} />;
-    }
-    return <RegisterVerify />;
-  }
+  // Handle redirects via useEffect to avoid modifying window.location during render
+  useEffect(() => {
+    const isBoardCreate = first === 'board' && second === 'create';
+    const isBoardToken = first === 'board' && second && second !== 'create';
 
-  if (first === 'board' && !second) {
-    // #/board
-    return <StickerboardsDemo />;
-  }
-
-  if (first === 'explore') {
-    // Public explore page: paginated thumbnails of stickerboards
-    return <Explore />;
-  }
-
-  if (first === 'board' && second === 'create') {
-    // #/board/create — requires auth
-    if (!isAuthenticated) {
+    if ((isBoardCreate || isBoardToken) && !isAuthenticated) {
       if (window.location.hash !== '#/') {
         window.location.hash = '#/';
       }
+    }
+  }, [first, second, isAuthenticated]);
+
+  // Routing logic wrapped in Suspense for Code Splitting
+  return (
+    <Suspense fallback={<LoadingSpinner message="Loading page..." />}>
+      {renderContent()}
+    </Suspense>
+  );
+
+  function renderContent() {
+    if (route.parts.length === 0) {
       return <Home />;
     }
-    return <CreateStickerboard />;
-  }
 
-  if (first === 'board' && second) {
-    // #/board/:token — require auth token to view a private board
-    if (!isAuthenticated) {
-      // Redirect unauthenticated users to default public route
-      if (window.location.hash !== '#/') {
-        window.location.hash = '#/';
+    if (first === 'register') {
+      // Public registration routes
+      if (second === 'verify') {
+        const initialEmail = route.searchParams.get('email') || '';
+        return <RegisterVerify mode="verify" initialEmail={initialEmail} />;
       }
-      return <Home />;
+      return <RegisterVerify />;
     }
-    return <BoardView token={second} />;
-  }
 
-  // Fallback
-  return <NotFound hash={hash} />;
+    if (first === 'board' && !second) {
+      // #/board
+      return <StickerboardsDemo />;
+    }
+
+    if (first === 'explore') {
+      // Public explore page: paginated thumbnails of stickerboards
+      return <Explore />;
+    }
+
+    if (first === 'board' && second === 'create') {
+      // #/board/create — requires auth
+      if (!isAuthenticated) {
+        return <Home />;
+      }
+      return <CreateStickerboard />;
+    }
+
+    if (first === 'board' && second) {
+      // #/board/:token — require auth token to view a private board
+      if (!isAuthenticated) {
+        // Redirect unauthenticated users to default public route
+        return <Home />;
+      }
+      return <BoardView token={second} />;
+    }
+
+    // Fallback
+    return <NotFound hash={hash} />;
+  }
 }
 
 /**

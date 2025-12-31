@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
  * 
  * @param {Object} props - Component properties
  */
-export default function StickerPalette({
+const StickerPalette = ({
   isControlled,
   internalStickers,
   isValidStickerId,
@@ -15,7 +15,7 @@ export default function StickerPalette({
   placingIndex,
   getStickerSrc,
   onSelectSticker,
-}) {
+}) => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 140 }}>
       <div style={{ fontSize: 14, color: "#444" }}>Sticker palette</div>
@@ -108,3 +108,4 @@ StickerPalette.propTypes = {
   getStickerSrc: PropTypes.func.isRequired,
   onSelectSticker: PropTypes.func.isRequired,
 };
+export default React.memo(StickerPalette);

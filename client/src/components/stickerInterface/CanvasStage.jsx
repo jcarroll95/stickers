@@ -7,12 +7,13 @@ import useImage from "use-image";
  * StickerSprite Sub-component
  * Renders a single sticker on the Konva layer.
  */
-const StickerSprite = ({ entry, boardSize, displayLongEdge, getStickerSrc, isValidStickerId }) => {
-  if (!isValidStickerId(entry?.stickerId)) return null;
-  const src = getStickerSrc(entry.stickerId);
+const StickerSprite = React.memo(({ entry, boardSize, displayLongEdge, getStickerSrc, isValidStickerId }) => {
+  const isValid = isValidStickerId(entry?.stickerId);
+  const src = isValid ? getStickerSrc(entry.stickerId) : null;
   const [img] = useImage(src);
 
   const scale = useMemo(() => {
+    if (!isValid) return 1;
     let base = 1;
     if (typeof entry.scale === "number") {
       base = entry.scale;
@@ -26,7 +27,9 @@ const StickerSprite = ({ entry, boardSize, displayLongEdge, getStickerSrc, isVal
     const targetLong = Math.max(1, Number(displayLongEdge) || 600);
     const ratio = targetLong / 600;
     return base * ratio;
-  }, [entry.scale, boardSize, img, displayLongEdge]);
+  }, [isValid, entry.scale, boardSize, img, displayLongEdge]);
+
+  if (!isValid) return null;
 
   const halfW = (img?.width || 0) * scale * 0.5;
   const halfH = (img?.height || 0) * scale * 0.5;
@@ -44,7 +47,7 @@ const StickerSprite = ({ entry, boardSize, displayLongEdge, getStickerSrc, isVal
       listening={false}
     />
   );
-};
+});
 
 StickerSprite.propTypes = {
   entry: PropTypes.shape({
@@ -69,7 +72,7 @@ StickerSprite.propTypes = {
  * 
  * @param {Object} props - Component properties
  */
-export default function CanvasStage({
+const CanvasStage = ({
   boardSize,
   bgImage,
   isControlled,
@@ -88,7 +91,7 @@ export default function CanvasStage({
   onMouseMove,
   onClick,
   stageRef,
-}) {
+}) => {
   const renderPlacedStickers = useMemo(() => {
     if (isControlled) {
       const placed = (internalStickers || []).filter((s) => !!s.stuck);
@@ -205,7 +208,7 @@ export default function CanvasStage({
     legacyDefaultScale,
   ]);
 
-    return (
+  return (
     <Stage
       width={boardSize.width}
       height={boardSize.height}
@@ -221,7 +224,7 @@ export default function CanvasStage({
       </Layer>
     </Stage>
   );
-}
+};
 
 CanvasStage.propTypes = {
   boardSize: PropTypes.shape({
@@ -252,3 +255,5 @@ CanvasStage.propTypes = {
     PropTypes.shape({ current: PropTypes.any })
   ]),
 };
+
+export default React.memo(CanvasStage);

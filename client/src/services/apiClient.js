@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
+import { parseError } from '../utils/errorUtils';
 
 /**
  * API Client Configuration
@@ -15,18 +17,17 @@ import axios from 'axios';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request Interceptor: Inject JWT token from localStorage
+// Request Interceptor: Global configuration
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // No longer injecting token from localStorage to move towards HttpOnly cookies.
+    // withCredentials: true ensures cookies are sent automatically.
     return config;
   },
   (error) => {
@@ -59,16 +60,20 @@ apiClient.interceptors.response.use(
 
       if (response.status === 401) {
         // Handle unauthorized access (e.g., clear session and redirect)
-        localStorage.removeItem('token');
+        // No longer removing 'token' from localStorage
         
         // Broadcast a generic logout event if store is not available
-        // Note: Ideally, we'd import the store here, but that can cause circular deps.
-        // Instead, the store can be notified via a custom event or a shared observable.
         window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+        
+        // Notify the user
+        toast.error('Session expired. Please login again.');
+      } else if (response.status >= 500) {
+        toast.error('A server error occurred. Please try again later.');
       }
     } else if (error.request) {
       // The request was made but no response was received
       console.error('[API Network Error]: No response from server');
+      toast.error('Network error. Please check your internet connection.');
     } else {
       // Something happened in setting up the request that triggered an Error
       console.error('[API Configuration Error]:', error.message);

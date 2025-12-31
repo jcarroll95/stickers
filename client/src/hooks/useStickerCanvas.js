@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import useImage from "use-image";
+import throttle from "lodash.throttle";
 import apiClient from "../services/apiClient";
 
 /**
@@ -50,12 +51,13 @@ export default function useStickerCanvas({
   const isValidStickerId = useCallback((id) => Number.isInteger(id) && id >= 0 && id <= 9, []);
 
   // Internal unified stickers state for controlled mode (optimistic updates)
+  const [internalStickers, setInternalStickers] = useState(Array.isArray(stickers) ? stickers : []);
   const isControlled = Array.isArray(stickers);
-  const [internalStickers, setInternalStickers] = useState(() => (isControlled ? stickers : []));
 
-  useEffect(() => {
-    if (isControlled) setInternalStickers(stickers || []);
-  }, [isControlled, stickers]);
+  // Synchronize internalStickers if stickers prop changes, but avoid cascading renders if same
+  if (isControlled && stickers !== internalStickers && JSON.stringify(stickers) !== JSON.stringify(internalStickers)) {
+    setInternalStickers(stickers);
+  }
 
   // Selection (for controlled mode): which sticker entry (by index in internalStickers) is being placed
   const [placingIndex, setPlacingIndex] = useState(null);
@@ -104,20 +106,19 @@ export default function useStickerCanvas({
 
   // Demo mode persistence
   const storageKey = useMemo(() => `stickerboard:${boardId}:placements`, [boardId]);
-  const [placements, setPlacements] = useState([]);
-
-  useEffect(() => {
-    if (isControlled) return;
+  const [placements, setPlacements] = useState(() => {
+    if (Array.isArray(stickers)) return []; // isControlled
     try {
-      const raw = localStorage.getItem(storageKey);
+      const raw = localStorage.getItem(`stickerboard:${boardId}:placements`);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setPlacements(parsed);
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
-      console.error("[useStickerCanvas] LocalStorage read failed:", e);
+      console.error("[useStickerCanvas] LocalStorage initial read failed:", e);
     }
-  }, [storageKey, isControlled]);
+    return [];
+  });
 
   const persistPlacements = useCallback((next) => {
     if (isControlled) return;
@@ -178,16 +179,31 @@ export default function useStickerCanvas({
     }
   }, [isControlled, legacyStickerImage, readonly]);
 
+  const updateHoverPos = useCallback((pos) => {
+    setHoverPos({
+      x: Math.max(0, Math.min(pos.x, boardSize.width)),
+      y: Math.max(0, Math.min(pos.y, boardSize.height))
+    });
+  }, [boardSize]);
+
+  const throttledUpdateHoverPos = useMemo(
+    () => throttle(updateHoverPos, 16),
+    [updateHoverPos]
+  );
+
+  useEffect(() => {
+    return () => {
+      throttledUpdateHoverPos.cancel();
+    };
+  }, [throttledUpdateHoverPos]);
+
   const onStageMouseMove = useCallback((e) => {
     if (!isPlacing) return;
     const stage = e.target.getStage();
     const pos = stage?.getPointerPosition();
     if (!pos) return;
-    setHoverPos({
-      x: Math.max(0, Math.min(pos.x, boardSize.width)),
-      y: Math.max(0, Math.min(pos.y, boardSize.height))
-    });
-  }, [isPlacing, boardSize]);
+    throttledUpdateHoverPos(pos);
+  }, [isPlacing, throttledUpdateHoverPos]);
 
   const placeSticker = useCallback((e) => {
     if (!isPlacing) return;
