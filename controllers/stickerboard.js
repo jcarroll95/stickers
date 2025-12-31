@@ -62,7 +62,7 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 20;    // requested perpage, default 20
     const startIndex = (page - 1) * limit;                      // which result to start listing on this page
     const endIndex = page * limit;                              // last result
-    const total = await Stickerboard.countDocuments();
+    const total = await Stickerboard.countDocuments(JSON.parse(queryStr));
 
     // mongoose .skip() means skips this number of results before returning results
     // .limit() means restrict the number of documents returned by this query

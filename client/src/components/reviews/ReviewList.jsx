@@ -1,6 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import apiClient from '../../services/apiClient';
 
-// Lists reviews for a given stickerboard. Read-only.
+/**
+ * ReviewList Component
+ * Lists reviews for a given stickerboard. Read-only.
+ * 
+ * @param {Object} props - Component properties
+ * @param {string|number} props.boardId - The ID of the board whose reviews to display
+ */
 export default function ReviewList({ boardId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -11,18 +19,12 @@ export default function ReviewList({ boardId }) {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch(`/api/v1/stickerboards/${encodeURIComponent(boardId)}/reviews`, {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
-      const json = await res.json();
-      if (!cancelled) setItems(Array.isArray(json?.data) ? json.data : []);
+      const response = await apiClient.get(`/stickerboards/${encodeURIComponent(boardId)}/reviews`);
+      // Standard unwrapping of JSend envelope or direct data
+      const list = response.data || response;
+      if (!cancelled) setItems(Array.isArray(list) ? list : []);
     } catch (e) {
-      if (!cancelled) setError(e.message || String(e));
+      if (!cancelled) setError(e.response?.data?.error || e.message || String(e));
     } finally {
       if (!cancelled) setLoading(false);
     }
@@ -73,3 +75,7 @@ export default function ReviewList({ boardId }) {
     </ul>
   );
 }
+
+ReviewList.propTypes = {
+  boardId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+};

@@ -1,7 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styles from './Explore.module.css';
 import ThumbnailBoard from './ThumbnailBoard.jsx';
+import apiClient from '../../services/apiClient';
 
+/**
+ * Explore Component
+ * Public explore page: paginated grid of stickerboard thumbnails.
+ */
 export default function Explore() {
   const [page, setPage] = useState(1);
   const [items, setItems] = useState([]);
@@ -17,24 +22,24 @@ export default function Explore() {
     try {
       setLoading(true);
       setError('');
-      // Public endpoint; include credentials if cookies are used but not required.
-      const res = await fetch(`/api/v1/stickerboards?limit=${limit}&page=${p}`, {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
-      const json = await res.json();
+      
+      const response = await apiClient.get(`/stickerboards?limit=${limit}&page=${p}`);
+      
       if (!cancelled) {
-        setItems(Array.isArray(json?.data) ? json.data : []);
-        const pag = json?.pagination || {};
+        // apiClient interceptor returns response.data
+        // The structure of advancedResults is { success: true, count: X, data: [...], pagination: {...} }
+        const data = response.data || response;
+        setItems(Array.isArray(data) ? data : []);
+        
+        const pag = response.pagination || {};
         setHasNext(!!pag.next);
         setHasPrev(!!pag.prev);
       }
     } catch (e) {
-      if (!cancelled) setError(e.message || String(e));
+      if (!cancelled) {
+        const errorMsg = e.response?.data?.error || e.message || String(e);
+        setError(errorMsg);
+      }
     } finally {
       if (!cancelled) setLoading(false);
     }

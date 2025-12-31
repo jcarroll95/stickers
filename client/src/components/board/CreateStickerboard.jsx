@@ -1,6 +1,10 @@
 import React, { useMemo, useState } from 'react';
+import apiClient from '../../services/apiClient';
 
-// Create my stickerboard flow: choose background, name, tags → create board
+/**
+ * CreateStickerboard Component
+ * Flow to choose background, name, and tags to create a new stickerboard.
+ */
 export default function CreateStickerboard() {
   const [name, setName] = useState('');
   const [tagsInput, setTagsInput] = useState('');
@@ -33,7 +37,6 @@ export default function CreateStickerboard() {
     setSubmitting(true);
     setError('');
     try {
-      const token = localStorage.getItem('token');
       const payload = {
         name: name.trim(),
         description: `Stickerboard: ${name.trim()}`,
@@ -42,23 +45,11 @@ export default function CreateStickerboard() {
         photo: selectedBg.id,
       };
 
-      const res = await fetch('/api/v1/stickerboards', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
+      const data = await apiClient.post('/stickerboards', payload);
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.success) {
-        throw new Error(data?.error || data?.message || `HTTP ${res.status}`);
-      }
-
-      const board = data.data;
+      // apiClient returns response.data (the body)
+      // Body is { success: true, data: board }
+      const board = data.data || data;
       const tokenForRoute = board?.slug || board?._id || board?.id;
       if (tokenForRoute) {
         window.location.hash = `#/board/${tokenForRoute}`;
@@ -66,7 +57,8 @@ export default function CreateStickerboard() {
         window.location.hash = '#/board';
       }
     } catch (err) {
-      setError(err.message || 'Failed to create stickerboard');
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to create stickerboard';
+      setError(errorMsg);
     } finally {
       setSubmitting(false);
     }

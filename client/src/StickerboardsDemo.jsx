@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
+import apiClient from './services/apiClient';
 
 export default function StickerboardsDemo() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    // adding konva canvas for board
-
 
     useEffect(() => {
         let cancelled = false;
@@ -13,27 +12,21 @@ export default function StickerboardsDemo() {
         async function load() {
             try {
                 setLoading(true);
-                const res = await fetch('/api/v1/stickerboards', {
-                    headers: { 'Accept': 'application/json' },
-                    // to use cookies/sessions, uncomment this:
-                    // credentials: 'include'
-                    // headers: { Authorization: `Bearer ${token}` }
-                });
-
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(`HTTP ${res.status}: ${text}`);
+                const response = await apiClient.get('/stickerboards');
+                
+                if (!cancelled) {
+                    // apiClient interceptor returns response.data
+                    setData(response.data || response);
                 }
-
-                const json = await res.json();
-                if (!cancelled) setData(json);
             } catch (err) {
-                if (!cancelled) setError(err.message || String(err));
+                if (!cancelled) {
+                    const errorMsg = err.response?.data?.error || err.message || String(err);
+                    setError(errorMsg);
+                }
             } finally {
                 if (!cancelled) setLoading(false);
             }
         }
-
 
         load();
         return () => { cancelled = true; };

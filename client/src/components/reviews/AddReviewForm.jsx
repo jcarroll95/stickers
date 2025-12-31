@@ -1,7 +1,15 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
+import apiClient from '../../services/apiClient';
 
-// Inline button + form to add a new review (comment) to a stickerboard.
-// Shows a single button initially; when clicked, expands a small form.
+/**
+ * AddReviewForm Component
+ * Inline button + form to add a new review (comment) to a stickerboard.
+ * 
+ * @param {Object} props - Component properties
+ * @param {string|number} props.boardId - The ID of the board to review
+ * @param {Function} [props.onSubmitted] - Callback after successful submission
+ */
 export default function AddReviewForm({ boardId, onSubmitted }) {
   const [open, setOpen] = useState(false);
   const [comment, setComment] = useState('');
@@ -34,34 +42,20 @@ export default function AddReviewForm({ boardId, onSubmitted }) {
       setPosting(true);
       setError('');
       setOkMsg('');
-      const tokenStr = localStorage.getItem('token');
-      const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...(tokenStr ? { Authorization: `Bearer ${tokenStr}` } : {}),
-      };
       const body = {
         comment: comment.trim(),
       };
       const r = parseInt(rating, 10);
       if (!isNaN(r) && r >= 1 && r <= 5) body.reviewRating = r;
 
-      const res = await fetch(`/api/v1/stickerboards/${encodeURIComponent(boardId)}/reviews`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
+      await apiClient.post(`/stickerboards/${encodeURIComponent(boardId)}/reviews`, body);
+
       setOkMsg('Comment added!');
       if (typeof onSubmitted === 'function') onSubmitted();
       reset();
       setOpen(false);
     } catch (err) {
-      setError(err.message || String(err));
+      setError(err.response?.data?.error || err.message || String(err));
     } finally {
       setPosting(false);
     }
@@ -110,3 +104,8 @@ export default function AddReviewForm({ boardId, onSubmitted }) {
     </div>
   );
 }
+
+AddReviewForm.propTypes = {
+  boardId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  onSubmitted: PropTypes.func,
+};

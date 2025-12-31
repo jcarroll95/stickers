@@ -1,9 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import styles from './Navbar.module.css';
+import apiClient from '../services/apiClient';
+import useAuthStore from '../store/authStore';
 
-// functional component definition describes a js func that returns JSX, this is how compnents are written
+/**
+ * Navbar Component
+ * Primary navigation and authentication control center.
+ */
 const Navbar = () => {
-    const [user, setUser] = useState(null);
+    const { user, login, logout, initialize } = useAuthStore();
     const [menuOpen, setMenuOpen] = useState(false);
     // unauthenticated login dropdown state
     const [loginOpen, setLoginOpen] = useState(false);
@@ -21,85 +27,65 @@ const Navbar = () => {
         window.location.hash = '#/register';
     };
 
-    // Attempt to fetch the current user using the backend's protect middleware
+    // Initialize auth state on mount
     useEffect(() => {
-        let cancelled = false;
-
-        const fetchMe = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const res = await fetch('/api/v1/auth/me', {
-                    method: 'GET',
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-                    // Send cookies if present (server must allow credentials via CORS when using different origins)
-                    credentials: 'include'
-                });
-
-                if (!res.ok) {
-                    // not logged in or token invalid
-                    if (!cancelled) setUser(null);
-                    return;
-                }
-                const data = await res.json();
-                if (!cancelled) setUser(data?.data || null);
-            } catch (e) {
-                if (!cancelled) setUser(null);
-            }
-        };
-
-        fetchMe();
-        return () => {
-            cancelled = true;
-        };
-    }, []);
+        initialize();
+    }, [initialize]);
 
     // Helper to safely extract a user id from various shapes
-    const getUserId = (u) => u?.__id || u?._id || u?.id || u?.data?.__id || u?.data?._id || u?.data?.id || null;
+    const getUserId = (u) => {
+        if (!u) return null;
+        // If u is the envelope { success: true, data: user }
+        const userObj = u.data || u;
+        return userObj._id || userObj.id || userObj.__id || null;
+    };
 
     // Navigate to the currently logged-in user's stickerboard
     const handleGoToMyBoard = async () => {
         if (navigatingMyBoard) return;
         setNavigatingMyBoard(true);
         try {
-            // Ensure we have the current user (and a token/cookie)
+            // Ensure we have the current user, refresh if possible to avoid stale state
             let currentUser = user;
-            const token = localStorage.getItem('token');
-            if (!currentUser) {
-                const meRes = await fetch('/api/v1/auth/me', {
-                    method: 'GET',
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-                    credentials: 'include'
-                });
-                if (!meRes.ok) {
-                    // Not authenticated – open login dropdown
+            try {
+                const response = await apiClient.get('/auth/me');
+                // The interceptor returns response.data (the body)
+                // Body is { success: true, data: user }
+                currentUser = response?.data || response;
+            } catch (e) {
+                console.warn('[Navbar] Could not refresh user profile for "My Board":', e.message);
+                // If we don't even have a cached user, we must log in
+                if (!currentUser) {
                     setLoginOpen(true);
                     return;
                 }
-                const meData = await meRes.json();
-                currentUser = meData?.data || null;
-                setUser(currentUser);
             }
 
             const uid = getUserId(currentUser);
             if (!uid) {
-                // Couldn't determine user id, prompt login as fallback
+                console.warn('[Navbar] Could not resolve user ID for "My Board"', currentUser);
                 setLoginOpen(true);
                 return;
             }
 
             // Fetch this user's stickerboard(s). Limit to first.
-            const sbRes = await fetch(`/api/v1/stickerboards?user=${encodeURIComponent(uid)}&limit=1`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            if (!sbRes.ok) {
-                // If unauthorized, show login; otherwise, just no-op
-                if (sbRes.status === 401) setLoginOpen(true);
+            let board = null;
+            try {
+                const sbResponse = await apiClient.get(`/stickerboards?user=${encodeURIComponent(uid)}&limit=1`);
+                // sbResponse is the body { success: true, data: [...] }
+                // Use a more robust check for the array
+                const boards = sbResponse?.data || (Array.isArray(sbResponse) ? sbResponse : []);
+                board = Array.isArray(boards) ? boards[0] : null;
+            } catch (sbErr) {
+                // If unauthorized, show login
+                if (sbErr.response?.status === 401) {
+                    setLoginOpen(true);
+                } else {
+                    console.error('[Navbar] Failed to fetch user boards:', sbErr.message);
+                }
                 return;
             }
-            const sbData = await sbRes.json();
-            const board = sbData?.data?.[0] || null;
+
             if (!board) {
                 // No board exists yet for user. Route to creation flow.
                 window.location.hash = '#/board/create';
@@ -113,29 +99,16 @@ const Navbar = () => {
             } else {
                 window.location.hash = '#/board';
             }
-        } catch (_) {
-            // Swallow errors to avoid breaking nav; optionally open login
+        } catch (err) {
+            console.error('[Navbar] Unexpected error in handleGoToMyBoard:', err);
         } finally {
             setNavigatingMyBoard(false);
         }
     };
 
     const handleLogout = async () => {
-        try {
-            // Clear any locally stored bearer token
-            localStorage.removeItem('token');
-            // Best-effort request to backend to clear cookie (if used)
-            await fetch('/api/v1/auth/logout', { credentials: 'include' });
-        } catch (_) {
-            // ignore
-        } finally {
-            setUser(null);
-            setMenuOpen(false);
-            // Navigate to a neutral public route so private data is not shown
-            window.location.hash = '#/';
-            // Broadcast a logout event so any views can react immediately
-            try { window.dispatchEvent(new CustomEvent('auth:logout')); } catch (_) {}
-        }
+        setMenuOpen(false);
+        await logout();
     };
 
     const handleLoginSubmit = async (e) => {
@@ -144,46 +117,26 @@ const Navbar = () => {
         setLoginError('');
         setLoggingIn(true);
         try {
-            const res = await fetch('/api/v1/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await res.json().catch(() => ({}));
-
-            if (!res.ok || !data?.success) {
-                throw new Error(data?.error || data?.message || 'Login failed');
-            }
-
-            // Save token locally for Bearer-based auth flows
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-            }
+            const data = await apiClient.post('/auth/login', { email, password });
 
             // Fetch current user to populate menu
-            const token = data.token || localStorage.getItem('token');
-            const meRes = await fetch('/api/v1/auth/me', {
-                method: 'GET',
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-                credentials: 'include'
-            });
-            if (meRes.ok) {
-                const meData = await meRes.json();
-                setUser(meData?.data || null);
+            try {
+                const response = await apiClient.get('/auth/me');
+                const userData = response.data || response;
+                
+                // Centralized login in store
+                login(userData || null, data.token);
+
                 // reset form and close dropdown
                 setEmail('');
                 setPassword('');
                 setLoginOpen(false);
-            } else {
+            } catch (meErr) {
                 // Even if login returned success, if /me fails, treat as error
                 throw new Error('Unable to fetch user profile after login');
             }
         } catch (err) {
-            setLoginError(err.message || 'Login failed');
+            setLoginError(err.response?.data?.error || err.message || 'Login failed');
         } finally {
             setLoggingIn(false);
         }
