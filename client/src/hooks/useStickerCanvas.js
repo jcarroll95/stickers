@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import useImage from "use-image";
+import throttle from "lodash.throttle";
 import apiClient from "../services/apiClient";
 
 /**
@@ -43,6 +44,8 @@ export default function useStickerCanvas({
   const [legacyStickerImage] = useImage("/assets/sticker0.png");
 
   const [isPlacing, setIsPlacing] = useState(false);
+  const [placementStep, setPlacementStep] = useState('POSITION'); // 'POSITION', 'SCALE', 'ROTATE'
+  const [currentPlacement, setCurrentPlacement] = useState(null);
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
 
   // Helper: map stickerId (0..9) to asset path
@@ -50,12 +53,13 @@ export default function useStickerCanvas({
   const isValidStickerId = useCallback((id) => Number.isInteger(id) && id >= 0 && id <= 9, []);
 
   // Internal unified stickers state for controlled mode (optimistic updates)
+  const [internalStickers, setInternalStickers] = useState(Array.isArray(stickers) ? stickers : []);
   const isControlled = Array.isArray(stickers);
-  const [internalStickers, setInternalStickers] = useState(() => (isControlled ? stickers : []));
 
-  useEffect(() => {
-    if (isControlled) setInternalStickers(stickers || []);
-  }, [isControlled, stickers]);
+  // Synchronize internalStickers if stickers prop changes, but avoid cascading renders if same
+  if (isControlled && stickers !== internalStickers && JSON.stringify(stickers) !== JSON.stringify(internalStickers)) {
+    setInternalStickers(stickers);
+  }
 
   // Selection (for controlled mode): which sticker entry (by index in internalStickers) is being placed
   const [placingIndex, setPlacingIndex] = useState(null);
@@ -104,20 +108,19 @@ export default function useStickerCanvas({
 
   // Demo mode persistence
   const storageKey = useMemo(() => `stickerboard:${boardId}:placements`, [boardId]);
-  const [placements, setPlacements] = useState([]);
-
-  useEffect(() => {
-    if (isControlled) return;
+  const [placements, setPlacements] = useState(() => {
+    if (Array.isArray(stickers)) return []; // isControlled
     try {
-      const raw = localStorage.getItem(storageKey);
+      const raw = localStorage.getItem(`stickerboard:${boardId}:placements`);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setPlacements(parsed);
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
-      console.error("[useStickerCanvas] LocalStorage read failed:", e);
+      console.error("[useStickerCanvas] LocalStorage initial read failed:", e);
     }
-  }, [storageKey, isControlled]);
+    return [];
+  });
 
   const persistPlacements = useCallback((next) => {
     if (isControlled) return;
@@ -133,6 +136,10 @@ export default function useStickerCanvas({
     if (isControlled) return;
     const lastPlacement = placements[placements.length - 1];
     if (!lastPlacement) return;
+    
+    // Check if the last placement is actually finished (it won't be in placements until it's finalized)
+    // Actually, in the new flow, the placement is ONLY pushed to placements on the final click.
+    // So finalizeLatestPlacement should still work for the last one in the list.
     
     try {
       const persisted = Array.isArray(persistedStickers) ? persistedStickers : [];
@@ -168,6 +175,8 @@ export default function useStickerCanvas({
   // Handlers
   const enterPlacementMode = useCallback((index) => {
     if (readonly) return;
+    setPlacementStep('POSITION');
+    setCurrentPlacement(null);
     if (isControlled) {
       if (index == null) return;
       setPlacingIndex(index);
@@ -178,16 +187,51 @@ export default function useStickerCanvas({
     }
   }, [isControlled, legacyStickerImage, readonly]);
 
+  const updateHoverPos = useCallback((pos) => {
+    setHoverPos({
+      x: Math.max(0, Math.min(pos.x, boardSize.width)),
+      y: Math.max(0, Math.min(pos.y, boardSize.height))
+    });
+
+    if (isPlacing && currentPlacement) {
+      if (placementStep === 'SCALE') {
+        const dx = pos.x - currentPlacement.x;
+        const dy = pos.y - currentPlacement.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        // Scale is a multiplier of distance. 
+        // We'll use a sensitivity factor so it's intuitive.
+        // If distance is 0, scale is small (or default).
+        // Let's say 100px = 1.0 scale multiplier above default.
+        const scaleMultiplier = Math.max(0.1, dist / 100);
+        setCurrentPlacement(prev => ({ ...prev, scale: prev.baseScale * scaleMultiplier }));
+      } else if (placementStep === 'ROTATE') {
+        const dx = pos.x - currentPlacement.x;
+        const dy = pos.y - currentPlacement.y;
+        // Calculate angle in degrees
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        setCurrentPlacement(prev => ({ ...prev, rotation: angle }));
+      }
+    }
+  }, [boardSize, isPlacing, currentPlacement, placementStep]);
+
+  const throttledUpdateHoverPos = useMemo(
+    () => throttle(updateHoverPos, 16),
+    [updateHoverPos]
+  );
+
+  useEffect(() => {
+    return () => {
+      throttledUpdateHoverPos.cancel();
+    };
+  }, [throttledUpdateHoverPos]);
+
   const onStageMouseMove = useCallback((e) => {
     if (!isPlacing) return;
     const stage = e.target.getStage();
     const pos = stage?.getPointerPosition();
     if (!pos) return;
-    setHoverPos({
-      x: Math.max(0, Math.min(pos.x, boardSize.width)),
-      y: Math.max(0, Math.min(pos.y, boardSize.height))
-    });
-  }, [isPlacing, boardSize]);
+    throttledUpdateHoverPos(pos);
+  }, [isPlacing, throttledUpdateHoverPos]);
 
   const placeSticker = useCallback((e) => {
     if (!isPlacing) return;
@@ -201,11 +245,31 @@ export default function useStickerCanvas({
     if (!withinX || !withinY) {
       setIsPlacing(false);
       setPlacingIndex(null);
+      setPlacementStep('POSITION');
+      setCurrentPlacement(null);
       return;
     }
 
-    const xNorm = pos.x / boardSize.width;
-    const yNorm = pos.y / boardSize.height;
+    if (placementStep === 'POSITION') {
+      setCurrentPlacement({
+        x: pos.x,
+        y: pos.y,
+        baseScale: isControlled ? placingDefaultScale : legacyDefaultScale,
+        scale: isControlled ? placingDefaultScale : legacyDefaultScale,
+        rotation: 0
+      });
+      setPlacementStep('SCALE');
+      return;
+    }
+
+    if (placementStep === 'SCALE') {
+      setPlacementStep('ROTATE');
+      return;
+    }
+
+    // placementStep === 'ROTATE' -> Finalize
+    const xNorm = currentPlacement.x / boardSize.width;
+    const yNorm = currentPlacement.y / boardSize.height;
 
     if (isControlled) {
       if (placingIndex == null || !Array.isArray(internalStickers)) return;
@@ -213,16 +277,16 @@ export default function useStickerCanvas({
       if (!original) return;
 
       const maxZ = internalStickers
-        .filter((s) => s && s.stuck)
-        .reduce((m, s) => (typeof s.zIndex === 'number' ? Math.max(m, s.zIndex) : m), 0);
+          .filter((s) => s && s.stuck)
+          .reduce((m, s) => (typeof s.zIndex === 'number' ? Math.max(m, s.zIndex) : m), 0);
       const nextZ = (Number.isFinite(maxZ) ? maxZ : 0) + 1;
 
       const placedSticker = {
         ...original,
         x: xNorm,
         y: yNorm,
-        scale: placingDefaultScale,
-        rotation: original.rotation || 0,
+        scale: currentPlacement.scale,
+        rotation: currentPlacement.rotation,
         zIndex: nextZ,
         stuck: true,
         createdAt: original.createdAt || new Date().toISOString(),
@@ -232,6 +296,8 @@ export default function useStickerCanvas({
       setInternalStickers(next);
       setIsPlacing(false);
       setPlacingIndex(null);
+      setPlacementStep('POSITION');
+      setCurrentPlacement(null);
 
       if (onPlaceSticker) {
         onPlaceSticker(next, placedSticker, placingIndex);
@@ -241,16 +307,18 @@ export default function useStickerCanvas({
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         xNorm,
         yNorm,
-        scale: legacyDefaultScale,
-        rotation: 0,
+        scale: currentPlacement.scale,
+        rotation: currentPlacement.rotation,
         asset: "/assets/sticker0.png",
       };
       const next = [...placements, placement];
       persistPlacements(next);
       setIsPlacing(false);
+      setPlacementStep('POSITION');
+      setCurrentPlacement(null);
       if (onAddSticker) onAddSticker(placement);
     }
-  }, [isPlacing, boardSize, isControlled, internalStickers, placingIndex, placingDefaultScale, placements, persistPlacements, onAddSticker, legacyDefaultScale, onPlaceSticker]);
+  }, [isPlacing, boardSize, isControlled, internalStickers, placingIndex, placingDefaultScale, placements, persistPlacements, onAddSticker, legacyDefaultScale, onPlaceSticker, placementStep, currentPlacement]);
 
   return {
     bgImage,
@@ -272,5 +340,7 @@ export default function useStickerCanvas({
     placeSticker,
     persistPlacements,
     finalizeLatestPlacement,
+    placementStep,
+    currentPlacement,
   };
 }

@@ -7,13 +7,13 @@ import PropTypes from "prop-types";
  * 
  * @param {Object} props - Component properties
  */
-export default function BoardSidebar({
+const BoardSidebar = ({
   isControlled,
   placements,
   onClear,
   onFinalize,
   canFinalize,
-}) {
+}) => {
   if (isControlled) return null;
 
   return (
@@ -64,3 +64,4 @@ BoardSidebar.propTypes = {
   onFinalize: PropTypes.func.isRequired,
   canFinalize: PropTypes.bool.isRequired,
 };
+export default React.memo(BoardSidebar);

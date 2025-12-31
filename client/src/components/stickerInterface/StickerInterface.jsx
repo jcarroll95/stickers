@@ -37,6 +37,8 @@ export default function StickerInterface(props) {
     placeSticker,
     persistPlacements,
     finalizeLatestPlacement,
+    placementStep,
+    currentPlacement,
   } = useStickerCanvas(props);
 
   return (
@@ -61,6 +63,8 @@ export default function StickerInterface(props) {
         isValidStickerId={isValidStickerId}
         onMouseMove={onStageMouseMove}
         onClick={placeSticker}
+        placementStep={placementStep}
+        currentPlacement={currentPlacement}
       />
 
       {/* Right: Palette and Sidebar controls */}

@@ -1,6 +1,17 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { toast } from 'react-hot-toast';
+
+vi.mock('react-hot-toast', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+  },
+}));
+
 import RegisterVerify from './RegisterVerify';
 import { server } from '../../test/setup';
 import { http, HttpResponse } from 'msw';
@@ -93,7 +104,10 @@ describe('RegisterVerify', () => {
   it('should handle resend code', async () => {
     server.use(
       http.post('*/auth/register-start', () => HttpResponse.json({ success: true })),
-      http.post('*/auth/register-resend', () => HttpResponse.json({ success: true }))
+      http.post('*/auth/register-resend', () => {
+        console.log('MSW: Handling register-resend');
+        return HttpResponse.json({ success: true });
+      })
     );
 
     render(<RegisterVerify />);
@@ -107,6 +121,7 @@ describe('RegisterVerify', () => {
 
     // Wait for the resend button to be available
     const resendBtn = await screen.findByRole('button', { name: /resend code/i });
+    expect(resendBtn).not.toBeDisabled();
     fireEvent.click(resendBtn);
 
     await waitFor(() => {

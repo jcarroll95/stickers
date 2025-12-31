@@ -125,13 +125,14 @@ const Navbar = () => {
                 const userData = response.data || response;
                 
                 // Centralized login in store
-                login(userData || null, data.token);
+                login(userData || null);
 
                 // reset form and close dropdown
                 setEmail('');
                 setPassword('');
                 setLoginOpen(false);
             } catch (meErr) {
+                console.error('[Navbar] Unable to fetch user profile after login:', meErr);
                 // Even if login returned success, if /me fails, treat as error
                 throw new Error('Unable to fetch user profile after login');
             }
@@ -194,36 +195,33 @@ const Navbar = () => {
 
     return (
         <nav className={styles.nav}>
+            <div className={styles.logoContainer} onClick={() => { window.location.hash = '#/'; }}>
+                <img
+                    src="/assets/stickerboards_star_fixed.png"
+                    alt="Stickerboards Logo"
+                    className={styles.logoImage}
+                />
+            </div>
 
             <ul className={styles.navLinks}>
-                <li
-                    className={styles.link}
-                    role="button"
-                    tabIndex={0}
-                    aria-disabled={navigatingMyBoard}
-                    onClick={handleGoToMyBoard}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleGoToMyBoard();
-                        }
-                    }}
-                >
-                    {navigatingMyBoard ? 'My Board…' : 'My Board'}
+                <li>
+                    <button
+                        type="button"
+                        className={styles.link}
+                        disabled={navigatingMyBoard}
+                        onClick={handleGoToMyBoard}
+                    >
+                        {navigatingMyBoard ? 'My Board…' : 'My Board'}
+                    </button>
                 </li>
-                <li
-                    className={styles.link}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => { window.location.hash = '#/explore'; }}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            window.location.hash = '#/explore';
-                        }
-                    }}
-                >
-                    Explore
+                <li>
+                    <button
+                        type="button"
+                        className={styles.link}
+                        onClick={() => { window.location.hash = '#/explore'; }}
+                    >
+                        Explore
+                    </button>
                 </li>
                 <li className={styles.link}>Cheer!</li>
                 <li className={styles.link}>Developer Docs</li>
@@ -293,22 +291,15 @@ const Navbar = () => {
                     </>
                 ) : (
                     <div className={styles.userMenu} ref={userMenuRef}>
-                        <div
+                        <button
+                            type="button"
                             className={styles.userName}
-                            role="button"
-                            tabIndex={0}
                             aria-expanded={menuOpen}
                             aria-controls="user-dropdown"
                             onClick={() => setMenuOpen((v) => !v)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    setMenuOpen((v) => !v);
-                                }
-                            }}
                         >
                             {user.name || 'User'}
-                        </div>
+                        </button>
                         {menuOpen && (
                             <div id="user-dropdown" className={styles.dropdown}>
                                 <a
@@ -323,6 +314,12 @@ const Navbar = () => {
                                     {navigatingMyBoard ? 'My Board…' : 'My Board'}
                                 </a>
                                 <a className={styles.dropdownItem} href="#/settings">Settings</a>
+                                {user?.role === 'admin' && (
+                                    <>
+                                        <a className={styles.dropdownItem} href="#/admin/metrics">Admin Metrics</a>
+                                        <a className={styles.dropdownItem} href="#/admin/users">User Manager</a>
+                                    </>
+                                )}
                                 <button className={styles.dropdownItemButton} onClick={handleLogout}>Logout</button>
                             </div>
                         )}

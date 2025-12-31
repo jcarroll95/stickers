@@ -29,6 +29,14 @@ describe('BoardView', () => {
   });
 
   it('should render loading state', () => {
+    server.use(
+      http.get('*/stickerboards/test-board', () => {
+        return new Promise(() => {}); // never resolves
+      }),
+      http.get('*/auth/me', () => {
+        return HttpResponse.json({ success: true, data: { id: 'owner-id' } });
+      })
+    );
     render(<BoardView token="test-board" />);
     expect(screen.getByText(/loading board…/i)).toBeInTheDocument();
   });
@@ -98,6 +106,9 @@ describe('BoardView', () => {
       }),
       http.get('*/stickerboards', () => {
         return HttpResponse.json({ success: true, data: [] });
+      }),
+      http.get('*/auth/me', () => {
+        return HttpResponse.json({ success: true, data: { id: 'owner-id' } });
       })
     );
 

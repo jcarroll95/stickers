@@ -7,13 +7,23 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     const reqQuery = { ...req.query };
 
     // Array of Fields to exclude when filtering
-    const removeFields = ['select', 'sort', 'page', 'limit'];
+    const removeFields = ['select', 'sort', 'page', 'limit', 'search'];
 
     // Loop over removeFields and delete them from reqQuery so we aren't searching the DB for 'select'
     removeFields.forEach(param => delete reqQuery[param]);
 
+    // Handle search if present
+    let filter = JSON.parse(JSON.stringify(reqQuery));
+    if (req.query.search) {
+        const searchRegex = { $regex: req.query.search, $options: 'i' };
+        filter.$or = [
+            { name: searchRegex },
+            { email: searchRegex }
+        ];
+    }
+
     // Create query string against the SANITIZED version of reqQuery so we don't re-insert the removed fields
-    let queryStr = JSON.stringify(reqQuery);
+    let queryStr = JSON.stringify(filter);
 
     // regex goes between //s, \b word boundary, /g global
     // Create comparison operators we can pass to mongoose
@@ -46,6 +56,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     const startIndex = (page - 1) * limit;                      // which result to start listing on this page
     const endIndex = page * limit;                              // last result
     const total = await model.countDocuments(JSON.parse(queryStr));
+    const totalPages = Math.ceil(total / limit);
 
     // mongoose .skip() means skips this number of results before returning results
     // .limit() means restrict the number of documents returned by this query
@@ -59,7 +70,10 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     const results = await query;
 
     // Pagination result object
-    const pagination = {}
+    const pagination = {
+        total,
+        totalPages
+    }
 
     if (endIndex < total) {
         pagination.next = {
