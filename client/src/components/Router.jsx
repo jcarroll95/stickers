@@ -1,17 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import StickerboardsDemo from '../StickerboardsDemo.jsx';
 import BoardView from './board/BoardView.jsx';
 import Explore from './explore/Explore.jsx';
 import RegisterVerify from './auth/RegisterVerify.jsx';
 import CreateStickerboard from './board/CreateStickerboard.jsx';
+import useAuthStore from '../store/authStore';
 
-// Tiny hash-based router. It listens to window.location.hash and renders
-// the correct view. Routes supported:
-// - #/board                 → list of boards (StickerboardsDemo)
-// - #/board/:token          → a specific board by id or slug (BoardView)
-// - otherwise               → simple home message
+/**
+ * Router Component
+ * Tiny hash-based router. It listens to window.location.hash and renders
+ * the correct view.
+ * 
+ * Routes supported:
+ * - #/board                 → list of boards (StickerboardsDemo)
+ * - #/board/:token          → a specific board by id or slug (BoardView)
+ * - #/explore               → public gallery
+ * - #/register              → registration flow
+ * - otherwise               → simple home message
+ */
 export default function Router() {
   const [hash, setHash] = useState(() => window.location.hash || '#/');
+  const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     const onHashChange = () => setHash(window.location.hash || '#/');
@@ -60,8 +70,7 @@ export default function Router() {
 
   if (first === 'board' && second === 'create') {
     // #/board/create — requires auth
-    const hasToken = !!localStorage.getItem('token');
-    if (!hasToken) {
+    if (!isAuthenticated) {
       if (window.location.hash !== '#/') {
         window.location.hash = '#/';
       }
@@ -72,8 +81,7 @@ export default function Router() {
 
   if (first === 'board' && second) {
     // #/board/:token — require auth token to view a private board
-    const hasToken = !!localStorage.getItem('token');
-    if (!hasToken) {
+    if (!isAuthenticated) {
       // Redirect unauthenticated users to default public route
       if (window.location.hash !== '#/') {
         window.location.hash = '#/';
@@ -87,6 +95,9 @@ export default function Router() {
   return <NotFound hash={hash} />;
 }
 
+/**
+ * Home Component
+ */
 function Home() {
   return (
     <div style={{ padding: '1rem' }}>
@@ -96,6 +107,9 @@ function Home() {
   );
 }
 
+/**
+ * NotFound Component
+ */
 function NotFound({ hash }) {
   return (
     <div style={{ padding: '1rem' }}>
@@ -104,3 +118,7 @@ function NotFound({ hash }) {
     </div>
   );
 }
+
+NotFound.propTypes = {
+  hash: PropTypes.string.isRequired,
+};

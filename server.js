@@ -37,6 +37,7 @@ const reviews = require('./routes/reviews');
 const app = express();
 
 // Body parser middleware which lets our methods access json data in req.body
+// original body parser no longer needed
 app.use(express.json());
 
 

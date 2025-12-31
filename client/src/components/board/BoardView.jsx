@@ -1,13 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import StickerInterface from '../stickerInterface/StickerInterface.jsx'
 import AddStickForm from '../stix/AddStickForm.jsx';
 import styles from './BoardView.module.css';
 import ReviewList from '../reviews/ReviewList.jsx';
 import AddReviewForm from '../reviews/AddReviewForm.jsx';
-// Displays a specific stickerboard given a token (id or slug).
-// Fetch strategy:
-// 1) Try GET /api/v1/stickerboards/:token (works for MongoDB ObjectId)
-// 2) If 404, try GET /api/v1/stickerboards?slug=:token&limit=1 (slug lookup)
+import apiClient from '../../services/apiClient';
+
+/**
+ * BoardView Component
+ * Displays a specific stickerboard given a token (id or slug).
+ * 
+ * @param {Object} props - Component properties
+ * @param {string} props.token - The board ID or slug to fetch
+ */
 export default function BoardView({ token }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -19,18 +25,10 @@ export default function BoardView({ token }) {
   // Fetch the current logged-in user (to determine ownership)
   const loadMe = useCallback(async () => {
     try {
-      const tokenStr = localStorage.getItem('token');
-      const res = await fetch('/api/v1/auth/me', {
-        method: 'GET',
-        headers: tokenStr ? { 'Authorization': `Bearer ${tokenStr}` } : {},
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        setMe(null);
-        return;
-      }
-      const json = await res.json();
-      setMe(json?.data || null);
+      const response = await apiClient.get('/auth/me');
+      // apiClient.get returns response.data
+      const userData = response.data || response;
+      setMe(userData || null);
     } catch (_) {
       setMe(null);
     }
@@ -43,36 +41,22 @@ export default function BoardView({ token }) {
       setError('');
       setBoard(null);
 
-      const tokenStr = localStorage.getItem('token');
-      const authHeader = tokenStr ? { Authorization: `Bearer ${tokenStr}` } : {};
-
       // First attempt: treat token as an id
-      const res = await fetch(`/api/v1/stickerboards/${encodeURIComponent(token)}`, {
-        headers: { 'Accept': 'application/json', ...authHeader },
-        credentials: 'include'
-      });
-
-      if (res.ok) {
-        const json = await res.json();
-        if (!cancelled) setBoard(json?.data || null);
-      } else if (res.status === 404) {
-        // Fallback: try slug query
-        const q = await fetch(`/api/v1/stickerboards?slug=${encodeURIComponent(token)}&limit=1`, {
-          headers: { 'Accept': 'application/json', ...authHeader },
-          credentials: 'include'
-        });
-
-        if (!q.ok) {
-          const text = await q.text();
-          throw new Error(`HTTP ${q.status}: ${text}`);
+      try {
+        const response = await apiClient.get(`/stickerboards/${encodeURIComponent(token)}`);
+        const boardData = response.data || response;
+        if (!cancelled) setBoard(boardData || null);
+      } catch (err) {
+        if (err.response?.status === 404) {
+          // Fallback: try slug query
+          const qResponse = await apiClient.get(`/stickerboards?slug=${encodeURIComponent(token)}&limit=1`);
+          // advancedResults returns { success: true, count: X, data: [...] }
+          const list = qResponse.data || qResponse;
+          const first = Array.isArray(list) ? list[0] : (list?.data?.[0] || null);
+          if (!cancelled) setBoard(first);
+        } else {
+          throw err;
         }
-
-        const list = await q.json();
-        const first = list?.data?.[0] || null;
-        if (!cancelled) setBoard(first);
-      } else {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
       }
     } catch (err) {
       setError(err.message || String(err));
@@ -118,7 +102,7 @@ export default function BoardView({ token }) {
   if (!board) return <p className={styles.container}>No board found.</p>;
 
   // Determine ownership
-  const meId = me?.__id || me?._id || me?.id || me?.data?.__id || me?.data?._id || me?.data?.id || null;
+  const meId = me?._id || me?.id || me?.data?._id || me?.data?.id || me?.__id || null;
   const boardUser = board?.user;
   const boardOwnerId = typeof boardUser === 'string' ? boardUser : (boardUser?._id || boardUser?.id || null);
   const isOwner = !!(meId && boardOwnerId && String(meId) === String(boardOwnerId));
@@ -181,22 +165,9 @@ export default function BoardView({ token }) {
               {...sharedProps}
               onPlaceSticker={async (next /* full array */, placed, index) => {
                 try {
-                  const tokenStr = localStorage.getItem('token');
-                  const headers = {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    ...(tokenStr ? { Authorization: `Bearer ${tokenStr}` } : {}),
-                  };
-                  const res = await fetch(`/api/v1/stickerboards/${encodeURIComponent(board._id || board.id)}`, {
-                    method: 'PUT',
-                    headers,
-                    credentials: 'include',
-                    body: JSON.stringify({ stickers: next }),
+                  await apiClient.put(`/stickerboards/${encodeURIComponent(board._id || board.id)}`, {
+                    stickers: next
                   });
-                  if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(`HTTP ${res.status}: ${text}`);
-                  }
                   try {
                     window.dispatchEvent(new CustomEvent('stickerboard:finalized', { detail: { boardId: board._id || board.id, sticker: placed, index } }));
                   } catch (_) {
@@ -204,28 +175,16 @@ export default function BoardView({ token }) {
                   }
                   await loadBoard();
                 } catch (err) {
+                  const errorMsg = err.response?.data?.error || err.message || String(err);
                   // eslint-disable-next-line no-alert
-                  alert(`Failed to save sticker placement: ${err.message || String(err)}`);
+                  alert(`Failed to save sticker placement: ${errorMsg}`);
                 }
               }}
               onClearStickers={async (next /* full array with stuck=false */) => {
                 try {
-                  const tokenStr = localStorage.getItem('token');
-                  const headers = {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    ...(tokenStr ? { Authorization: `Bearer ${tokenStr}` } : {}),
-                  };
-                  const res = await fetch(`/api/v1/stickerboards/${encodeURIComponent(board._id || board.id)}`, {
-                    method: 'PUT',
-                    headers,
-                    credentials: 'include',
-                    body: JSON.stringify({ stickers: next }),
+                  await apiClient.put(`/stickerboards/${encodeURIComponent(board._id || board.id)}`, {
+                    stickers: next
                   });
-                  if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(`HTTP ${res.status}: ${text}`);
-                  }
                   try {
                     window.dispatchEvent(new CustomEvent('stickerboard:cleared', { detail: { boardId: board._id || board.id } }));
                   } catch (_) {
@@ -233,8 +192,9 @@ export default function BoardView({ token }) {
                   }
                   await loadBoard();
                 } catch (err) {
+                  const errorMsg = err.response?.data?.error || err.message || String(err);
                   // eslint-disable-next-line no-alert
-                  alert(`Failed to clear stickers: ${err.message || String(err)}`);
+                  alert(`Failed to clear stickers: ${errorMsg}`);
                 }
               }}
             />
@@ -348,3 +308,7 @@ export default function BoardView({ token }) {
     </div>
   );
 }
+
+BoardView.propTypes = {
+  token: PropTypes.string.isRequired,
+};

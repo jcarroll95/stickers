@@ -1,8 +1,14 @@
 import React, { useMemo } from 'react';
+import PropTypes from 'prop-types';
 import StickerInterface from '../stickerInterface/StickerInterface.jsx';
 
-// Read-only thumbnail rendering of a stickerboard using StickerInterface.
-// Long edge is capped at 300px for compact grid display.
+/**
+ * ThumbnailBoard Component
+ * Read-only thumbnail rendering of a stickerboard.
+ * 
+ * @param {Object} props - Component properties
+ * @param {Object} props.board - The stickerboard object to render
+ */
 export default function ThumbnailBoard({ board }) {
   const boardSrc = useMemo(() => {
     const p = String(board?.photo || '').trim();
@@ -25,3 +31,12 @@ export default function ThumbnailBoard({ board }) {
     </div>
   );
 }
+
+ThumbnailBoard.propTypes = {
+  board: PropTypes.shape({
+    _id: PropTypes.string,
+    id: PropTypes.string,
+    photo: PropTypes.string,
+    stickers: PropTypes.arrayOf(PropTypes.object),
+  }).isRequired,
+};

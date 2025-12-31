@@ -1,20 +1,22 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import styles from './AddStickForm.module.css';
+import apiClient from '../../services/apiClient';
 
 // Options per Stick schema enums
 const STICK_LOCATIONS = ['Stomach', 'Arm', 'Thigh', 'Other'];
 const STICK_LOC_MODS = ['Left', 'Right', 'Upper', 'Upper Left', 'Upper Right', 'Lower', 'Lower Left', 'Lower Right'];
 
 /**
- * AddStickForm
+ * AddStickForm Component
  * A controlled form for creating a new Stick on a given Stickerboard.
- *
- * Props:
- * - boardId: string (required) — Stickerboard _id to attach the new stick to
- * - onCreated: function(stick) — called with the created stick on success
- * - onCancel: function() — called if user clicks cancel
- * - title: string — optional heading for the form
+ * 
+ * @param {Object} props - Component properties
+ * @param {string|number} props.boardId - Stickerboard ID to attach the new stick to
+ * @param {Function} [props.onCreated] - Called with the created stick on success
+ * @param {Function} [props.onCancel] - Called if user clicks cancel
+ * @param {string} [props.title='Add a new Stick'] - Heading for the form
+ * @param {number} [props.nextStickNumber] - The number to assign to the new stick
  */
 export default function AddStickForm({ boardId, onCreated, onCancel, title = 'Add a new Stick', nextStickNumber }) {
   const [values, setValues] = useState({
@@ -86,13 +88,6 @@ export default function AddStickForm({ boardId, onCreated, onCancel, title = 'Ad
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const token = localStorage.getItem('token');
-      const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      };
-
       // Convert date/time to ISO-ish fields if provided
       const body = { ...values };
       if (values.userDate) {
@@ -116,24 +111,10 @@ export default function AddStickForm({ boardId, onCreated, onCancel, title = 'Ad
         if (body[k] === '' || body[k] == null) delete body[k];
       });
 
-      const res = await fetch(`/api/v1/stix/${encodeURIComponent(boardId)}`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify(body),
-      });
+      const response = await apiClient.post(`/stix/${encodeURIComponent(boardId)}`, body);
 
-      if (!res.ok) {
-        let message = `Failed to create stick (HTTP ${res.status})`;
-        try {
-          const t = await res.text();
-          if (t) message += `: ${t}`;
-        } catch (_) {}
-        throw new Error(message);
-      }
-
-      const json = await res.json();
-      const created = json?.data;
+      // apiClient interceptor returns response.data
+      const created = response.data || response;
       setStatus({ type: 'success', message: 'Stick created successfully.' });
       if (onCreated) onCreated(created);
       // Optionally reset fields except some defaults
@@ -148,7 +129,8 @@ export default function AddStickForm({ boardId, onCreated, onCancel, title = 'Ad
         // keep dose, cost, location selections as-is for faster consecutive entries
       }));
     } catch (err) {
-      setStatus({ type: 'error', message: err.message || String(err) });
+      const errorMsg = err.response?.data?.error || err.message || String(err);
+      setStatus({ type: 'error', message: errorMsg });
     } finally {
       setSubmitting(false);
     }

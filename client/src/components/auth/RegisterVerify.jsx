@@ -1,7 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import styles from './RegisterVerify.module.css';
+import apiClient from '../../services/apiClient';
 
-// Two-step registration: 1) email+password, 2) code verification
+/**
+ * RegisterVerify Component
+ * Handles the two-step registration flow:
+ * 1) Identity details (email, password, name)
+ * 2) Email verification via code
+ * 
+ * @param {Object} props - Component properties
+ * @param {Function} [props.onSuccess] - Callback when registration/verification is complete
+ * @param {string} [props.mode] - 'verify' to jump straight to code entry
+ * @param {string} [props.initialEmail] - Pre-fill email field
+ */
 export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
   const isVerifyMode = mode === 'verify';
   const [step, setStep] = useState(1);
@@ -48,7 +60,9 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
       setMessage(`We found a pending verification for ${data.email}. Enter the code from your email.`);
       // focus code box shortly after paint
       setTimeout(() => inputsRef.current[0]?.focus(), 0);
-    } catch {}
+    } catch (e) {
+      console.warn('[RegisterVerify] Failed to restore pending registration:', e);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -93,18 +107,12 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
     setMessage('');
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/auth/register-start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password, name }),
+      await apiClient.post('/auth/register-start', { 
+        email: email.trim().toLowerCase(), 
+        password, 
+        name 
       });
-      const ok = res.ok;
-      if (!ok) {
-        let text = '';
-        try { text = await res.text(); } catch {}
-        throw new Error(text || `HTTP ${res.status}`);
-      }
+
       setStep(2);
       setMessage('If that email is eligible, a verification code has been sent.');
       setCooldown(60);
@@ -118,11 +126,13 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
           cooldownUntil: now + 60 * 1000,
         };
         localStorage.setItem(PENDING_KEY, JSON.stringify(payload));
-      } catch {}
+      } catch (e) {
+        console.warn('[RegisterVerify] Failed to persist pending registration:', e);
+      }
       // focus first code box
       setTimeout(() => inputsRef.current[0]?.focus(), 0);
     } catch (err) {
-      setError(err.message || 'Failed to start registration');
+      setError(err.response?.data?.error || err.message || 'Failed to start registration');
     } finally {
       setLoading(false);
     }
@@ -134,61 +144,55 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
     setMessage('');
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/auth/register-verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: email.trim().toLowerCase(), code: codeStr }),
+      const data = await apiClient.post('/auth/register-verify', {
+        email: email.trim().toLowerCase(),
+        code: codeStr
       });
-      const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.success || !data?.token) {
-        throw new Error(data?.error || 'Invalid or expired code');
+
+      if (!data?.success || !data?.token) {
+        throw new Error('Invalid or expired code');
       }
+
       // store token like login does
-      try { localStorage.setItem('token', data.token); } catch {}
+      localStorage.setItem('token', data.token);
+
       // Clear pending registration on success
-      try { localStorage.removeItem(PENDING_KEY); } catch {}
+      localStorage.removeItem(PENDING_KEY);
+
       setMessage('Verification successful!');
       if (onSuccess) onSuccess(data);
 
       // After verification, check if user already has a stickerboard.
       // If not, route to creation page before first board view.
       try {
-        const token = data.token || localStorage.getItem('token');
         // Get current user
-        const meRes = await fetch('/api/v1/auth/me', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          credentials: 'include'
-        });
-        const me = await meRes.json().catch(() => ({}));
-        const uid = me?.data?.__id || me?.data?._id || me?.data?.id || null;
+        const response = await apiClient.get('/auth/me');
+        const userData = response.data || response;
+        const uid = userData?._id || userData?.id || null;
 
         if (uid) {
-          const sbRes = await fetch(`/api/v1/stickerboards?user=${encodeURIComponent(uid)}&limit=1`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-            credentials: 'include'
-          });
-          if (sbRes.ok) {
-            const sb = await sbRes.json().catch(() => ({}));
-            const board = sb?.data?.[0] || null;
-            if (!board) {
-              window.location.hash = '#/board/create';
-              return;
-            }
-            const boardToken = board.slug || board._id || board.id;
-            if (boardToken) {
-              window.location.hash = `#/board/${boardToken}`;
-              return;
-            }
+          const sbResponse = await apiClient.get(`/stickerboards?user=${encodeURIComponent(uid)}&limit=1`);
+          const boards = sbResponse.data || sbResponse;
+          const board = Array.isArray(boards) ? boards[0] : null;
+
+          if (!board) {
+            window.location.hash = '#/board/create';
+            return;
+          }
+          const boardToken = board.slug || board._id || board.id;
+          if (boardToken) {
+            window.location.hash = `#/board/${boardToken}`;
+            return;
           }
         }
         // Fallback
         window.location.hash = '#/board';
-      } catch (_) {
+      } catch (innerErr) {
+        console.error('[RegisterVerify] Error during post-verification routing:', innerErr);
         window.location.hash = '#/board';
       }
     } catch (err) {
-      setError(err.message || 'Verification failed');
+      setError(err.response?.data?.error || err.message || 'Verification failed');
     } finally {
       setLoading(false);
     }
@@ -201,17 +205,10 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
     setMessage('');
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/auth/register-resend', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      await apiClient.post('/auth/register-resend', { 
+        email: email.trim().toLowerCase() 
       });
-      if (!res.ok) {
-        let text = '';
-        try { text = await res.text(); } catch {}
-        throw new Error(text || `HTTP ${res.status}`);
-      }
+
       setMessage('If the email is eligible, a new code has been sent.');
       setCooldown(60);
       // Update persisted cooldown (and optionally extend expiry if your backend resets it)
@@ -223,9 +220,11 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
         payload.cooldownUntil = now + 60 * 1000;
         // optionally: payload.expiresAt = Math.max(payload.expiresAt || 0, now + 15*60*1000);
         localStorage.setItem(PENDING_KEY, JSON.stringify(payload));
-      } catch {}
+      } catch (e) {
+        console.warn('[RegisterVerify] Failed to persist resend metadata:', e);
+      }
     } catch (err) {
-      setError(err.message || 'Unable to resend code');
+      setError(err.response?.data?.error || err.message || 'Unable to resend code');
     } finally {
       setLoading(false);
     }
@@ -288,7 +287,9 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
                 className={styles.linkButton}
                 onClick={(e) => {
                   e.preventDefault();
-                  try { localStorage.removeItem(PENDING_KEY); } catch {}
+                  try { localStorage.removeItem(PENDING_KEY); } catch (err) {
+                    console.warn('[RegisterVerify] Failed to remove pending key:', err);
+                  }
                   setStep(1);
                 }}
               >
@@ -335,6 +336,7 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
               className={styles.buttonSecondary}
               onClick={resendCode}
               disabled={cooldown > 0 || loading || (isVerifyMode && !emailValid)}
+              aria-label="Resend code"
             >
               {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
             </button>
@@ -349,3 +351,9 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
     </div>
   );
 }
+
+RegisterVerify.propTypes = {
+  onSuccess: PropTypes.func,
+  mode: PropTypes.oneOf(['verify']),
+  initialEmail: PropTypes.string,
+};
