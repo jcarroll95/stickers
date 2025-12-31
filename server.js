@@ -31,7 +31,7 @@ const stickerboard = require('./routes/stickerboard');
 const stick = require('./routes/stix');
 const auth = require('./routes/auth');
 const users = require('./routes/users');
-const reviews = require('./routes/reviews');
+const comments = require('./routes/comments');
 const admin = require('./routes/admin');
 const { performanceMiddleware } = require('./middleware/performance');
 
@@ -90,7 +90,7 @@ app.use('/api/v1/stickerboards', stickerboard); // connecting our route to the f
 app.use('/api/v1/stix', stick);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/auth/users', users);
-app.use('/api/v1/reviews', reviews)
+app.use('/api/v1/comments', comments)
 app.use('/api/v1/admin', admin);
 
 // helmet

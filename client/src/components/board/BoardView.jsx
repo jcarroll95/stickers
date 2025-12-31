@@ -5,8 +5,8 @@ import DOMPurify from 'dompurify';
 import StickerInterface from '../stickerInterface/StickerInterface.jsx'
 import AddStickForm from '../stix/AddStickForm.jsx';
 import styles from './BoardView.module.css';
-import ReviewList from '../reviews/ReviewList.jsx';
-import AddReviewForm from '../reviews/AddReviewForm.jsx';
+import CommentList from '../comments/CommentList.jsx';
+import AddCommentForm from '../comments/AddCommentForm.jsx';
 import apiClient from '../../services/apiClient';
 import LoadingSpinner from '../common/LoadingSpinner.jsx';
 import { parseError } from '../../utils/errorUtils';
@@ -24,7 +24,7 @@ export default function BoardView({ token }) {
   const [board, setBoard] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [me, setMe] = useState(null);
-  const [reviewsVersion, setReviewsVersion] = useState(0); // bump to refresh list after add
+  const [commentsVersion, setCommentsVersion] = useState(0); // bump to refresh list after add
 
   // Fetch the current logged-in user (to determine ownership)
   const loadMe = useCallback(async () => {
@@ -303,17 +303,17 @@ export default function BoardView({ token }) {
         </div>
       )}
 
-      {/* Non-owner: Reviews section */}
+      {/* Non-owner: Comments section */}
       {!isOwner && (
         <section style={{ marginTop: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ margin: 0 }}>Reviews</h2>
-            <AddReviewForm
+            <h2 style={{ margin: 0 }}>Comments</h2>
+            <AddCommentForm
               boardId={board._id || board.id}
-              onSubmitted={() => setReviewsVersion((v) => v + 1)}
+              onSubmitted={() => setCommentsVersion((v) => v + 1)}
             />
           </div>
-          <ReviewList key={`reviews-${reviewsVersion}`} boardId={board._id || board.id} />
+          <CommentList key={`comments-${commentsVersion}`} boardId={board._id || board.id} />
         </section>
       )}
 

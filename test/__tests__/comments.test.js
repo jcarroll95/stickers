@@ -18,19 +18,19 @@ async function createBoard(token, { name, description } = {}) {
   return res.body.data;
 }
 
-describe('Reviews controller', () => {
-  test('add review and list nested reviews for a board', async () => {
-    const token = await registerAndLogin({ email: 'reviewer@example.com' });
-    const board = await createBoard(token, { name: `Board-R-${Date.now()}`, description: 'desc' });
+describe('Comments controller', () => {
+  test('add comment and list nested comments for a board', async () => {
+    const token = await registerAndLogin({ email: 'commenter@example.com' });
+    const board = await createBoard(token, { name: `Board-C-${Date.now()}`, description: 'desc' });
 
     await request(app)
-      .post(`/api/v1/stickerboards/${board._id}/reviews`)
+      .post(`/api/v1/stickerboards/${board._id}/comments`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ comment: 'Nice board', reviewRating: 5 })
+      .send({ comment: 'Nice board', commentRating: 5 })
       .expect(201);
 
     const list = await request(app)
-      .get(`/api/v1/stickerboards/${board._id}/reviews`)
+      .get(`/api/v1/stickerboards/${board._id}/comments`)
       .expect(200);
 
     expect(list.body.success).toBe(true);
@@ -39,20 +39,20 @@ describe('Reviews controller', () => {
     expect(list.body.data[0].comment).toBe('Nice board');
   });
 
-  test('non-owner cannot update another user\'s review (401)', async () => {
-    const ownerToken = await registerAndLogin({ email: 'reviewowner@example.com' });
-    const intruderToken = await registerAndLogin({ email: 'reviewintruder@example.com' });
-    const board = await createBoard(ownerToken, { name: `Board-R2-${Date.now()}`, description: 'desc' });
+  test('non-owner cannot update another user\'s comment (401)', async () => {
+    const ownerToken = await registerAndLogin({ email: 'commentowner@example.com' });
+    const intruderToken = await registerAndLogin({ email: 'commentintruder@example.com' });
+    const board = await createBoard(ownerToken, { name: `Board-C2-${Date.now()}`, description: 'desc' });
 
     const created = await request(app)
-      .post(`/api/v1/stickerboards/${board._id}/reviews`)
+      .post(`/api/v1/stickerboards/${board._id}/comments`)
       .set('Authorization', `Bearer ${ownerToken}`)
-      .send({ comment: 'Owner review', reviewRating: 4 })
+      .send({ comment: 'Owner comment', commentRating: 4 })
       .expect(201);
-    const reviewId = created.body.data._id;
+    const commentId = created.body.data._id;
 
     await request(app)
-      .put(`/api/v1/reviews/${reviewId}`)
+      .put(`/api/v1/comments/${commentId}`)
       .set('Authorization', `Bearer ${intruderToken}`)
       .send({ comment: 'Hacked' })
       .expect(401);

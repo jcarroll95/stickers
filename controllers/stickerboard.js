@@ -38,7 +38,7 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
     console.log(queryStr);
 
     // Find the resource now that queryStr has been massaged to work for the mongoose method
-    query = Stickerboard.find(JSON.parse(queryStr)).populate('stix');
+    query = Stickerboard.find(JSON.parse(queryStr)).populate('stix').populate('comments');
 
     // Sort the query with default by created date descending
     if (req.query.sort) {
@@ -99,7 +99,7 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
 // @route GET /api/v1/stickerboards/:id
 // @access Public
 exports.getStickerboard = asyncHandler(async (req, res, next) => {
-        const stickerboard = await Stickerboard.findById(req.params.id);
+        const stickerboard = await Stickerboard.findById(req.params.id).populate('stix').populate('comments');
 
         // since we're looking for a specific ID, it's possible that one doesn't exist
         // if it doesn't exist then stickerboard will be empty

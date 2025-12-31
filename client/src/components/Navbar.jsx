@@ -313,7 +313,13 @@ const Navbar = () => {
                                 >
                                     {navigatingMyBoard ? 'My Board…' : 'My Board'}
                                 </a>
-                                <a className={styles.dropdownItem} href="#/settings">Settings</a>
+                                <a
+                                    className={styles.dropdownItem}
+                                    href="#/settings"
+                                    onClick={() => setMenuOpen(false)}
+                                >
+                                    Settings
+                                </a>
                                 {user?.role === 'admin' && (
                                     <>
                                         <a className={styles.dropdownItem} href="#/admin/metrics">Admin Metrics</a>

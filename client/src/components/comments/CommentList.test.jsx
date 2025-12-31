@@ -1,33 +1,33 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import ReviewList from './ReviewList';
+import CommentList from './CommentList';
 import { server } from '../../test/setup';
 import { http, HttpResponse } from 'msw';
 
-describe('ReviewList', () => {
+describe('CommentList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('should render loading state initially', () => {
-    render(<ReviewList boardId="123" />);
-    expect(screen.getByText(/loading reviews…/i)).toBeInTheDocument();
+    render(<CommentList boardId="123" />);
+    expect(screen.getByText(/loading comments…/i)).toBeInTheDocument();
   });
 
-  it('should render list of reviews on success', async () => {
-    const mockReviews = [
-      { _id: 'r1', comment: 'Great board!', reviewRating: 5, createdAt: new Date().toISOString(), belongsToUser: { name: 'User 1' } },
-      { _id: 'r2', comment: 'Nice colors', reviewRating: 4, createdAt: new Date().toISOString(), belongsToUser: { name: 'User 2' } },
+  it('should render list of comments on success', async () => {
+    const mockComments = [
+      { _id: 'r1', comment: 'Great board!', commentRating: 5, createdAt: new Date().toISOString(), belongsToUser: { name: 'User 1' } },
+      { _id: 'r2', comment: 'Nice colors', commentRating: 4, createdAt: new Date().toISOString(), belongsToUser: { name: 'User 2' } },
     ];
 
     server.use(
-      http.get('*/stickerboards/123/reviews', () => {
-        return HttpResponse.json({ success: true, data: mockReviews });
+      http.get('*/stickerboards/123/comments', () => {
+        return HttpResponse.json({ success: true, data: mockComments });
       })
     );
 
-    render(<ReviewList boardId="123" />);
+    render(<CommentList boardId="123" />);
 
     await waitFor(() => {
       expect(screen.getByText('Great board!')).toBeInTheDocument();
@@ -37,28 +37,28 @@ describe('ReviewList', () => {
     });
   });
 
-  it('should show message if no reviews exist', async () => {
+  it('should show message if no comments exist', async () => {
     server.use(
-      http.get('*/stickerboards/123/reviews', () => {
+      http.get('*/stickerboards/123/comments', () => {
         return HttpResponse.json({ success: true, data: [] });
       })
     );
 
-    render(<ReviewList boardId="123" />);
+    render(<CommentList boardId="123" />);
 
     await waitFor(() => {
-      expect(screen.getByText(/no reviews yet/i)).toBeInTheDocument();
+      expect(screen.getByText(/no comments yet/i)).toBeInTheDocument();
     });
   });
 
   it('should show error message if fetch fails', async () => {
     server.use(
-      http.get('*/stickerboards/123/reviews', () => {
+      http.get('*/stickerboards/123/comments', () => {
         return HttpResponse.json({ success: false, error: 'Fetch failed' }, { status: 500 });
       })
     );
 
-    render(<ReviewList boardId="123" />);
+    render(<CommentList boardId="123" />);
 
     await waitFor(() => {
       expect(screen.getByText(/error: fetch failed/i)).toBeInTheDocument();
