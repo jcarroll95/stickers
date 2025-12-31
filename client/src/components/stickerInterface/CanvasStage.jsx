@@ -33,14 +33,16 @@ const StickerSprite = React.memo(({ entry, boardSize, displayLongEdge, getSticke
 
   const halfW = (img?.width || 0) * scale * 0.5;
   const halfH = (img?.height || 0) * scale * 0.5;
-  const x = (entry.x || 0) * boardSize.width - halfW;
-  const y = (entry.y || 0) * boardSize.height - halfH;
+  const x = (entry.x || 0) * boardSize.width;
+  const y = (entry.y || 0) * boardSize.height;
 
   return (
     <KonvaImage
       image={img}
       x={x}
       y={y}
+      offsetX={img?.width ? img.width / 2 : 0}
+      offsetY={img?.height ? img.height / 2 : 0}
       scaleX={scale}
       scaleY={scale}
       rotation={entry.rotation || 0}
@@ -91,6 +93,8 @@ const CanvasStage = ({
   onMouseMove,
   onClick,
   stageRef,
+  placementStep,
+  currentPlacement,
 }) => {
   const renderPlacedStickers = useMemo(() => {
     if (isControlled) {
@@ -124,19 +128,16 @@ const CanvasStage = ({
 
     const localNodes = placements.map((p) => {
       const scale = typeof p.scale === "number" ? p.scale : legacyDefaultScale;
-      // We don't have stickerDims easily here, but we can use the legacyStickerImage
-      const imgW = legacyStickerImage?.width || 0;
-      const imgH = legacyStickerImage?.height || 0;
-      const halfW = (imgW * scale) / 2;
-      const halfH = (imgH * scale) / 2;
-      const x = p.xNorm * boardSize.width - halfW;
-      const y = p.yNorm * boardSize.height - halfH;
+      const x = p.xNorm * boardSize.width;
+      const y = p.yNorm * boardSize.height;
       return (
         <KonvaImage
           key={p.id}
           image={legacyStickerImage}
           x={x}
           y={y}
+          offsetX={legacyStickerImage?.width ? legacyStickerImage.width / 2 : 0}
+          offsetY={legacyStickerImage?.height ? legacyStickerImage.height / 2 : 0}
           scaleX={scale}
           scaleY={scale}
           rotation={p.rotation}
@@ -161,39 +162,37 @@ const CanvasStage = ({
 
   const renderHoverSticker = useMemo(() => {
     if (!isPlacing) return null;
-    if (isControlled) {
-      if (!placingImage) return null;
-      const halfW = ((placingImage?.width || 0) * placingDefaultScale) / 2;
-      const halfH = ((placingImage?.height || 0) * placingDefaultScale) / 2;
-      const x = hoverPos.x - halfW;
-      const y = hoverPos.y - halfH;
-      return (
-        <KonvaImage
-          image={placingImage}
-          x={x}
-          y={y}
-          scaleX={placingDefaultScale}
-          scaleY={placingDefaultScale}
-          opacity={0.7}
-          listening={false}
-        />
-      );
+
+    let img = isControlled ? placingImage : legacyStickerImage;
+    if (!img) return null;
+
+    let x, y, scale, rotation;
+
+    if (currentPlacement) {
+      // In SCALE or ROTATE step
+      x = currentPlacement.x;
+      y = currentPlacement.y;
+      scale = currentPlacement.scale;
+      rotation = currentPlacement.rotation || 0;
+    } else {
+      // In POSITION step
+      const baseScale = isControlled ? placingDefaultScale : legacyDefaultScale;
+      x = hoverPos.x;
+      y = hoverPos.y;
+      scale = baseScale;
+      rotation = 0;
     }
 
-    if (!legacyStickerImage) return null;
-    const imgW = legacyStickerImage?.width || 0;
-    const imgH = legacyStickerImage?.height || 0;
-    const halfW = (imgW * legacyDefaultScale) / 2;
-    const halfH = (imgH * legacyDefaultScale) / 2;
-    const x = hoverPos.x - halfW;
-    const y = hoverPos.y - halfH;
     return (
       <KonvaImage
-        image={legacyStickerImage}
+        image={img}
         x={x}
         y={y}
-        scaleX={legacyDefaultScale}
-        scaleY={legacyDefaultScale}
+        offsetX={img.width / 2}
+        offsetY={img.height / 2}
+        scaleX={scale}
+        scaleY={scale}
+        rotation={rotation}
         opacity={0.7}
         listening={false}
       />
@@ -206,6 +205,8 @@ const CanvasStage = ({
     hoverPos,
     legacyStickerImage,
     legacyDefaultScale,
+    currentPlacement,
+    placementStep,
   ]);
 
   return (
@@ -254,6 +255,8 @@ CanvasStage.propTypes = {
     PropTypes.func,
     PropTypes.shape({ current: PropTypes.any })
   ]),
+  placementStep: PropTypes.string,
+  currentPlacement: PropTypes.object,
 };
 
 export default React.memo(CanvasStage);

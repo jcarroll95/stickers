@@ -9,6 +9,8 @@ const BoardView = lazy(() => import('./board/BoardView.jsx'));
 const Explore = lazy(() => import('./explore/Explore.jsx'));
 const RegisterVerify = lazy(() => import('./auth/RegisterVerify.jsx'));
 const CreateStickerboard = lazy(() => import('./board/CreateStickerboard.jsx'));
+const MetricsDashboard = lazy(() => import('./admin/MetricsDashboard.jsx'));
+const UserManager = lazy(() => import('./admin/UserManager.jsx'));
 
 /**
  * Router Component
@@ -24,7 +26,7 @@ const CreateStickerboard = lazy(() => import('./board/CreateStickerboard.jsx'));
  */
 export default function Router() {
   const [hash, setHash] = useState(() => window.location.hash || '#/');
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
     const onHashChange = () => setHash(window.location.hash || '#/');
@@ -105,6 +107,22 @@ export default function Router() {
         return <Home />;
       }
       return <BoardView token={second} />;
+    }
+
+    if (first === 'admin' && second === 'metrics') {
+      // #/admin/metrics — require admin role
+      if (!isAuthenticated || user?.role !== 'admin') {
+        return <Home />;
+      }
+      return <MetricsDashboard />;
+    }
+
+    if (first === 'admin' && second === 'users') {
+      // #/admin/users — require admin role
+      if (!isAuthenticated || user?.role !== 'admin') {
+        return <Home />;
+      }
+      return <UserManager />;
     }
 
     // Fallback

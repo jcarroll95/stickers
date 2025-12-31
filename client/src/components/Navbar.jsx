@@ -195,6 +195,13 @@ const Navbar = () => {
 
     return (
         <nav className={styles.nav}>
+            <div className={styles.logoContainer} onClick={() => { window.location.hash = '#/'; }}>
+                <img
+                    src="/assets/stickerboards_star_fixed.png"
+                    alt="Stickerboards Logo"
+                    className={styles.logoImage}
+                />
+            </div>
 
             <ul className={styles.navLinks}>
                 <li>
@@ -307,6 +314,12 @@ const Navbar = () => {
                                     {navigatingMyBoard ? 'My Board…' : 'My Board'}
                                 </a>
                                 <a className={styles.dropdownItem} href="#/settings">Settings</a>
+                                {user?.role === 'admin' && (
+                                    <>
+                                        <a className={styles.dropdownItem} href="#/admin/metrics">Admin Metrics</a>
+                                        <a className={styles.dropdownItem} href="#/admin/users">User Manager</a>
+                                    </>
+                                )}
                                 <button className={styles.dropdownItemButton} onClick={handleLogout}>Logout</button>
                             </div>
                         )}

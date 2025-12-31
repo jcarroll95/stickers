@@ -19,6 +19,20 @@
     font-weight: 600;
 }
 
+.logoContainer {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    height: 100%;
+    padding: var(--space-2) 0;
+}
+
+.logoImage {
+    height: auto;
+    max-height: 100%;
+    width: auto;
+}
+
 .navLinks {
     display: flex;
     list-style: none;

@@ -32,9 +32,14 @@ const stick = require('./routes/stix');
 const auth = require('./routes/auth');
 const users = require('./routes/users');
 const reviews = require('./routes/reviews');
+const admin = require('./routes/admin');
+const { performanceMiddleware } = require('./middleware/performance');
 
 // define express app
 const app = express();
+
+// Use performance middleware early to track all requests
+app.use(performanceMiddleware);
 
 // Body parser middleware which lets our methods access json data in req.body
 // original body parser no longer needed
@@ -86,6 +91,7 @@ app.use('/api/v1/stix', stick);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/auth/users', users);
 app.use('/api/v1/reviews', reviews)
+app.use('/api/v1/admin', admin);
 
 // helmet
 app.use(helmet());
