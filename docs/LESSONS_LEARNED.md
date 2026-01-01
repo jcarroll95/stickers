@@ -7,10 +7,13 @@ I'm trying to be transparent about unforced errors during this project build so 
 ---
 
 ## 0. Rate limiting at the application layer when the API first deployed
-- Server would work fine for minutes - hours but eventually all attempts would reach "Too many requests"
+- Server would work fine for minutes to hours but eventually all attempts would reach "Too many requests"
 - A key difference between the prod and dev environments is access through nginx reverse proxy to the API
 - Express saw these as repeated requests from the same IP, so the fix was to add:
 - app.set('trust proxy', 1);
+- Happened again after I realized my rapidly-scaffolded frontend was making too many calls to the database too fast
+- The rate limit bucket of 100 requests in 10 minutes could be exceeded readily if I was adding many stickers on one or two accounts simultaneously on my local machine
+- You have to consider rate limiting holistically: behind the proxy, and how hard you're hammering the API from the frontend.
 
 ## 1. Never Serve Web Content from `/root`
 

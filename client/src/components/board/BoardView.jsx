@@ -28,6 +28,11 @@ export default function BoardView({ token }) {
 
   // Fetch the current logged-in user (to determine ownership)
   const loadMe = useCallback(async () => {
+    // Optimization: Check if user is already loaded in store if we're using a store
+    // For now, BoardView has its own 'me' state, but we can check if it's already set
+    // or if we can get it from authStore (though BoardView doesn't currently use the hook).
+    if (me) return;
+
     try {
       const response = await apiClient.get('/auth/me');
       // apiClient.get returns response.data
@@ -37,7 +42,7 @@ export default function BoardView({ token }) {
       console.warn('[BoardView] Could not load user profile:', err.message);
       setMe(null);
     }
-  }, []);
+  }, [me]);
 
   const loadBoard = useCallback(async () => {
     let cancelled = false;
@@ -74,8 +79,11 @@ export default function BoardView({ token }) {
   useEffect(() => {
     // call and ignore the cleanup return of loadBoard
     loadBoard();
+  }, [loadBoard]);
+
+  useEffect(() => {
     loadMe();
-  }, [loadBoard, loadMe]);
+  }, [loadMe]);
 
   // Reload board after a sticker is finalized from the interface
   useEffect(() => {
@@ -86,7 +94,11 @@ export default function BoardView({ token }) {
       }
     };
     window.addEventListener('stickerboard:finalized', handler);
-    return () => window.removeEventListener('stickerboard:finalized', handler);
+    window.addEventListener('stickerboard:cleared', handler);
+    return () => {
+        window.removeEventListener('stickerboard:finalized', handler);
+        window.removeEventListener('stickerboard:cleared', handler);
+    };
   }, [board?._id, board?.id, loadBoard]);
 
     // Determine the next stick number: 1 + highest valid numeric stickNumber on this board
@@ -184,7 +196,6 @@ export default function BoardView({ token }) {
                   } catch (e) {
                     console.error('[BoardView] Failed to dispatch finalized event:', e);
                   }
-                  await loadBoard();
                   toast.success('Sticker placement saved!', { id: saveToast });
                 } catch (err) {
                   const errorMsg = parseError(err);
@@ -202,7 +213,6 @@ export default function BoardView({ token }) {
                   } catch (e) {
                     console.error('[BoardView] Failed to dispatch cleared event:', e);
                   }
-                  await loadBoard();
                   toast.success('Stickers cleared!', { id: clearToast });
                 } catch (err) {
                   const errorMsg = parseError(err);

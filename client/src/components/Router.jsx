@@ -12,6 +12,7 @@ const CreateStickerboard = lazy(() => import('./board/CreateStickerboard.jsx'));
 const MetricsDashboard = lazy(() => import('./admin/MetricsDashboard.jsx'));
 const UserManager = lazy(() => import('./admin/UserManager.jsx'));
 const UserSettings = lazy(() => import('./user/UserSettings.jsx'));
+const LandingPage = lazy(() => import('./LandingPage.jsx'));
 
 /**
  * Router Component
@@ -71,7 +72,7 @@ export default function Router() {
 
   function renderContent() {
     if (route.parts.length === 0) {
-      return <Home />;
+      return <LandingPage />;
     }
 
     if (first === 'register') {
@@ -96,7 +97,7 @@ export default function Router() {
     if (first === 'settings') {
       // #/settings — require auth
       if (!isAuthenticated) {
-        return <Home />;
+        return <LandingPage />;
       }
       return <UserSettings />;
     }
@@ -104,7 +105,7 @@ export default function Router() {
     if (first === 'board' && second === 'create') {
       // #/board/create — requires auth
       if (!isAuthenticated) {
-        return <Home />;
+        return <LandingPage />;
       }
       return <CreateStickerboard />;
     }
@@ -113,7 +114,7 @@ export default function Router() {
       // #/board/:token — require auth token to view a private board
       if (!isAuthenticated) {
         // Redirect unauthenticated users to default public route
-        return <Home />;
+        return <LandingPage />;
       }
       return <BoardView token={second} />;
     }
@@ -121,7 +122,7 @@ export default function Router() {
     if (first === 'admin' && second === 'metrics') {
       // #/admin/metrics — require admin role
       if (!isAuthenticated || user?.role !== 'admin') {
-        return <Home />;
+        return <LandingPage />;
       }
       return <MetricsDashboard />;
     }
@@ -129,7 +130,7 @@ export default function Router() {
     if (first === 'admin' && second === 'users') {
       // #/admin/users — require admin role
       if (!isAuthenticated || user?.role !== 'admin') {
-        return <Home />;
+        return <LandingPage />;
       }
       return <UserManager />;
     }
@@ -139,17 +140,6 @@ export default function Router() {
   }
 }
 
-/**
- * Home Component
- */
-function Home() {
-  return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Welcome</h2>
-      <p>Select an item from the navbar to load data.</p>
-    </div>
-  );
-}
 
 /**
  * NotFound Component
