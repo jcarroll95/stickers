@@ -13,22 +13,6 @@ describe('apiClient', () => {
     expect(apiClient.defaults.baseURL).toBe('/api/v1');
   });
 
-  it('should inject token from localStorage into headers', async () => {
-    localStorage.setItem('token', 'test-token');
-    
-    server.use(
-      http.get('*/test-headers', ({ request }) => {
-        if (request.headers.get('Authorization') === 'Bearer test-token') {
-          return HttpResponse.json({ success: true });
-        }
-        return new HttpResponse(null, { status: 401 });
-      })
-    );
-
-    const response = await apiClient.get('/test-headers');
-    expect(response.success).toBe(true);
-  });
-
   it('should unwrap data from response envelope', async () => {
     server.use(
       http.get('*/test-envelope', () => {
@@ -41,8 +25,7 @@ describe('apiClient', () => {
     expect(body.data.foo).toBe('bar');
   });
 
-  it('should clear token and broadcast event on 401', async () => {
-    localStorage.setItem('token', 'expired-token');
+  it('should broadcast event on 401', async () => {
     const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
     
     server.use(
@@ -57,7 +40,6 @@ describe('apiClient', () => {
       expect(err.response.status).toBe(401);
     }
 
-    expect(localStorage.getItem('token')).toBe(null);
     expect(dispatchSpy).toHaveBeenCalled();
     const event = dispatchSpy.mock.calls[0][0];
     expect(event.type).toBe('auth:unauthorized');

@@ -66,7 +66,36 @@ apiClient.interceptors.response.use(
         window.dispatchEvent(new CustomEvent('auth:unauthorized'));
         
         // Notify the user
-        toast.error('Session expired. Please login again.');
+        toast.error((t) => (
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            Session expired. Please login again.
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toast.dismiss(t.id);
+              }}
+              style={{
+                marginLeft: '10px',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '16px',
+                lineHeight: '1',
+                padding: '0 4px',
+                color: '#ff4b4b',
+                fontWeight: 'bold'
+              }}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </span>
+        ), {
+            id: 'auth-unauthorized', // Prevent duplicate toasts
+            duration: 5000,
+            icon: null,
+        });
       } else if (response.status >= 500) {
         toast.error('A server error occurred. Please try again later.');
       }
