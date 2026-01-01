@@ -45,6 +45,10 @@ const StickerboardSchema = new mongoose.Schema({
             rotation: Number,
             zIndex: Number,
             stuck: Boolean,
+            isCheers: {
+                type: Boolean,
+                default: false
+            },
             createdAt: Date
         }
     ]

@@ -8,8 +8,8 @@ import useImage from "use-image";
  * Renders a single sticker on the Konva layer.
  */
 const StickerSprite = React.memo(({ entry, boardSize, displayLongEdge, getStickerSrc, isValidStickerId }) => {
-  const isValid = isValidStickerId(entry?.stickerId);
-  const src = isValid ? getStickerSrc(entry.stickerId) : null;
+  const isValid = isValidStickerId(entry?.stickerId, entry?.isCheers);
+  const src = isValid ? getStickerSrc(entry.stickerId, entry?.isCheers) : null;
   const [img] = useImage(src);
 
   const scale = useMemo(() => {

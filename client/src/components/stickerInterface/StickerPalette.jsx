@@ -15,15 +15,19 @@ const StickerPalette = ({
   placingIndex,
   getStickerSrc,
   onSelectSticker,
+  isCheersMode,
+  cheersStickers,
 }) => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 140 }}>
-      <div style={{ fontSize: 14, color: "#444" }}>Sticker palette</div>
+      <div style={{ fontSize: 14, color: "#444" }}>
+        {isCheersMode ? "Cheers! stickers" : "Sticker palette"}
+      </div>
       
       {isControlled ? (() => {
         const available = (internalStickers || [])
           .map((s, i) => ({ entry: s, index: i }))
-          .filter(({ entry }) => !entry.stuck && isValidStickerId(entry?.stickerId));
+          .filter(({ entry }) => !entry.stuck && isValidStickerId(entry?.stickerId, entry?.isCheers));
 
         if (available.length === 0) {
           return (
@@ -61,9 +65,11 @@ const StickerPalette = ({
                 }}
                 title={isPlacing && placingIndex === index ? "Click on the board to place" : "Click to place this sticker"}
               >
-                <div style={{ fontSize: 12, marginBottom: 6 }}>Sticker {entry.stickerId}</div>
+                <div style={{ fontSize: 12, marginBottom: 6 }}>
+                  {isCheersMode ? `Cheers ${entry.stickerId}` : `Sticker ${entry.stickerId}`}
+                </div>
                 <img
-                  src={getStickerSrc(entry.stickerId)}
+                  src={getStickerSrc(entry.stickerId, entry?.isCheers)}
                   alt={`sticker ${entry.stickerId}`}
                   style={{ display: "block", maxWidth: "100%", height: "auto" }}
                 />
@@ -107,5 +113,7 @@ StickerPalette.propTypes = {
   placingIndex: PropTypes.number,
   getStickerSrc: PropTypes.func.isRequired,
   onSelectSticker: PropTypes.func.isRequired,
+  isCheersMode: PropTypes.bool,
+  cheersStickers: PropTypes.arrayOf(PropTypes.number),
 };
 export default React.memo(StickerPalette);

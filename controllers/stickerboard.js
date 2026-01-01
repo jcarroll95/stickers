@@ -161,11 +161,37 @@ exports.updateStickerboard = asyncHandler(async (req, res, next) => {
             );
         }
 
-        // make sure this user owns the stickerboard
-        if (stickerboard.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return next(
-                new ErrorResponse(`User ${req.user.id} is not authorized to update this board`, 401)
-            )
+        // Check ownership
+        const isOwner = stickerboard.user.toString() === req.user.id;
+        const isAdmin = req.user.role === 'admin';
+
+        if (!isOwner && !isAdmin) {
+            // If not owner/admin, they can ONLY update the 'stickers' field (Cheers! functionality)
+            const updates = Object.keys(req.body);
+            const isOnlyStickers = updates.length === 1 && updates[0] === 'stickers';
+
+            if (!isOnlyStickers) {
+                return next(
+                    new ErrorResponse(`User ${req.user.id} is not authorized to update this board fields other than stickers`, 401)
+                );
+            }
+
+            // Also validate that they are ADDING a sticker that they have
+            if (!Array.isArray(req.body.stickers) || req.body.stickers.length <= stickerboard.stickers.length) {
+                return next(
+                    new ErrorResponse(`Invalid stickers update for non-owner`, 400)
+                );
+            }
+
+            const newSticker = req.body.stickers[req.body.stickers.length - 1];
+            const User = require('../models/User');
+            const user = await User.findById(req.user.id);
+
+            if (!user || !user.cheersStickers.includes(newSticker.stickerId)) {
+                return next(
+                    new ErrorResponse(`User does not have the required Cheers! sticker`, 400)
+                );
+            }
         }
 
         // in this instance .findOneAndUpdate is requiring an OBJECT as the filter param { _id: req.params.id }
@@ -175,6 +201,25 @@ exports.updateStickerboard = asyncHandler(async (req, res, next) => {
             runValidators: true
         });
 
+        // If the update includes adding a sticker by a user who is not the owner,
+        // we treat it as a "Cheers!" sticker and consume it from their account.
+        // req.user.id is the person making the request.
+        if (req.body.stickers && Array.isArray(req.body.stickers)) {
+            const lastSticker = req.body.stickers[req.body.stickers.length - 1];
+            // If the user is NOT the owner, and they just added a sticker
+            if (stickerboard.user.toString() !== req.user.id && lastSticker && lastSticker.stuck === true) {
+                const User = require('../models/User');
+                const user = await User.findById(req.user.id);
+                if (user && user.cheersStickers.includes(lastSticker.stickerId)) {
+                    // Consume the sticker
+                    const index = user.cheersStickers.indexOf(lastSticker.stickerId);
+                    if (index > -1) {
+                        user.cheersStickers.splice(index, 1);
+                        await user.save({ validateBeforeSave: false });
+                    }
+                }
+            }
+        }
 
         res.status(200).json({ success: true, data: stickerboard });
 });

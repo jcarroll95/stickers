@@ -28,11 +28,6 @@ export default function BoardView({ token }) {
 
   // Fetch the current logged-in user (to determine ownership)
   const loadMe = useCallback(async () => {
-    // Optimization: Check if user is already loaded in store if we're using a store
-    // For now, BoardView has its own 'me' state, but we can check if it's already set
-    // or if we can get it from authStore (though BoardView doesn't currently use the hook).
-    if (me) return;
-
     try {
       const response = await apiClient.get('/auth/me');
       // apiClient.get returns response.data
@@ -42,7 +37,7 @@ export default function BoardView({ token }) {
       console.warn('[BoardView] Could not load user profile:', err.message);
       setMe(null);
     }
-  }, [me]);
+  }, []);
 
   const loadBoard = useCallback(async () => {
     let cancelled = false;
@@ -91,6 +86,7 @@ export default function BoardView({ token }) {
       if (!e?.detail?.boardId) return;
       if ((board?._id || board?.id) === e.detail.boardId) {
         loadBoard();
+        loadMe(); // refresh user profile to update cheersStickers if consumed
       }
     };
     window.addEventListener('stickerboard:finalized', handler);
@@ -180,6 +176,8 @@ export default function BoardView({ token }) {
           boardSrc,
           stickers: Array.isArray(board.stickers) ? board.stickers : [],
           persistedStickers: Array.isArray(board.stickers) ? board.stickers : [],
+          isOwner,
+          cheersStickers: me?.cheersStickers || [],
         };
         if (isOwner) {
           return (
@@ -222,11 +220,28 @@ export default function BoardView({ token }) {
             />
           );
         }
-        // Non-owner: read-only view
+        // Non-owner: can also place cheers stickers
         return (
           <StickerInterface
             {...sharedProps}
-            readonly
+            onPlaceSticker={async (next /* full array */, placed, index) => {
+              const saveToast = toast.loading('Sending Cheers!...');
+              try {
+                // Non-owner uses the same update endpoint, but the backend will handle cheers consumption
+                await apiClient.put(`/stickerboards/${encodeURIComponent(board._id || board.id)}`, {
+                  stickers: next
+                });
+                try {
+                  window.dispatchEvent(new CustomEvent('stickerboard:finalized', { detail: { boardId: board._id || board.id, sticker: placed, index } }));
+                } catch (e) {
+                  console.error('[BoardView] Failed to dispatch finalized event:', e);
+                }
+                toast.success('Cheers! sent!', { id: saveToast });
+              } catch (err) {
+                const errorMsg = parseError(err);
+                toast.error(`Failed to send Cheers!: ${errorMsg}`, { id: saveToast });
+              }
+            }}
           />
         );
       })()}

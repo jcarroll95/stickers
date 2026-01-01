@@ -54,6 +54,7 @@ export default function ThumbnailBoard({ board }) {
           stickers={Array.isArray(board?.stickers) ? board.stickers : []}
           persistedStickers={Array.isArray(board?.stickers) ? board.stickers : []}
           readonly
+          isOwner={false}
           displayLongEdge={300}
         />
       ) : (

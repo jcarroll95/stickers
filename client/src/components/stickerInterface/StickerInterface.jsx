@@ -39,6 +39,8 @@ export default function StickerInterface(props) {
     finalizeLatestPlacement,
     placementStep,
     currentPlacement,
+    isCheersMode,
+    cheersStickers,
   } = useStickerCanvas(props);
 
   return (
@@ -78,6 +80,8 @@ export default function StickerInterface(props) {
             placingIndex={placingIndex}
             getStickerSrc={getStickerSrc}
             onSelectSticker={enterPlacementMode}
+            isCheersMode={isCheersMode}
+            cheersStickers={cheersStickers}
           />
           <BoardSidebar
             isControlled={isControlled}
@@ -85,6 +89,7 @@ export default function StickerInterface(props) {
             onClear={() => persistPlacements([])}
             onFinalize={finalizeLatestPlacement}
             canFinalize={placements.length > 0}
+            isCheersMode={isCheersMode}
           />
         </div>
       )}
@@ -102,4 +107,6 @@ StickerInterface.propTypes = {
   displayLongEdge: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   onPlaceSticker: PropTypes.func,
   onAddSticker: PropTypes.func,
+  isOwner: PropTypes.bool,
+  cheersStickers: PropTypes.arrayOf(PropTypes.number),
 };
