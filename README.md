@@ -15,7 +15,9 @@ The API is finished and deployed as a Node.js / Express app, connected to MongoD
 
 A Postman collection for testing every deployed endpoint is available in [/postman](/postman)
  
-The backend v1.0.0 is completed, tested, documented, and deployed. Front end basic functionality has been developed but isn't web facing in production yet.
+The backend v1.0.0 is completed, tested, documented, and deployed. Front end functionality is nearing MVP spec, deployed, and active. Users can register, log in, verify email, log sticks, place stickers, and send comments and cheers to other boards. 
+
+
 
 ## Usage
 A sanitized config.env.env has been provided to outline the required environmental variables. Drop the second .env extension and fill in credentials for your database, mail server, and JWT secret.
@@ -34,13 +36,13 @@ npm run dev
 ```
 Node seeder <-import> [stix/comments/users/stickerboard]
 ```
->Note: data provided here includes an example test set with hard-coded _id values that won't deploy correctly for you, recommend you use sanitized versions.
+>Note: data will need to be pre-filled in order of MongoDB object id dependency; ie create users, then create and populate their boards, etc.
 > 
-### Scrub the database sections of all data ***NO SAFETY CHECK***
+### Scrub the database sections of all data 
 ```
 Node seeder <-delete> [stix/comments/users/stickerboard]
 ```
->Note: This is a dev convenience. I've wrapped the logic in an NODE_ENV=development check but you still should not deploy this function to the production server.
+>Note: This is a dev convenience. It touches the production database and should not be deployed.
 
 ### Run in Production Mode
 ```
@@ -53,19 +55,19 @@ Developing a frontend concept in Figma.
 <img src="public/figmatest.jpeg">
 
 ## Next Steps
--Deploy front end
+-Deploy front end (Complete)
 
--Add Sticker visual functionality (React/Konva)
+-Add Sticker visual functionality (React/Konva) (Complete)
 
--Move documentation off the main page
+-Move documentation off the main page (Complete)
 
--Add integration and end-to-end testing for more meaningful coverage
+-Add integration and end-to-end testing for more meaningful coverage (In progress)
 
--Project issue tracking (Jira)
+-Project issue tracking (Jira) (Tracking issues in Github for now)
 
--Weight, half-life, progress photo functionality
+-Weight, half-life, progress photo functionality (Not started - outside of MVP Spec)
 
--VIP User LLM functions: API calls to Gemini with RAG of stix and side effects for trend analysis and expectations
+-VIP User LLM functions: API calls to Gemini with RAG of stix and side effects for trend analysis and expectations (Next effort)
 
 - Version: 1.0.0
 - License: MIT

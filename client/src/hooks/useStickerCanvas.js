@@ -39,6 +39,8 @@ export default function useStickerCanvas({
   displayLongEdge = 600,
   onPlaceSticker,
   onAddSticker,
+  isOwner = true,
+  cheersStickers = [],
 }) {
   const [bgImage] = useImage(boardSrc);
   const [legacyStickerImage] = useImage("/assets/sticker0.png");
@@ -48,18 +50,43 @@ export default function useStickerCanvas({
   const [currentPlacement, setCurrentPlacement] = useState(null);
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
 
+  // Cheers Mode logic
+  const isCheersMode = !isOwner;
+  const effectiveInternalStickers = useMemo(() => {
+    const boardStickers = Array.isArray(stickers) ? stickers : [];
+    if (isCheersMode) {
+      // For Cheers! mode, we need to show existing stickers (stuck) 
+      // AND provide the user's available cheers stickers (not stuck) for placement.
+      const cheers = (cheersStickers || []).map(id => ({ stickerId: id, stuck: false, isCheers: true }));
+      return [...boardStickers, ...cheers];
+    }
+    return boardStickers;
+  }, [isCheersMode, cheersStickers, stickers]);
+
   // Helper: map stickerId (0..9) to asset path
-  const getStickerSrc = useCallback((stickerId) => `/assets/sticker${stickerId}.png`, []);
-  const isValidStickerId = useCallback((id) => Number.isInteger(id) && id >= 0 && id <= 9, []);
+  const getStickerSrc = useCallback((stickerId, isCheers) => {
+    // If isCheers is provided (from the sticker object), use it.
+    // Otherwise fallback to global isCheersMode (useful for palette/initial placement)
+    const cheers = (typeof isCheers === 'boolean') ? isCheers : isCheersMode;
+    if (cheers) {
+      return `/assets/c${stickerId}.png`;
+    }
+    return `/assets/sticker${stickerId}.png`;
+  }, [isCheersMode]);
+
+  const isValidStickerId = useCallback((id, isCheers) => {
+    const cheers = (typeof isCheers === 'boolean') ? isCheers : isCheersMode;
+    return Number.isInteger(id) && id >= 0 && id <= 9;
+  }, [isCheersMode]);
 
   // Internal unified stickers state for controlled mode (optimistic updates)
-  const [internalStickers, setInternalStickers] = useState(Array.isArray(stickers) ? stickers : []);
-  const isControlled = Array.isArray(stickers);
+  const [internalStickers, setInternalStickers] = useState(effectiveInternalStickers);
+  const isControlled = isCheersMode || Array.isArray(stickers);
 
-  // Synchronize internalStickers if stickers prop changes, but avoid cascading renders if same
-  if (isControlled && stickers !== internalStickers && JSON.stringify(stickers) !== JSON.stringify(internalStickers)) {
-    setInternalStickers(stickers);
-  }
+  // Synchronize internalStickers if prop changes
+  useEffect(() => {
+    setInternalStickers(effectiveInternalStickers);
+  }, [effectiveInternalStickers]);
 
   // Selection (for controlled mode): which sticker entry (by index in internalStickers) is being placed
   const [placingIndex, setPlacingIndex] = useState(null);
@@ -71,8 +98,8 @@ export default function useStickerCanvas({
 
   const placingStickerId = placingSticker?.stickerId;
   const [placingImage] = useImage(
-    placingStickerId != null && isValidStickerId(placingStickerId)
-      ? getStickerSrc(placingStickerId)
+    placingStickerId != null && isValidStickerId(placingStickerId, placingSticker?.isCheers)
+      ? getStickerSrc(placingStickerId, placingSticker?.isCheers)
       : null
   );
 
@@ -300,7 +327,9 @@ export default function useStickerCanvas({
       setCurrentPlacement(null);
 
       if (onPlaceSticker) {
-        onPlaceSticker(next, placedSticker, placingIndex);
+        // Only send stickers that are actually stuck to the backend
+        const onlyStuck = next.filter(s => s.stuck);
+        onPlaceSticker(onlyStuck, placedSticker, placingIndex);
       }
     } else {
       const placement = {
@@ -342,5 +371,7 @@ export default function useStickerCanvas({
     finalizeLatestPlacement,
     placementStep,
     currentPlacement,
+    isCheersMode,
+    cheersStickers,
   };
 }

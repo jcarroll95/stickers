@@ -39,6 +39,10 @@ const UserSchema = new mongoose.Schema({
     lastVerificationSentAt: Date,
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    cheersStickers: {
+        type: [Number],
+        default: [0, 1, 2, 3, 4]
+    },
     createdAt: {
         type: Date,
         default: Date.now

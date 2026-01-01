@@ -94,22 +94,24 @@ exports.addStick = asyncHandler(async (req, res, next) => {
             stickerboard.stickers = [];
         }
 
-        // Determine preferred stickerId between 0-9 that is not yet used
-        const used = new Set(
-            stickerboard.stickers
-                .map((s) => (typeof s?.stickerId === 'number' ? s.stickerId : null))
-                .filter((n) => n != null)
-        );
+        // Determine preferred stickerId between 0-9 based on the stick number
+        // (Modulo 10 to rotate through the 10 available sticker assets)
         let chosenId = 0;
-        for (let i = 0; i <= 9; i++) {
-            if (!used.has(i)) {
-                chosenId = i;
-                break;
-            }
-            // If all 0-9 are used, chosenId will remain 9 after the loop; adjust below
-            if (i === 9) {
-                // fallback: reuse 0 (any) if all are present
-                chosenId = 0;
+        if (typeof stick.stickNumber === 'number') {
+            chosenId = stick.stickNumber % 10;
+        } else {
+            // Fallback to finding first unused if stickNumber is missing
+            const used = new Set(
+                stickerboard.stickers
+                    .map((s) => (typeof s?.stickerId === 'number' ? s.stickerId : null))
+                    .filter((n) => n != null)
+            );
+            for (let i = 0; i <= 9; i++) {
+                if (!used.has(i)) {
+                    chosenId = i;
+                    break;
+                }
+                if (i === 9) chosenId = 0;
             }
         }
 

@@ -56,10 +56,10 @@ const LandingPage = () => {
 
       {/* Showcase Section */}
       <section className={styles.showcase}>
-        <h2 className={styles.sectionTitle}>Inspiration Gallery</h2>
+        <h2 className={styles.sectionTitle}>Stickerboard Gallery</h2>
         <div className={styles.imageGrid}>
           <img src="/assets/sb1.png" alt="Gallery 1" className={styles.gridImage} />
-          <img src="/assets/sb2.png" alt="Gallery 2" className={styles.gridImage} />
+          <img src="/assets/sb5.png" alt="Gallery 2" className={styles.gridImage} />
           <img src="/assets/sb3.png" alt="Gallery 3" className={styles.gridImage} />
           <img src="/assets/sb4.png" alt="Gallery 4" className={styles.gridImage} />
         </div>
