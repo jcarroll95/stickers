@@ -53,4 +53,26 @@ describe('middleware/advancedResults unit coverage', () => {
     expect(page2.body.success).toBe(true);
     expect(page2.body.data.length).toBe(1);
   });
+
+  test('should support [ne] operator', async () => {
+    const token = await registerAndLogin({ email: 'ne@example.com' });
+    const user1 = '695737819754e2dcb92cfe39'; // From logs above, but better to be dynamic if possible
+    // Actually, let's just use what was seeded or seed new ones.
+    
+    const board1 = await createBoard({ name: 'Board1', description: 'desc', userToken: token });
+    const userId = board1.user;
+
+    const app = buildApp(Stickerboard);
+    
+    // Fetch with [ne]
+    const res = await request(app)
+      .get(`/items?user[ne]=${userId}`)
+      .expect(200);
+    
+    expect(res.body.success).toBe(true);
+    // All returned boards should NOT have this userId
+    res.body.data.forEach(board => {
+      expect(board.user.toString()).not.toBe(userId.toString());
+    });
+  });
 });

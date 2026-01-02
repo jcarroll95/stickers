@@ -14,6 +14,7 @@ const Navbar = () => {
     // unauthenticated login dropdown state
     const [loginOpen, setLoginOpen] = useState(false);
     const [navigatingMyBoard, setNavigatingMyBoard] = useState(false);
+    const [navigatingCheer, setNavigatingCheer] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loggingIn, setLoggingIn] = useState(false);
@@ -103,6 +104,60 @@ const Navbar = () => {
             console.error('[Navbar] Unexpected error in handleGoToMyBoard:', err);
         } finally {
             setNavigatingMyBoard(false);
+        }
+    };
+
+    /**
+     * handleCheer
+     * Navigates to a random stickerboard that is NOT owned by the current user.
+     */
+    const handleCheer = async () => {
+        if (navigatingCheer) return;
+
+        // If not logged in, show the login dropdown
+        if (!user) {
+            setLoginOpen(true);
+            return;
+        }
+
+        setNavigatingCheer(true);
+
+        try {
+            // 1. Get current user ID (using the helper)
+            const uid = getUserId(user);
+
+            // 2. Fetch a list of stickerboards NOT owned by the current user
+            // The advancedResults middleware handles filtering. 
+            // We can use [ne] (not equal) for Mongoose filtering via query params if supported, 
+            // or just fetch a set and filter client-side.
+            // Let's try the [ne] syntax: ?user[ne]=UID
+            const response = await apiClient.get(`/stickerboards?user[ne]=${uid}&limit=50`);
+            const data = response?.data || response;
+            const boards = Array.isArray(data) ? data : (data?.data || []);
+
+            if (boards.length === 0) {
+                // No other boards found. Maybe show a message?
+                // For now, let's just go to the explore page as a fallback.
+                window.location.hash = '#/explore';
+                return;
+            }
+
+            // 3. Pick a random board
+            const randomBoard = boards[Math.floor(Math.random() * boards.length)];
+
+            // 4. Navigate
+            const boardToken = randomBoard.slug || randomBoard._id || randomBoard.id;
+            if (boardToken) {
+                window.location.hash = `#/board/${boardToken}`;
+            } else {
+                window.location.hash = '#/explore';
+            }
+        } catch (err) {
+            console.error('[Navbar] Failed to navigate for Cheer!:', err);
+            // Fallback to explore on error
+            window.location.hash = '#/explore';
+        } finally {
+            setNavigatingCheer(false);
         }
     };
 
@@ -223,7 +278,16 @@ const Navbar = () => {
                         Explore
                     </button>
                 </li>
-                <li className={styles.link}>Cheer!</li>
+                <li>
+                    <button
+                        type="button"
+                        className={styles.link}
+                        disabled={navigatingCheer}
+                        onClick={handleCheer}
+                    >
+                        {navigatingCheer ? 'Cheering…' : 'Cheer!'}
+                    </button>
+                </li>
                 <li className={styles.link}>Developer Docs</li>
             </ul>
 

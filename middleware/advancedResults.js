@@ -27,7 +27,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
 
     // regex goes between //s, \b word boundary, /g global
     // Create comparison operators we can pass to mongoose
-    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in|ne)\b/g, match => `$${match}`);
     console.log(queryStr);
 
     // Find the resource now that queryStr has been massaged to work for the mongoose method
