@@ -1,4 +1,6 @@
-// This will handle our mongoose errors. you can log the err object to the console to see all the data fields contained inside the error and establish, eg, what name is associated with the specific error so you can test for that name and handle it appropriately.
+// This will handle our mongoose errors. you can log the err object to the console to see all the data fields contained
+// inside the error and establish, eg, what name is associated with the specific error so you can test for that name
+// and handle it appropriately.
 
 const ErrorResponse = require('../utils/errorResponse');
 const errorHandler = (err, req, res, next) => {

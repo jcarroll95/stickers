@@ -1,7 +1,6 @@
 // @desc Main application file for the server
 const path = require('path');
 const express = require('express');
-// dotenv should be removed in future version due to current node.js capabilities
 const dotenv = require('dotenv');
 // logger middleware has been deprecated for v1.0.0
 // const logger = require('./middleware/logger');
@@ -12,11 +11,13 @@ const cookieParser = require('cookie-parser');
 const mongoSanitize = require('express-mongo-sanitize');
 const colors = require('colors');
 const helmet = require('helmet');
-const { xss } = require('express-xss-sanitizer');
+const { xss } = require('express-xss-sanitizer');   // xss is an object, destructure it so we can call it as xss()
 const bodyParser = require('body-parser');
 const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const cors = require('cors');
+// tack on middleware for admin metrics
+const { performanceMiddleware } = require('./middleware/performance');
 
 // load environmental vars for dotenv
 dotenv.config({ path: './config/config.env' });
@@ -33,19 +34,16 @@ const auth = require('./routes/auth');
 const users = require('./routes/users');
 const comments = require('./routes/comments');
 const admin = require('./routes/admin');
-const { performanceMiddleware } = require('./middleware/performance');
 
 // define express app
 const app = express();
 
-// Use performance middleware early to track all requests
+// Use performance middleware to track http requests
 app.use(performanceMiddleware);
 
 // Body parser middleware which lets our methods access json data in req.body
 // original body parser no longer needed
 app.use(express.json());
-
-
 
 // Dev logging middleware for morgan
 if(process.env.NODE_ENV === 'development') {
@@ -60,7 +58,7 @@ app.use(xss());
 // If behind NGINX (reverse proxy), make Express respect X-Forwarded-For
 app.set('trust proxy', 1);
 
-// rate limiting
+// rate limiting for express
 const limiter = rateLimit({
     windowMs: 10 * 60 * 1000, // 10 mins
     max: 1000

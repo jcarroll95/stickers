@@ -70,7 +70,7 @@ describe('Navbar', () => {
     fireEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     await waitFor(() => {
-      expect(mockLogin).toHaveBeenCalledWith({ name: 'Jane Doe' }, 'fake-token');
+      expect(mockLogin).toHaveBeenCalledWith({ name: 'Jane Doe' });
     });
   });
 
@@ -120,6 +120,39 @@ describe('Navbar', () => {
 
     await waitFor(() => {
       expect(window.location.hash).toBe('#/board/my-board');
+    });
+  });
+
+  it('should handle "Cheer!" click when authenticated', async () => {
+    const mockUser = { id: 'owner-id', name: 'Jane' };
+    useAuthStore.mockReturnValue({
+      user: mockUser,
+      login: mockLogin,
+      logout: mockLogout,
+      initialize: mockInitialize,
+    });
+
+    const mockBoards = [
+      { _id: 'b2', name: 'Other Board', slug: 'other-board', user: 'other-id' }
+    ];
+
+    server.use(
+      http.get('*/stickerboards', ({ request }) => {
+        const url = new URL(request.url);
+        if (url.searchParams.get('user[ne]') === 'owner-id') {
+          return HttpResponse.json({ success: true, data: mockBoards });
+        }
+        return HttpResponse.json({ success: true, data: [] });
+      })
+    );
+
+    render(<Navbar />);
+    
+    const cheerBtn = screen.getByRole('button', { name: /cheer!/i });
+    fireEvent.click(cheerBtn);
+
+    await waitFor(() => {
+      expect(window.location.hash).toBe('#/board/other-board');
     });
   });
 });
