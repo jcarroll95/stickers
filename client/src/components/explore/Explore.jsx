@@ -60,7 +60,7 @@ export default function Explore() {
   }, []);
 
   const cardClick = useCallback((board) => {
-    const token = board?.slug || board?._id || board?.id;
+    const token = board?._id || board?.id || board?.slug;
     if (token) {
       window.location.hash = `#/board/${token}`;
     }

@@ -13,29 +13,26 @@ const BoardSidebar = ({
   onClear,
   onFinalize,
   canFinalize,
-  isCheersMode,
 }) => {
-  // If isControlled but NOT cheers mode, hide the sidebar (it's for demo mode usually)
-  // In cheers mode, we want to see the "Finalize" button to save the cheers sticker.
-  if (isControlled && !isCheersMode) return null;
+  // If isControlled hide the sidebar (it's for demo mode usually)
+  // Backend-driven modes (Owner or Cheers) handle their own persistence
+  if (isControlled) return null;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      {!isCheersMode && (
-        <button
-          type="button"
-          onClick={onClear}
-          style={{
-            padding: 6,
-            border: "1px solid #ccc",
-            background: "#fff",
-            cursor: "pointer",
-            borderRadius: 6,
-          }}
-        >
-          Clear stickers
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={onClear}
+        style={{
+          padding: 6,
+          border: "1px solid #ccc",
+          background: "#fff",
+          cursor: "pointer",
+          borderRadius: 6,
+        }}
+      >
+        Clear stickers
+      </button>
       <button
         type="button"
         onClick={onFinalize}
@@ -48,18 +45,16 @@ const BoardSidebar = ({
           cursor: canFinalize ? "pointer" : "not-allowed",
           borderRadius: 6,
         }}
-        title={canFinalize ? (isCheersMode ? "Send this Cheers! sticker" : "Save the most recently placed sticker to the board") : "Place a sticker first"}
+        title={canFinalize ? "Save the most recently placed sticker to the board" : "Place a sticker first"}
       >
-        {isCheersMode ? "Send Cheers!" : "Finalize last sticker"}
+        Finalize last sticker
       </button>
-      {!isCheersMode && (
-        <details style={{ fontSize: 12 }}>
-          <summary>Debug placements</summary>
-          <pre style={{ maxWidth: 240, whiteSpace: "pre-wrap" }}>
-            {JSON.stringify(placements, null, 2)}
-          </pre>
-        </details>
-      )}
+      <details style={{ fontSize: 12 }}>
+        <summary>Debug placements</summary>
+        <pre style={{ maxWidth: 240, whiteSpace: "pre-wrap" }}>
+          {JSON.stringify(placements, null, 2)}
+        </pre>
+      </details>
     </div>
   );
 }
@@ -70,6 +65,5 @@ BoardSidebar.propTypes = {
   onClear: PropTypes.func.isRequired,
   onFinalize: PropTypes.func.isRequired,
   canFinalize: PropTypes.bool.isRequired,
-  isCheersMode: PropTypes.bool,
 };
 export default React.memo(BoardSidebar);

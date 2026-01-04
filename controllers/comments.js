@@ -5,10 +5,12 @@ const Comment = require('../models/Comment');
 const Stickerboard = require('../models/Stickerboard');
 const User = require('../models/User');
 
-// @desc    Get comments
-// @route   GET /api/v1/comments
-// @route   GET /api/v1/stickerboards/:belongsToBoard/comments
-// @access  Public
+/**
+ * @desc    Get comments
+ * @route   GET /api/v1/comments
+ * @route   GET /api/v1/stickerboards/:belongsToBoard/comments
+ * @access  Public
+*/
 exports.getComments = asyncHandler(async (req, res, next) => {
     if (req.params.belongsToBoard) {
         const comments = await Comment.find({ belongsToBoard: req.params.belongsToBoard } );
@@ -25,10 +27,12 @@ exports.getComments = asyncHandler(async (req, res, next) => {
     }
 });
 
-// @desc    Get a single comment
-// @route   GET /api/v1/comments/:id
-// @access  Public
-exports.getComment = asyncHandler(async (req, res, next) => {
+/**
+ * @desc    Get a single comment
+ * @route   GET /api/v1/comments/:id
+ * @access  Public
+*/
+ exports.getComment = asyncHandler(async (req, res, next) => {
     const comment = await Comment.findById(req.params.id).populate({
         path: 'belongsToBoard',
         select: 'name description'
@@ -44,20 +48,27 @@ exports.getComment = asyncHandler(async (req, res, next) => {
     });
 });
 
-// @desc    Add a comment
-// @route   POST /api/v1/stickerboards/:belongsToBoard/comments
-// @access  Private
-exports.addComment = asyncHandler(async (req, res, next) => {
-    req.body.belongsToBoard = req.params.belongsToBoard;
-    req.body.belongsToUser = req.user.id;
-
+/**
+ * @desc    Add a comment
+ * @route   POST /api/v1/stickerboards/:belongsToBoard/comments
+ * @access  Private
+*/
+ exports.addComment = asyncHandler(async (req, res, next) => {
     const stickerboard = await Stickerboard.findById(req.params.belongsToBoard);
 
     if (!stickerboard) {
         return next(new ErrorResponse(`No stickerboard with id ${req.params.belongsToBoard}`, 404));
     }
 
-    const comment = await Comment.create(req.body);
+    // Field allowlist
+    const commentData = {
+        belongsToBoard: req.params.belongsToBoard,
+        belongsToUser: req.user.id,
+        commentRating: req.body.commentRating,
+        comment: req.body.comment
+    };
+
+    const comment = await Comment.create(commentData);
 
     res.status(201).json({
         success: true,
@@ -65,9 +76,11 @@ exports.addComment = asyncHandler(async (req, res, next) => {
     })
 });
 
-// @desc    Update a comment
-// @route   PUT /api/v1/comments/:id
-// @access  Private
+/**
+ * @desc    Update a comment
+ * @route   PUT /api/v1/comments/:id
+ * @access  Private
+*/
 exports.updateComment = asyncHandler(async (req, res, next) => {
 
     let comment = await Comment.findById(req.params.id);
@@ -81,7 +94,13 @@ exports.updateComment = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(`Not authorized to update comment ${req.params.id}`, 401));
     }
 
-    comment = await Comment.findByIdAndUpdate(req.params.id, req.body, {
+    // Field allowlist
+    const updateData = {
+        commentRating: req.body.commentRating,
+        comment: req.body.comment
+    };
+
+    comment = await Comment.findByIdAndUpdate(req.params.id, updateData, {
         new: true,
         runValidators: true
     });
@@ -92,9 +111,11 @@ exports.updateComment = asyncHandler(async (req, res, next) => {
     });
 });
 
-// @desc    Delete a comment
-// @route   DELETE /api/v1/comments/:id
-// @access  Private
+/**
+ * @desc    Delete a comment
+ * @route   DELETE /api/v1/comments/:id
+ * @access  Private
+*/
 exports.deleteComment = asyncHandler(async (req, res, next) => {
 
     const comment = await Comment.findById(req.params.id);

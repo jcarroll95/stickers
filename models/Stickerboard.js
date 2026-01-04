@@ -11,7 +11,7 @@ const StickerboardSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Please name your stickerboard'],
-        unique: true,
+        unique: false,
         trim: true,
         maxlength: [50, 'Name can not exceed 50 characters'],
     },
@@ -38,18 +38,18 @@ const StickerboardSchema = new mongoose.Schema({
     height: Number,            // logical height (e.g. 700)
     stickers: [
         {
-            stickerId: Number,     // predefined asset id
-            x: Number,             // normalized or absolute coordinates
-            y: Number,
-            scale: Number,
-            rotation: Number,
-            zIndex: Number,
-            stuck: Boolean,
+            stickerId: { type: Number, required: true, min: 0, max: 10000 },     // predefined asset id
+            x: { type: Number, required: true, min: -5000, max: 5000 },             // normalized or absolute coordinates
+            y: { type: Number, required: true, min: -5000, max: 5000 },
+            scale: { type: Number, default: 1, min: 0.0001, max: 10 },
+            rotation: { type: Number, default: 0, min: -360, max: 360 },
+            zIndex: { type: Number, default: 0, min: 0, max: 100000 },
+            stuck: { type: Boolean, default: false },
             isCheers: {
                 type: Boolean,
                 default: false
             },
-            createdAt: Date
+            createdAt: { type: Date, default: Date.now }
         }
     ]
 },
@@ -58,15 +58,16 @@ const StickerboardSchema = new mongoose.Schema({
     },
 );
 
+// stickerboard names no longer unique, let's add an index
+StickerboardSchema.index({ user: 1, name: 1 }, { unique: true });
+
 // create a stickerboard slug from the name.
 StickerboardSchema.pre('save', function () {
     this.slug = slugify(this.name, { lower: true });
-    console.log('Slugify ran', this.name.yellow.bold);
 });
 
 // Cascade delete stix and comments when a stickerboard is deleted
 StickerboardSchema.pre('deleteOne', { document: true, query: false },async function (next) {
-    console.log(`Stickerboard ${this._id} deleted, stix and comments associated with it deleted`.red.inverse);
     await this.model('Stick').deleteMany( { belongsToBoard: this._id });
     await this.model('Comment').deleteMany( { belongsToBoard: this._id });
 });

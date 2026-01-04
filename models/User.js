@@ -12,6 +12,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add an email address'],
         unique: [true, 'Email address already registered'],
+        lowercase: true,
         match: [
             /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
             'Please enter a valid email address'

@@ -179,7 +179,7 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
             window.location.hash = '#/board/create';
             return;
           }
-          const boardToken = board.slug || board._id || board.id;
+          const boardToken = board._id || board.id || board.slug;
           if (boardToken) {
             window.location.hash = `#/board/${boardToken}`;
             return;

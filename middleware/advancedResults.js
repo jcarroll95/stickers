@@ -28,7 +28,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     // regex goes between //s, \b word boundary, /g global
     // Create comparison operators we can pass to mongoose
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in|ne)\b/g, match => `$${match}`);
-    console.log(queryStr);
+    // console.log(queryStr);
 
     // Find the resource now that queryStr has been massaged to work for the mongoose method
     query = model.find(JSON.parse(queryStr));
@@ -47,7 +47,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
         // .split turns them into an array, join rejoins them space delimited
         const fields = req.query.select.split(',').join(' ');
         query = query.select(fields);
-        console.log(`Selected these fields: ${fields}`.yellow.underline);
+        // console.log(`Selected these fields: ${fields}`.yellow.underline);
     }
 
     // Pagination stuff

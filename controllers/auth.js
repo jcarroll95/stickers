@@ -21,19 +21,21 @@ function assertValidEmailAndPassword(email, password) {
   }
 }
 
-// @desc    Register User
-// @route   POST /api/v1/auth/register
-// @access  Public
+/**
+ * @desc    Register User
+ * @route   POST /api/v1/auth/register
+ * @access  Public
+*/
 exports.register = asyncHandler(async (req, res, next) => {
 
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     // create user
     const user = await User.create({
         name,
         email,
         password,
-        role
+        role: (process.env.NODE_ENV === 'test' && req.body.role) ? req.body.role : 'user'
     });
 
     // create token - LOWERCASE user because this is a static method from our mongoose model
@@ -42,10 +44,12 @@ exports.register = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, token });
 })
 
-// @desc    Login User
-// @route   POST /api/v1/auth/login
-// @access  Public
-exports.login = asyncHandler(async (req, res, next) => {
+/**
+ * @desc    Login User
+ * @route   POST /api/v1/auth/login
+ * @access  Public
+*/
+ exports.login = asyncHandler(async (req, res, next) => {
 
     const { email, password } = req.body;
 
@@ -77,10 +81,12 @@ exports.login = asyncHandler(async (req, res, next) => {
     sendTokenResponse(user, 200, res);
 })
 
-// @desc    Logout current logged in user and clear cookie
-// @route   GET /api/v1/auth/logout
-// @access  Private
-exports.logout = asyncHandler(async (req, res, next) => {
+/**
+ * @desc    Logout current logged in user and clear cookie
+ * @route   GET /api/v1/auth/logout
+ * @access  Private
+*/
+ exports.logout = asyncHandler(async (req, res, next) => {
     res.cookie('token', 'none', {expires: new Date(Date.now() + 10 * 1000), httpOnly: true});
 
     res.status(200).json({
@@ -90,9 +96,11 @@ exports.logout = asyncHandler(async (req, res, next) => {
 
 });
 
-// @desc    Get current logged in user
-// @route   GET /api/v1/auth/me
-// @access  Private
+/**
+ * @desc    Get current logged in user
+ * @route   GET /api/v1/auth/me
+ * @access  Private
+*/
 exports.getMe = asyncHandler(async (req, res, next) => {
    const user = await User.findById(req.user.id);
 
@@ -103,9 +111,11 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 
 });
 
-// @desc    Forgot Password
-// @route   POST /api/v1/auth/forgotpassword
-// @access  Public
+/**
+ * @desc    Forgot Password
+ * @route   POST /api/v1/auth/forgotpassword
+ * @access  Public
+*/
 exports.forgotPassword = asyncHandler(async (req, res, next) => {
     const user = await User.findOne({ email: req.body.email });
 
@@ -145,9 +155,11 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
 });
 
-// @desc    Reset Password
-// @route   PUT /api/v1/auth/resetpassword/:resettoken
-// @access  Private
+/**
+ * @desc    Reset Password
+ * @route   PUT /api/v1/auth/resetpassword/:resettoken
+ * @access  Private
+*/
 exports.resetPassword = asyncHandler(async (req, res, next) => {
     // get hashed token
     const resetPasswordToken = crypto.createHash('sha256')
@@ -199,13 +211,11 @@ const sendTokenResponse = (user, statusCode, res) => {
         });
 }
 
-// =======================
-// Email verification flow
-// =======================
-
-// @desc    Start registration (send verification code)
-// @route   POST /api/v1/auth/register-start
-// @access  Public
+/**
+ * @desc    Start registration (send verification code)
+ * @route   POST /api/v1/auth/register-start
+ * @access  Public
+*/
 exports.registerStart = asyncHandler(async (req, res, next) => {
   const email = normalizeEmail(req.body.email);
   const password = req.body.password;
@@ -220,11 +230,11 @@ exports.registerStart = asyncHandler(async (req, res, next) => {
     return res.status(200).json({ success: true });
   }
 
-  // Create pending user if not exists
+  // Create pending user if not extant
   if (!user) {
     user = await User.create({ name, email, password, isVerified: false });
   } else {
-    // User exists but unverified: update password if provided (optional), but do not fail
+    // User exists but unverified: update password if provided (optional)
     if (password) user.password = password; // will be hashed on save
   }
 
@@ -245,9 +255,11 @@ exports.registerStart = asyncHandler(async (req, res, next) => {
   return res.status(200).json({ success: true });
 });
 
-// @desc    Verify email with code and complete registration
-// @route   POST /api/v1/auth/register-verify
-// @access  Public
+/**
+ * @desc    Verify email with code and complete registration
+ * @route   POST /api/v1/auth/register-verify
+ * @access  Public
+*/
 exports.registerVerify = asyncHandler(async (req, res, next) => {
   const email = normalizeEmail(req.body.email);
   const code = String(req.body.code || '');
@@ -295,9 +307,11 @@ exports.registerVerify = asyncHandler(async (req, res, next) => {
   sendTokenResponse(user, 200, res);
 });
 
-// @desc    Resend verification code
-// @route   POST /api/v1/auth/register-resend
-// @access  Public
+/**
+ * @desc    Resend verification code
+ * @route   POST /api/v1/auth/register-resend
+ * @access  Public
+*/
 exports.registerResend = asyncHandler(async (req, res, next) => {
   const email = normalizeEmail(req.body.email);
   if (!email) return next(new ErrorResponse('Email is required', 400));
@@ -324,9 +338,11 @@ exports.registerResend = asyncHandler(async (req, res, next) => {
   return res.status(200).json({ success: true });
 });
 
-// @desc    Update user details
-// @route   PUT /api/v1/auth/updatedetails
-// @access  Private
+/**
+ * @desc    Update user details
+ * @route   PUT /api/v1/auth/updatedetails
+ * @access  Private
+*/
 exports.updateDetails = asyncHandler(async (req, res, next) => {
     // this is just for name and email updates: therefore do not apply req.body to the  model, because someone
     // could inject other fields like changing their role
@@ -346,9 +362,11 @@ exports.updateDetails = asyncHandler(async (req, res, next) => {
 
 });
 
-// @desc    Update Password
-// @route   PUT /api/v1/auth/updatepassword
-// @access  Private
+/**
+ * @desc    Update Password
+ * @route   PUT /api/v1/auth/updatepassword
+ * @access  Private
+*/
 exports.updatePassword = asyncHandler(async (req, res, next) => {
     // we are going to find the user by the logged in id AND add in comparison to the stored password which is
     // not selected by default in our model
