@@ -4,10 +4,12 @@ const asyncHandler = require('../middleware/async');
 const Stick = require('../models/Stick');
 const Stickerboard = require('../models/Stickerboard');
 
-// @desc    Get stix
-// @route   GET /api/v1/stix
-// @route   GET /api/v1/stickerboards/:belongsToBoard/stix
-// @access  Private
+/**
+ * @desc    Get stix
+ * @route   GET /api/v1/stix
+ * @route   GET /api/v1/stickerboards/:belongsToBoard/stix
+ * @access  Private
+*/
 exports.getStix = asyncHandler(async (req, res, next) => {
 
     if (req.params.belongsToBoard) {
@@ -39,9 +41,11 @@ exports.getStix = asyncHandler(async (req, res, next) => {
 
 });
 
-// @desc    Get stick
-// @route   GET /api/v1/stix/:stickId
-// @access  Private
+/**
+ * @desc    Get stick
+ * @route   GET /api/v1/stix/:stickId
+ * @access  Private
+*/
 exports.getStick = asyncHandler(async (req, res, next) => {
     const stick = await Stick.findById(req.params.stickId).populate( {
         path: 'belongsToBoard',
@@ -58,49 +62,81 @@ exports.getStick = asyncHandler(async (req, res, next) => {
     })
 });
 
-// @desc    Add a stick
-// @route   POST /api/v1/stix/:belongsToBoard
-// @access  Private
+/**
+ * @desc    Add a stick
+ * @route   POST /api/v1/stix/:belongsToBoard
+ * @access  Private
+*/
 exports.addStick = asyncHandler(async (req, res, next) => {
-    // we need the stickerboard _id that's in the URL to become something we can submit in the body of our
-    // response which is adding a new stick IAW our stick model, so let's manually grab it:
-    req.body.belongsToBoard = req.params.belongsToBoard;
+    const mongoose = require('mongoose');
 
-    req.body.user = req.user.id;
+    // Field allowlist for Stick
+    const allowedFields = [
+        'stickNumber', 'stickMed', 'stickLocation', 'stickLocMod', 
+        'stickDose', 'userTime', 'userDate', 'description', 
+        'nsv', 'weight', 'cost'
+    ];
+    const stickData = {
+        belongsToBoard: req.params.belongsToBoard,
+        user: req.user.id
+    };
+    allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) stickData[field] = req.body[field];
+    });
 
-    // all sticks are associated with a stickerboard. adding a stick must be done by the owner of that board.
+    // Start session for atomic update
+    const session = await mongoose.startSession();
+    let useTransaction = true;
 
-    // get the stickerboard by ID
-    const stickerboard = await Stickerboard.findById(req.params.belongsToBoard);
-    // if it doesn't exist, throw an error
-    if (!stickerboard) {
-        return next(new ErrorResponse(`No stickerboard found with id ${req.params.belongsToBoard}`, 404));
-    }
-
-    // make sure this user owns the stickerboard
-    if (stickerboard.user.toString() !== req.user.id && req.user.role !== 'admin') {
-        return next(
-            new ErrorResponse(`User ${req.user.id} is not authorized to add stix to board ${stickerboard.id}`, 401)
-        )
-    }
-
-    // mongoose .create IAW our stick model, creating a document that contains the data in our req.body
-    const stick = await Stick.create(req.body);
-
-    // Also add a new sticker entry to the stickerboard's stickers[] palette
     try {
-        // Ensure stickers array exists
+        await session.startTransaction();
+        // Force a dummy operation to verify transaction support
+        if (useTransaction) {
+            await Stickerboard.findOne({ _id: new mongoose.Types.ObjectId() }).session(session);
+        }
+    } catch (err) {
+        // Fallback for non-replica set environments
+        if (err.code === 20 || err.message.includes('replica set') || err.message.includes('Transaction numbers')) {
+            useTransaction = false;
+            if (session.inTransaction()) {
+                await session.abortTransaction();
+            }
+        } else {
+            session.endSession();
+            return next(err);
+        }
+    }
+
+    try {
+        const sessionOpt = useTransaction ? { session } : {};
+
+        // 1. Check if stickerboard exists and user owns it
+        const stickerboard = await Stickerboard.findById(req.params.belongsToBoard).session(useTransaction ? session : null);
+        if (!stickerboard) {
+            if (useTransaction) await session.abortTransaction();
+            session.endSession();
+            return next(new ErrorResponse(`No stickerboard found with id ${req.params.belongsToBoard}`, 404));
+        }
+
+        if (stickerboard.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            if (useTransaction) await session.abortTransaction();
+            session.endSession();
+            return next(new ErrorResponse(`User ${req.user.id} is not authorized to add stix to board ${stickerboard.id}`, 401));
+        }
+
+        // 2. Create the stick
+        const stick = await Stick.create([stickData], sessionOpt);
+        const newStick = stick[0]; // create with session returns an array
+
+        // 3. Update the stickerboard palette
         if (!Array.isArray(stickerboard.stickers)) {
             stickerboard.stickers = [];
         }
 
-        // Determine preferred stickerId between 0-9 based on the stick number
-        // (Modulo 10 to rotate through the 10 available sticker assets)
         let chosenId = 0;
-        if (typeof stick.stickNumber === 'number') {
-            chosenId = stick.stickNumber % 10;
+        if (typeof newStick.stickNumber === 'number') {
+            chosenId = newStick.stickNumber % 10;
         } else {
-            // Fallback to finding first unused if stickNumber is missing
             const used = new Set(
                 stickerboard.stickers
                     .map((s) => (typeof s?.stickerId === 'number' ? s.stickerId : null))
@@ -123,31 +159,37 @@ exports.addStick = asyncHandler(async (req, res, next) => {
             scale: 1,
             rotation: 0,
             zIndex: 0,
-            stuck: false, // ensure initial state is not placed yet
+            stuck: false,
             createdAt: now
         };
 
-        stickerboard.stickers.push(newSticker);
-        await stickerboard.save();
-    } catch (e) {
-        // If updating the palette fails, do not fail stick creation; log error and continue
-        // eslint-disable-next-line no-console
-        console.error('Failed to update stickerboard palette after stick creation:', e);
-    }
+        await Stickerboard.findByIdAndUpdate(
+            req.params.belongsToBoard,
+            { $push: { stickers: newSticker } },
+            { ...sessionOpt, new: true, runValidators: true }
+        );
 
-    res.status(200).json({
-        success: true,
-        data: stick
-    })
+        if (useTransaction) await session.commitTransaction();
+        session.endSession();
+
+        res.status(200).json({
+            success: true,
+            data: newStick
+        });
+    } catch (err) {
+        if (useTransaction) await session.abortTransaction();
+        session.endSession();
+        next(err);
+    }
 });
 
-
-// @desc    Update a stick
-// @route   PUT /api/v1/stix/:stickId
-// @access  Private
+/**
+ * @desc    Update a stick
+ * @route   PUT /api/v1/stix/:stickId
+ * @access  Private
+*/
 exports.updateStick = asyncHandler(async (req, res, next) => {
-    // get the stickerboard by ID and replace the data with json passed in the req body
-    // new: true will return the newly updated mongo data in stick
+    // get the stick by ID
     let stick = await Stick.findById(req.params.stickId);
     // if it doesn't exist, throw an error
     if (!stick) {
@@ -161,7 +203,18 @@ exports.updateStick = asyncHandler(async (req, res, next) => {
         )
     }
 
-    stick = await Stick.findByIdAndUpdate(req.params.stickId, req.body, {
+    // Field allowlist for Stick updates
+    const allowedFields = [
+        'stickNumber', 'stickMed', 'stickLocation', 'stickLocMod', 
+        'stickDose', 'userTime', 'userDate', 'description', 
+        'nsv', 'weight', 'cost'
+    ];
+    const updateData = {};
+    allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) updateData[field] = req.body[field];
+    });
+
+    stick = await Stick.findByIdAndUpdate(req.params.stickId, updateData, {
         new: true,
         runValidators: true
     });
@@ -172,9 +225,11 @@ exports.updateStick = asyncHandler(async (req, res, next) => {
     })
 });
 
-// @desc    Delete a stick
-// @route   DELETE /api/v1/stix/:stickId
-// @access  Private
+/**
+ * @desc    Delete a stick
+ * @route   DELETE /api/v1/stix/:stickId
+ * @access  Private
+*/
 exports.deleteStick = asyncHandler(async (req, res, next) => {
     let stick = await Stick.findById(req.params.stickId);
     // if it doesn't exist, throw an error

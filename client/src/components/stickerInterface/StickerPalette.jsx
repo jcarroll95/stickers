@@ -27,7 +27,11 @@ const StickerPalette = ({
       {isControlled ? (() => {
         const available = (internalStickers || [])
           .map((s, i) => ({ entry: s, index: i }))
-          .filter(({ entry }) => !entry.stuck && isValidStickerId(entry?.stickerId, entry?.isCheers));
+          .filter(({ entry }) => 
+            !entry.stuck && 
+            isValidStickerId(entry?.stickerId, entry?.isCheers) &&
+            (isCheersMode ? entry.isCheers : !entry.isCheers)
+          );
 
         if (available.length === 0) {
           return (

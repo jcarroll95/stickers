@@ -85,7 +85,7 @@ const UserSettings = () => {
         setUpdating(true);
         setMessage({ text: '', type: '' });
         try {
-            await apiClient.put(`/stickerboard/${boardData.id}`, { name: boardData.name });
+            await apiClient.put(`/stickerboards/${boardData.id}`, { name: boardData.name });
             setMessage({ text: 'Board name updated successfully!', type: 'success' });
         } catch (err) {
             setMessage({ text: err.response?.data?.error || 'Failed to update board name.', type: 'error' });

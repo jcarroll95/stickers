@@ -15,6 +15,10 @@ User = require('./models/User');
 Comment = require('./models/Comment');
 
 // Connect to MongoDB database
+if (process.env.NODE_ENV === 'test') {
+    console.error('Seeder should not be run in test environment'.red);
+    process.exit(1);
+}
 mongoose.connect(process.env.MONGO_URI);
 
 // Read JSON data files from our data folder
@@ -63,7 +67,7 @@ const importData = async (cliFlag) => {
 // Delete selected data from the db
 const deleteData = async (cliFlag) => {
     try {
-        // Mongo-created IDs will become desync'd so comment out what you don't want to delete
+        // Mongo-created IDs will become desync'd so remove what you don't want to delete
         if (cliFlag === 'stix') {
             await Stick.deleteMany();
         } else if (cliFlag === 'comments') {
@@ -72,6 +76,9 @@ const deleteData = async (cliFlag) => {
             await User.deleteMany();
         } else if (cliFlag === 'stickerboards') {
             await Stickerboard.deleteMany();
+        } else if (cliFlag === 'index') {
+            await Stickerboard.collection.dropIndex("name_1");
+            await Stickerboard.syncIndexes();
         } else {
             await Stickerboard.deleteMany();
             await Stick.deleteMany();

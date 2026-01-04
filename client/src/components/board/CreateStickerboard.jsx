@@ -50,7 +50,7 @@ export default function CreateStickerboard() {
       // apiClient returns response.data (the body)
       // Body is { success: true, data: board }
       const board = data.data || data;
-      const tokenForRoute = board?.slug || board?._id || board?.id;
+      const tokenForRoute = board?._id || board?.id || board?.slug;
       if (tokenForRoute) {
         window.location.hash = `#/board/${tokenForRoute}`;
       } else {

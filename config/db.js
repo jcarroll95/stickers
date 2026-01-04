@@ -4,9 +4,11 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-// mongoose connect returns a promise, we could use 
-// mongoose.connect().then() but we'll use async await instead
-// we'll pass in some settings to avoid warnings
+    // Extra safety: never connect to a real DB if we are in test mode
+    if (process.env.NODE_ENV === 'test') {
+        console.error('Attempted to call connectDB() in test environment. Skipping.'.red);
+        return;
+    }
 
     const conn = await mongoose.connect(process.env.MONGO_URI);
     /* These are defaults now, using them in this manner is deprecated

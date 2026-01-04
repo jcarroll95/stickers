@@ -93,8 +93,8 @@ const Navbar = () => {
                 return;
             }
 
-            // Prefer slug route if available, else id. Keep hash-based routing consistent with app.
-            const boardToken = board.slug || board._id || board.id;
+            // Prefer id route to ensure uniqueness, else slug. Keep hash-based routing consistent with app.
+            const boardToken = board._id || board.id || board.slug;
             if (boardToken) {
                 window.location.hash = `#/board/${boardToken}`;
             } else {
@@ -145,8 +145,8 @@ const Navbar = () => {
             // 3. Pick a random board
             const randomBoard = boards[Math.floor(Math.random() * boards.length)];
 
-            // 4. Navigate
-            const boardToken = randomBoard.slug || randomBoard._id || randomBoard.id;
+            // 4. Navigate (prefer id for uniqueness)
+            const boardToken = randomBoard._id || randomBoard.id || randomBoard.slug;
             if (boardToken) {
                 window.location.hash = `#/board/${boardToken}`;
             } else {

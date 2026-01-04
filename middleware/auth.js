@@ -22,10 +22,10 @@ exports.protect = asyncHandler(async (req, res, next) => {
     try {
         // verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log(decoded);
+        // console.log(decoded);
         // get the decoded id from the token and find that user in the db
         req.user = await User.findById(decoded.id);
-
+        if (!req.user) return next(new ErrorResponse('Not authorized to access this route', 401));
         next();
     } catch (err) {
         return next(new ErrorResponse('Not authorized to access this route', 401));

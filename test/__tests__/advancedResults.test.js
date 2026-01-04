@@ -24,7 +24,13 @@ async function createBoard({ name, description, userToken }) {
 
 async function registerAndLogin({ name = 'User', email, password = 'Pass123!', role = 'vipuser' } = {}) {
   const reg = await request(appServer).post('/api/v1/auth/register').send({ name, email, password, role }).expect(200);
-  return reg.body.token;
+  const token = reg.body.token;
+  // If role is NOT user, we might need to update the user record directly as registration might have hardcoded it
+  if (role !== 'user') {
+    const User = require('../../models/User');
+    await User.updateOne({ email: email.toLowerCase() }, { role });
+  }
+  return token;
 }
 
 describe('middleware/advancedResults unit coverage', () => {

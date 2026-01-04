@@ -89,7 +89,6 @@ export default function StickerInterface(props) {
             onClear={() => persistPlacements([])}
             onFinalize={finalizeLatestPlacement}
             canFinalize={placements.length > 0}
-            isCheersMode={isCheersMode}
           />
         </div>
       )}

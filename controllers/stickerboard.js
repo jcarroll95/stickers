@@ -4,20 +4,15 @@ const ErrorResponse = require('../utils/errorResponse');
 const Stickerboard = require('../models/Stickerboard');
 const asyncHandler = require('../middleware/async');
 
-
-// @desc Get all stickerboards
-// @route GET /api/v1/stickerboards
-// @access Public
+/**
+ * @desc Get all stickerboards
+ * @route GET /api/v1/stickerboards
+ * @access Public
+*/
 exports.getStickerboards = asyncHandler(async (req, res, next) => {
-    // await on the async call to .find() for find all stickerboards, and return success
-    // console.log(req.query)
-    // const stickerboards = await Stickerboard.find();
-    // we'll modify the basic routine above to use a regex to make the query conform
-    // to the MONGODB query operators standards for > < >= <=
-
     let query;  // just initialize
 
-    // Spread operator to copy query element of req into a new object
+    // Spread operator fun
     const reqQuery = { ...req.query };
 
     // Array of Fields to exclude when filtering
@@ -88,43 +83,33 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
         }
     }
 
-
     // Publish the response
     res
         .status(200)
         .json(res.advancedResults);
 });
 
-// @desc Get single stickerboard
-// @route GET /api/v1/stickerboards/:id
-// @access Public
+/**
+ * @desc Get single stickerboard
+ * @route GET /api/v1/stickerboards/:id
+ * @access Public
+*/
 exports.getStickerboard = asyncHandler(async (req, res, next) => {
         const stickerboard = await Stickerboard.findById(req.params.id).populate('stix').populate('comments');
-
-        // since we're looking for a specific ID, it's possible that one doesn't exist
-        // if it doesn't exist then stickerboard will be empty
-        // we have to RETURN res.status this time since we already set it in the statement
-        // above, and we will get an error sending the header twice
 
         if(!stickerboard) {
             return next(
                 new ErrorResponse(`Stickerboard not found with id of ${req.params.id}`, 404)
             );
         }
-        // res.status(400).json({ success: false });
-        // We'll modify this basic error response to conform to the Express.js guide which says
-        // "For errors returned from asynchronous functions invoked by route handlers and middleware,
-        // you must pass them the next() function, where Express will catch and process them. If we don't
-        // want Express to handle the error (it outputs an HTML page, we want to output JSON data) then you
-        // have to create your own error handler function. To do this you must delegate
-
         res.status(200).json({ success: true, data: stickerboard });
 });
 
-
-// @desc      Create new stickerboard
-// @route     POST /api/v1/stickerboards
-// @access    Private
+/**
+ * @desc      Create new stickerboard
+ * @route     POST /api/v1/stickerboards
+ * @access    Private
+*/
 exports.createStickerboard = asyncHandler(async (req, res, next) => {
     // Add user to req.body
     req.body.user = req.user.id;
@@ -146,87 +131,168 @@ exports.createStickerboard = asyncHandler(async (req, res, next) => {
 
 });
 
-// @desc Update stickerboard
-// @route PUT /api/v1/stickerboards/:id
-// @access Private
-exports.updateStickerboard = asyncHandler(async (req, res, next) => {
+/**
+ * Helper: constructs a validated cheers sticker object
+ * @param {Object} input - Raw sticker data from client
+ * @returns {Object|null} - Validated sticker or null if invalid
+ */
+function buildCheersSticker(input) {
+    if (!input || typeof input !== 'object') return null;
+    const stickerId = Number(input.stickerId);
+    const x = Number(input.x);
+    const y = Number(input.y);
 
-    // The mongoose method findByIdAndUpdate will take the id parameter from the route, and apply JSON data contained
-    // in the body against matching fields in the schema, with the defined validation.
-        let stickerboard = await Stickerboard.findById(req.params.id);
+    // basic numeric checks (schema will also validate)
+    if (!Number.isFinite(stickerId) || !Number.isFinite(x) || !Number.isFinite(y)) return null;
+
+    return {
+        stickerId,
+        x,
+        y,
+        scale: Number.isFinite(Number(input.scale)) ? Number(input.scale) : 1,
+        rotation: Number.isFinite(Number(input.rotation)) ? Number(input.rotation) : 0,
+        zIndex: Number.isFinite(Number(input.zIndex)) ? Number(input.zIndex) : 0,
+        stuck: true,
+        isCheers: true,
+        createdAt: new Date()
+    };
+}
+
+/**
+ * @desc Update stickerboard
+ * @route PUT /api/v1/stickerboards/:id
+ * @access Private
+*/
+exports.updateStickerboard = asyncHandler(async (req, res, next) => {
+    const mongoose = require('mongoose');
+    const User = require('../models/User');
+
+    // Start session
+    const session = await mongoose.startSession();
+    let useTransaction = true;
+
+    try {
+        await session.startTransaction();
+        // Force a dummy operation to verify transaction support
+        if (useTransaction) {
+            await Stickerboard.findOne({ _id: new mongoose.Types.ObjectId() }).session(session);
+        }
+    } catch (err) {
+        // Fallback for environments without replica sets (e.g. local dev)
+        // Error 20: Transaction numbers are only allowed on a replica set member
+        if (err.code === 20 || err.message.includes('replica set') || err.message.includes('Transaction numbers')) {
+            useTransaction = false;
+            if (session.inTransaction()) {
+                await session.abortTransaction();
+            }
+        } else {
+            session.endSession();
+            return next(err);
+        }
+    }
+
+    try {
+        const sessionOpt = useTransaction ? { session } : {};
+        let stickerboard = await Stickerboard.findById(req.params.id).session(useTransaction ? session : null);
 
         if (!stickerboard) {
-            return next(
-                new ErrorResponse(`Stickerboard not found with id of ${req.params.id}`, 404)
-            );
+            if (useTransaction) await session.abortTransaction();
+            session.endSession();
+            return next(new ErrorResponse(`Stickerboard not found with id of ${req.params.id}`, 404));
         }
 
         // Check ownership
         const isOwner = stickerboard.user.toString() === req.user.id;
         const isAdmin = req.user.role === 'admin';
 
+        let candidateSticker;
+
         if (!isOwner && !isAdmin) {
-            // If not owner/admin, they can ONLY update the 'stickers' field (Cheers! functionality)
+            // Non-owner updates: must ONLY be adding a sticker
             const updates = Object.keys(req.body);
-            const isOnlyStickers = updates.length === 1 && updates[0] === 'stickers';
+            const isOnlyStickers = updates.length === 1 && (updates[0] === 'stickers' || updates[0] === 'sticker');
 
             if (!isOnlyStickers) {
-                return next(
-                    new ErrorResponse(`User ${req.user.id} is not authorized to update this board fields other than stickers`, 401)
-                );
+                if (useTransaction) await session.abortTransaction();
+                session.endSession();
+                return next(new ErrorResponse(`User ${req.user.id} is not authorized to update this board`, 401));
             }
 
-            // Also validate that they are ADDING a sticker that they have
-            if (!Array.isArray(req.body.stickers) || req.body.stickers.length <= stickerboard.stickers.length) {
-                return next(
-                    new ErrorResponse(`Invalid stickers update for non-owner`, 400)
-                );
-            }
-
-            const newSticker = req.body.stickers[req.body.stickers.length - 1];
-            const User = require('../models/User');
-            const user = await User.findById(req.user.id);
-
-            if (!user || !user.cheersStickers.includes(newSticker.stickerId)) {
-                return next(
-                    new ErrorResponse(`User does not have the required Cheers! sticker`, 400)
-                );
-            }
-        }
-
-        // in this instance .findOneAndUpdate is requiring an OBJECT as the filter param { _id: req.params.id }
-        // rather than simply passing in req.params.id and I don't know why it works everywhere else but not here.
-        stickerboard = await Stickerboard.findOneAndUpdate({ _id: req.params.id }, req.body, {
-            new: true,
-            runValidators: true
-        });
-
-        // If the update includes adding a sticker by a user who is not the owner,
-        // we treat it as a "Cheers!" sticker and consume it from their account.
-        // req.user.id is the person making the request.
-        if (req.body.stickers && Array.isArray(req.body.stickers)) {
-            const lastSticker = req.body.stickers[req.body.stickers.length - 1];
-            // If the user is NOT the owner, and they just added a sticker
-            if (stickerboard.user.toString() !== req.user.id && lastSticker && lastSticker.stuck === true) {
-                const User = require('../models/User');
-                const user = await User.findById(req.user.id);
-                if (user && user.cheersStickers.includes(lastSticker.stickerId)) {
-                    // Consume the sticker
-                    const index = user.cheersStickers.indexOf(lastSticker.stickerId);
-                    if (index > -1) {
-                        user.cheersStickers.splice(index, 1);
-                        await user.save({ validateBeforeSave: false });
-                    }
+            // Extract candidate sticker
+            if (Array.isArray(req.body.stickers)) {
+                if (req.body.stickers.length <= stickerboard.stickers.length) {
+                    if (useTransaction) await session.abortTransaction();
+                    session.endSession();
+                    return next(new ErrorResponse(`Invalid stickers update: must append a sticker`, 400));
                 }
+                candidateSticker = req.body.stickers[req.body.stickers.length - 1];
+            } else if (req.body.sticker && typeof req.body.sticker === 'object') {
+                candidateSticker = req.body.sticker;
+            } else {
+                if (useTransaction) await session.abortTransaction();
+                session.endSession();
+                return next(new ErrorResponse(`Invalid stickers update: missing sticker data`, 400));
             }
+
+            // Whitelist and build sticker
+            const stickerToInsert = buildCheersSticker(candidateSticker);
+            if (!stickerToInsert) {
+                if (useTransaction) await session.abortTransaction();
+                session.endSession();
+                return next(new ErrorResponse(`Invalid sticker data provided`, 400));
+            }
+
+            // 1. Consume sticker first (atomic conditional update)
+            const consumeRes = await User.updateOne(
+                { _id: req.user.id, cheersStickers: stickerToInsert.stickerId },
+                { $pull: { cheersStickers: stickerToInsert.stickerId } },
+                sessionOpt
+            );
+
+            if (consumeRes.modifiedCount !== 1) {
+                if (useTransaction) await session.abortTransaction();
+                session.endSession();
+                return next(new ErrorResponse(`User does not have the required Cheers! sticker`, 400));
+            }
+
+            // 2. Append to board
+            stickerboard = await Stickerboard.findOneAndUpdate(
+                { _id: req.params.id },
+                { $push: { stickers: stickerToInsert } },
+                { new: true, runValidators: true, ...sessionOpt }
+            );
+        } else {
+            // Owners/Admins update
+            // Field allowlist for board metadata
+            const allowedBoardFields = ['name', 'description', 'tags', 'photo', 'stickers'];
+            const updateData = {};
+            allowedBoardFields.forEach(field => {
+                if (req.body[field] !== undefined) updateData[field] = req.body[field];
+            });
+
+            stickerboard = await Stickerboard.findOneAndUpdate(
+                { _id: req.params.id },
+                updateData,
+                { new: true, runValidators: true, ...sessionOpt }
+            );
         }
+
+        if (useTransaction) await session.commitTransaction();
+        session.endSession();
 
         res.status(200).json({ success: true, data: stickerboard });
+    } catch (err) {
+        if (useTransaction) await session.abortTransaction();
+        session.endSession();
+        next(err);
+    }
 });
 
-// @desc Delete stickerboard
-// @route DELETE /api/v1/stickerboards/:id
-// @acess Private
+/**
+ * @desc Delete stickerboard
+ * @route DELETE /api/v1/stickerboards/:id
+ * @acess Private
+*/
 exports.deleteStickerboard = asyncHandler(async (req, res, next) => {
         const stickerboard = await Stickerboard.findById(req.params.id);
 
@@ -250,9 +316,11 @@ exports.deleteStickerboard = asyncHandler(async (req, res, next) => {
         res.status(200).json({ success: true, data: {} });
 });
 
-// @desc Upload photo for stickerboard
-// @route PUT /api/v1/stickerboards/:id/photo
-// @acess Private
+/**
+ * @desc Upload photo for stickerboard
+ * @route PUT /api/v1/stickerboards/:id/photo
+ * @acess Private
+*/
 exports.stickerboardPhotoUpload= asyncHandler(async (req, res, next) => {
     const stickerboard = await Stickerboard.findById(req.params.id);
 
