@@ -1,6 +1,7 @@
 const request = require('supertest');
 const app = require('../../server');
 const User = require('../../models/User');
+const { registerVerifyLogin, authHeader } = require('./authHelpers');
 
 describe('Auth email verification flow and auth middleware branches', () => {
   test('register-start basic flow and cooldown branch (second call still 200)', async () => {
@@ -74,16 +75,14 @@ describe('Auth email verification flow and auth middleware branches', () => {
 
   test('register-start early-return branch when user already verified', async () => {
     const email = `verified-${Date.now()}@example.com`;
+    const password = 'Pass123!';
+    
     // Create a verified user directly
-    await request(app)
-      .post('/api/v1/auth/register')
-      .send({ name: 'V2', email, password: 'Pass123!', role: 'user' })
-      .expect(200);
-    await User.updateOne({ email }, { isVerified: true });
+    await registerVerifyLogin({ name: 'V2', email, password, role: 'user' });
 
     const res = await request(app)
       .post('/api/v1/auth/register-start')
-      .send({ name: 'V2', email, password: 'Pass123!' })
+      .send({ name: 'V2', email, password })
       .expect(200);
     expect(res.body.success).toBe(true);
   });

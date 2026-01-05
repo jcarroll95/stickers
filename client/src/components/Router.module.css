@@ -1,0 +1,13 @@
+.routerContainer {
+  /* No specific styles yet, just a wrapper */
+}
+
+.notFoundContainer {
+  padding: 1rem;
+}
+
+.notFoundCode {
+  background-color: #f3f4f6;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}

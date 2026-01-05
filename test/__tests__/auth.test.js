@@ -1,37 +1,19 @@
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
 const app = require('../../server');
 const User = require('../../models/User');
+const { registerVerifyLogin, authHeader } = require('./authHelpers');
 
 describe('Auth routes', () => {
   test('register, login, and access protected /me', async () => {
     const email = 'alice@example.com';
     const password = 'P@ssw0rd!';
 
-    // Register
-    const reg = await request(app)
-      .post('/api/v1/auth/register')
-      .send({ name: 'Alice', email, password, role: 'user' })
-      .expect(200);
-    expect(reg.body.success).toBe(true);
-    expect(reg.body.token).toBeDefined();
-
-    // Login
-    // New flow requires verified email before login
-    await User.updateOne({ email }, { isVerified: true });
-    const login = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email, password })
-      .expect(200);
-    expect(login.body.success).toBe(true);
-    expect(login.body.token).toBeDefined();
-
-    const token = login.body.token;
+    const { token } = await registerVerifyLogin({ name: 'Alice', email, password });
 
     // Access protected /me with Bearer token
     const me = await request(app)
       .get('/api/v1/auth/me')
-      .set('Authorization', `Bearer ${token}`)
+      .set(authHeader(token))
       .expect(200);
 
     expect(me.body.success).toBe(true);
@@ -60,25 +42,12 @@ describe('Auth routes', () => {
     const password = 'Pass123!';
 
     // Register and login to get a valid token
-    await request(app)
-      .post('/api/v1/auth/register')
-      .send({ name: 'Dave', email, password, role: 'user' })
-      .expect(200);
-
-    // Mark user as verified to allow login
-    await User.updateOne({ email }, { isVerified: true });
-
-    const login = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email, password })
-      .expect(200);
-
-    const token = login.body.token;
+    const { token } = await registerVerifyLogin({ name: 'Dave', email, password });
 
     // Attempt to update password with wrong currentPassword
     const res = await request(app)
       .put('/api/v1/auth/updatepassword')
-      .set('Authorization', `Bearer ${token}`)
+      .set(authHeader(token))
       .send({ currentPassword: 'Wrong123!', newPassword: 'NewPass123!' })
       .expect(401);
 

@@ -119,7 +119,7 @@ describe('Navbar', () => {
     fireEvent.click(myBoardLink);
 
     await waitFor(() => {
-      expect(window.location.hash).toBe('#/board/my-board');
+      expect(window.location.hash).toBe('#/board/b1');
     });
   });
 
@@ -152,7 +152,7 @@ describe('Navbar', () => {
     fireEvent.click(cheerBtn);
 
     await waitFor(() => {
-      expect(window.location.hash).toBe('#/board/other-board');
+      expect(window.location.hash).toBe('#/board/b2');
     });
   });
 });

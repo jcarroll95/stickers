@@ -18,7 +18,7 @@ const STICK_LOC_MODS = ['Left', 'Right', 'Upper', 'Upper Left', 'Upper Right', '
  * @param {string} [props.title='Add a new Stick'] - Heading for the form
  * @param {number} [props.nextStickNumber] - The number to assign to the new stick
  */
-export default function AddStickForm({ boardId, onCreated, onCancel, title = 'Add a new Stick', nextStickNumber }) {
+export default function AddStickForm({ boardId, onCreated, onCancel, title = 'Add a new Stick', nextStickNumber, className }) {
   const [values, setValues] = useState({
     stickNumber: '',
     stickMed: '',
@@ -137,7 +137,7 @@ export default function AddStickForm({ boardId, onCreated, onCancel, title = 'Ad
   }
 
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
+    <form onSubmit={handleSubmit} className={`${styles.form} ${className || ''}`}>
       {title && <h3 className={styles.title}>{title}</h3>}
 
       <div className={styles.grid}>

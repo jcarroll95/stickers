@@ -30,7 +30,6 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
     // regex goes between //s, \b word boundary, /g global
     // Create comparison operators we can pass to mongoose
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in|ne)\b/g, match => `$${match}`);
-    console.log(queryStr);
 
     // Find the resource now that queryStr has been massaged to work for the mongoose method
     query = Stickerboard.find(JSON.parse(queryStr)).populate('stix').populate('comments');
@@ -49,7 +48,6 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
         // .split turns them into an array, join rejoins them space delimited
         const fields = req.query.select.split(',').join(' ');
         query = query.select(fields);
-        console.log(`Selected these fields: ${fields}`.yellow.underline);
     }
 
     // Pagination stuff
@@ -95,7 +93,9 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
  * @access Public
 */
 exports.getStickerboard = asyncHandler(async (req, res, next) => {
-        const stickerboard = await Stickerboard.findById(req.params.id).populate('stix').populate('comments');
+        const stickerboard = await Stickerboard.findById(req.params.id)
+            .populate({ path: 'stix', options: { sort: { stickNumber: 1 } } })
+            .populate('comments');
 
         if(!stickerboard) {
             return next(

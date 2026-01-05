@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState, Suspense, lazy } from 'react';
 import PropTypes from 'prop-types';
 import useAuthStore from '../store/authStore';
 import LoadingSpinner from './common/LoadingSpinner.jsx';
+import styles from './Router.module.css';
 
 // Lazy load major route components
 const StickerboardsDemo = lazy(() => import('../StickerboardsDemo.jsx'));
@@ -14,18 +15,6 @@ const UserManager = lazy(() => import('./admin/UserManager.jsx'));
 const UserSettings = lazy(() => import('./user/UserSettings.jsx'));
 const LandingPage = lazy(() => import('./LandingPage.jsx'));
 
-/**
- * Router Component
- * Tiny hash-based router. It listens to window.location.hash and renders
- * the correct view.
- * 
- * Routes supported:
- * - #/board                 → list of boards (StickerboardsDemo)
- * - #/board/:token          → a specific board by id or slug (BoardView)
- * - #/explore               → public gallery
- * - #/register              → registration flow
- * - otherwise               → simple home message
- */
 export default function Router() {
   const [hash, setHash] = useState(() => window.location.hash || '#/');
   const { isAuthenticated, user } = useAuthStore();
@@ -37,21 +26,16 @@ export default function Router() {
   }, []);
 
   const route = useMemo(() => {
-    // Normalize: ensure it always starts with '#/'
     const h = hash.startsWith('#') ? hash : `#/${hash}`;
-    // Remove leading '#'
     const path = h.slice(1);
-    // Separate query if present (e.g., #/register/verify?email=x@y.z)
     const [pathOnly, queryString] = path.split('?');
-    const parts = pathOnly.split('/').filter(Boolean); // ["", "board", ...] → ["board", ...]
+    const parts = pathOnly.split('/').filter(Boolean);
     const searchParams = new URLSearchParams(queryString || '');
-
     return { parts, searchParams };
   }, [hash]);
 
   const [first, second] = route.parts;
 
-  // Handle redirects via useEffect to avoid modifying window.location during render
   useEffect(() => {
     const isBoardCreate = first === 'board' && second === 'create';
     const isBoardToken = first === 'board' && second && second !== 'create';
@@ -63,81 +47,46 @@ export default function Router() {
     }
   }, [first, second, isAuthenticated]);
 
-  // Routing logic wrapped in Suspense for Code Splitting
+  const renderContent = () => {
+    if (route.parts.length === 0) return <LandingPage />;
+
+    switch (first) {
+      case 'register':
+        if (second === 'verify') {
+          return <RegisterVerify mode="verify" initialEmail={route.searchParams.get('email') || ''} />;
+        }
+        return <RegisterVerify />;
+
+      case 'board':
+        if (!second) return <StickerboardsDemo />;
+        if (!isAuthenticated) return <LandingPage />;
+        if (second === 'create') return <CreateStickerboard />;
+        return <BoardView token={second} />;
+
+      case 'explore':
+        return <Explore />;
+
+      case 'settings':
+        return isAuthenticated ? <UserSettings /> : <LandingPage />;
+
+      case 'admin':
+        if (!isAuthenticated || user?.role !== 'admin') return <LandingPage />;
+        if (second === 'metrics') return <MetricsDashboard />;
+        if (second === 'users') return <UserManager />;
+        return <NotFound hash={hash} />;
+
+      default:
+        return <NotFound hash={hash} />;
+    }
+  };
+
   return (
-    <Suspense fallback={<LoadingSpinner message="Loading page..." />}>
-      {renderContent()}
-    </Suspense>
+    <div className={styles.routerContainer}>
+      <Suspense fallback={<LoadingSpinner message="Loading page..." />}>
+        {renderContent()}
+      </Suspense>
+    </div>
   );
-
-  function renderContent() {
-    if (route.parts.length === 0) {
-      return <LandingPage />;
-    }
-
-    if (first === 'register') {
-      // Public registration routes
-      if (second === 'verify') {
-        const initialEmail = route.searchParams.get('email') || '';
-        return <RegisterVerify mode="verify" initialEmail={initialEmail} />;
-      }
-      return <RegisterVerify />;
-    }
-
-    if (first === 'board' && !second) {
-      // #/board
-      return <StickerboardsDemo />;
-    }
-
-    if (first === 'explore') {
-      // Public explore page: paginated thumbnails of stickerboards
-      return <Explore />;
-    }
-
-    if (first === 'settings') {
-      // #/settings — require auth
-      if (!isAuthenticated) {
-        return <LandingPage />;
-      }
-      return <UserSettings />;
-    }
-
-    if (first === 'board' && second === 'create') {
-      // #/board/create — requires auth
-      if (!isAuthenticated) {
-        return <LandingPage />;
-      }
-      return <CreateStickerboard />;
-    }
-
-    if (first === 'board' && second) {
-      // #/board/:token — require auth token to view a private board
-      if (!isAuthenticated) {
-        // Redirect unauthenticated users to default public route
-        return <LandingPage />;
-      }
-      return <BoardView token={second} />;
-    }
-
-    if (first === 'admin' && second === 'metrics') {
-      // #/admin/metrics — require admin role
-      if (!isAuthenticated || user?.role !== 'admin') {
-        return <LandingPage />;
-      }
-      return <MetricsDashboard />;
-    }
-
-    if (first === 'admin' && second === 'users') {
-      // #/admin/users — require admin role
-      if (!isAuthenticated || user?.role !== 'admin') {
-        return <LandingPage />;
-      }
-      return <UserManager />;
-    }
-
-    // Fallback
-    return <NotFound hash={hash} />;
-  }
 }
 
 
@@ -146,9 +95,9 @@ export default function Router() {
  */
 function NotFound({ hash }) {
   return (
-    <div style={{ padding: '1rem' }}>
+    <div className={styles.notFoundContainer}>
       <h2>Not Found</h2>
-      <p>No route matches <code>{hash}</code>.</p>
+      <p>No route matches <code className={styles.notFoundCode}>{hash}</code>.</p>
     </div>
   );
 }

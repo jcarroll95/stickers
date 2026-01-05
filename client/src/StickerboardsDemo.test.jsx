@@ -7,6 +7,11 @@ import { http, HttpResponse } from 'msw';
 
 describe('StickerboardsDemo', () => {
   it('should render loading state initially', () => {
+    server.use(
+      http.get('*/stickerboards', () => {
+        return new Promise(() => {}); // stay in loading state
+      })
+    );
     render(<StickerboardsDemo />);
     expect(screen.getByRole('status')).toBeInTheDocument();
   });

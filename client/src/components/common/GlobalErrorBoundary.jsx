@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './GlobalErrorBoundary.module.css';
 
 class GlobalErrorBoundary extends React.Component {
   constructor(props) {
@@ -17,41 +18,19 @@ class GlobalErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{
-          padding: '2rem',
-          textAlign: 'center',
-          backgroundColor: '#fef2f2',
-          border: '1px solid #fee2e2',
-          borderRadius: '8px',
-          margin: '2rem'
-        }}>
-          <h2 style={{ color: '#991b1b' }}>Something went wrong</h2>
-          <p style={{ color: '#7f1d1d' }}>
+        <div className={styles.container}>
+          <h2 className={styles.title}>Something went wrong</h2>
+          <p className={styles.message}>
             The application encountered an unexpected error.
           </p>
           <button
             onClick={() => window.location.reload()}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#b91c1c',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginTop: '1rem'
-            }}
+            className={styles.button}
           >
             Reload Application
           </button>
           {import.meta.env.DEV && (
-            <pre style={{
-              textAlign: 'left',
-              marginTop: '1rem',
-              padding: '1rem',
-              backgroundColor: '#fff',
-              overflow: 'auto',
-              fontSize: '12px'
-            }}>
+            <pre className={styles.devLog}>
               {this.state.error?.toString()}
             </pre>
           )}
