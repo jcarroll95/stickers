@@ -2,9 +2,10 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import useStickerCanvas from './useStickerCanvas';
 
-// Mock use-image to return a fake image object
+// Mock use-image to return a stable fake image object
+const mockImage = { width: 1000, height: 1000 };
 vi.mock('use-image', () => ({
-  default: vi.fn(() => [{ width: 1000, height: 1000 }]),
+  default: vi.fn(() => [mockImage]),
 }));
 
 describe('useStickerCanvas', () => {
@@ -71,9 +72,9 @@ describe('useStickerCanvas', () => {
       },
     };
 
-    act(() => {
-      result.current.placeSticker(mockEvent);
-    });
+    act(() => { result.current.placeSticker(mockEvent); }); // Step 1: Position
+    act(() => { result.current.placeSticker(mockEvent); }); // Step 2: Scale
+    act(() => { result.current.placeSticker(mockEvent); }); // Step 3: Rotate (Finalize)
 
     expect(result.current.isPlacing).toBe(false);
     expect(result.current.placements).toHaveLength(1);
@@ -83,7 +84,7 @@ describe('useStickerCanvas', () => {
     });
   });
 
-  it('should place a sticker in controlled mode', () => {
+  it('should place a sticker in controlled mode', async () => {
     const onPlaceSticker = vi.fn();
     const props = {
       ...defaultProps,
@@ -105,9 +106,9 @@ describe('useStickerCanvas', () => {
       },
     };
 
-    act(() => {
-      result.current.placeSticker(mockEvent);
-    });
+    await act(async () => { await result.current.placeSticker(mockEvent); }); // Step 1: Position
+    await act(async () => { await result.current.placeSticker(mockEvent); }); // Step 2: Scale
+    await act(async () => { await result.current.placeSticker(mockEvent); }); // Step 3: Rotate (Finalize)
 
     expect(result.current.isPlacing).toBe(false);
     expect(onPlaceSticker).toHaveBeenCalled();

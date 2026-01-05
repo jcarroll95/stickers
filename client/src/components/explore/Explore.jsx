@@ -1,87 +1,31 @@
-import React, { useCallback, useEffect, useState, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import DOMPurify from 'dompurify';
-import styles from './Explore.module.css';
-import ThumbnailBoard from './ThumbnailBoard.jsx';
-import apiClient from '../../services/apiClient';
 import LoadingSpinner from '../common/LoadingSpinner.jsx';
-import { parseError } from '../../utils/errorUtils';
+import ThumbnailBoard from './ThumbnailBoard.jsx';
+import { useExplore } from '../../hooks/useExplore';
+import styles from './Explore.module.css';
 
-/**
- * Explore Component
- * Public explore page: paginated grid of stickerboard thumbnails.
- */
 export default function Explore() {
-  const [page, setPage] = useState(1);
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [hasNext, setHasNext] = useState(false);
-  const [hasPrev, setHasPrev] = useState(false);
+  const { items, loading, error, page, setPage, hasPrev, hasNext, loadPage } = useExplore();
 
-  const limit = 9; // 9 at a time
+  const onPrev = () => setPage((p) => Math.max(1, p - 1));
+  const onNext = () => setPage((p) => p + 1);
 
-  const loadPage = useCallback(async (p) => {
-    let cancelled = false;
-    try {
-      setLoading(true);
-      setError('');
-      
-      const response = await apiClient.get(`/stickerboards?limit=${limit}&page=${p}`);
-      
-      if (!cancelled) {
-        // apiClient interceptor returns response.data
-        // The structure of advancedResults is { success: true, count: X, data: [...], pagination: {...} }
-        const data = response.data || response;
-        setItems(Array.isArray(data) ? data : []);
-        
-        const pag = response.pagination || {};
-        setHasNext(!!pag.next);
-        setHasPrev(!!pag.prev);
-      }
-    } catch (e) {
-      if (!cancelled) {
-        setError(parseError(e));
-      }
-    } finally {
-      if (!cancelled) setLoading(false);
-    }
-    return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
-    loadPage(page);
-  }, [page, loadPage]);
-
-  const onPrev = useCallback(() => {
-    setPage((p) => Math.max(1, p - 1));
-  }, []);
-  const onNext = useCallback(() => {
-    setPage((p) => p + 1);
-  }, []);
-
-  const cardClick = useCallback((board) => {
+  const cardClick = (board) => {
     const token = board?._id || board?.id || board?.slug;
     if (token) {
       window.location.hash = `#/board/${token}`;
     }
-  }, []);
+  };
 
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Explore Stickerboards</h2>
       {loading && <LoadingSpinner message="Loading stickerboards…" />}
       {error && (
-        <div style={{ color: 'crimson', margin: '1rem 0', textAlign: 'center' }}>
+        <div className={styles.errorContainer}>
           <p>Error: {error}</p>
-          <button onClick={() => loadPage(page)} style={{ 
-            marginTop: '0.5rem', 
-            padding: '4px 12px', 
-            cursor: 'pointer',
-            border: '1px solid #dc2626',
-            color: '#dc2626',
-            backgroundColor: 'transparent',
-            borderRadius: '4px'
-          }}>Retry</button>
+          <button onClick={() => loadPage(page)} className={styles.retryButton}>Retry</button>
         </div>
       )}
 
@@ -94,9 +38,8 @@ export default function Explore() {
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(b.name || 'Untitled') }}
             />
             <div className={styles.thumb} onClick={() => cardClick(b)} role="button" tabIndex={0}
-                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cardClick(b); } }}
-                 style={{ minHeight: 200 }}>
-              <Suspense fallback={<div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: 8 }}>Loading thumbnail...</div>}>
+                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cardClick(b); } }}>
+              <Suspense fallback={<div className={styles.thumbLoading}>Loading thumbnail...</div>}>
                 <ThumbnailBoard board={b} />
               </Suspense>
             </div>

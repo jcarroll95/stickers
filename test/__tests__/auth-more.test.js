@@ -1,6 +1,7 @@
 const request = require('supertest');
 const app = require('../../server');
 const User = require('../../models/User');
+const { registerVerifyLogin, authHeader } = require('./authHelpers');
 
 async function register({ name = 'User', email, password = 'Pass123!' , role = 'user'}) {
   return request(app)
@@ -71,25 +72,17 @@ describe('Auth controller additional branches', () => {
   test('updateDetails happy path (200) and logout (200)', async () => {
     const email = 'details@example.com';
     const password = 'Pass123!';
-    await register({ name: 'Details', email, password });
-    // verify before login
-    await User.updateOne({ email }, { isVerified: true });
-    const login = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email, password })
-      .expect(200);
-
-    const token = login.body.token;
+    const { token } = await registerVerifyLogin({ name: 'Details', email, password });
 
     const upd = await request(app)
       .put('/api/v1/auth/updatedetails')
-      .set('Authorization', `Bearer ${token}`)
+      .set(authHeader(token))
       .send({ name: 'New Name', email: 'new-details@example.com' })
       .expect(200);
 
     expect(upd.body.success).toBe(true);
     expect(upd.body.data.name).toBe('New Name');
 
-    await request(app).get('/api/v1/auth/logout').set('Authorization', `Bearer ${token}`).expect(200);
+    await request(app).get('/api/v1/auth/logout').set(authHeader(token)).expect(200);
   });
 });

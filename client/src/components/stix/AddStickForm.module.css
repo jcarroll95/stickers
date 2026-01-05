@@ -9,6 +9,15 @@
   max-width: 720px;
 }
 
+.modalForm {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  padding-bottom: 88px !important;
+  max-width: none !important;
+}
+
 .title {
   margin: 0 0 12px 0;
   font-size: 1.125rem;

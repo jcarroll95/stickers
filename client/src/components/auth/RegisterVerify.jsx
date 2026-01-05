@@ -104,6 +104,8 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
     }
   }
 
+  const COOLDOWN_TIME = import.meta.env.MODE === 'test' ? 1 : 60;
+
   async function startRegister(e) {
     e.preventDefault();
     setError('');
@@ -118,7 +120,7 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
 
       setStep(2);
       setMessage('If that email is eligible, a verification code has been sent.');
-      setCooldown(60);
+      setCooldown(COOLDOWN_TIME);
       // Persist pending registration so user can come back
       try {
         const now = Date.now();
@@ -126,7 +128,7 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
           email: email.trim().toLowerCase(),
           // UI already states 15 minutes expiry
           expiresAt: now + 15 * 60 * 1000,
-          cooldownUntil: now + 60 * 1000,
+          cooldownUntil: now + COOLDOWN_TIME * 1000,
         };
         localStorage.setItem(PENDING_KEY, JSON.stringify(payload));
       } catch (e) {
@@ -211,14 +213,14 @@ export default function RegisterVerify({ onSuccess, mode, initialEmail = '' }) {
 
       toast.success('A new code has been sent.');
       setMessage('A new code has been sent.');
-      setCooldown(60);
+      setCooldown(COOLDOWN_TIME);
       // Update persisted cooldown (and optionally extend expiry if your backend resets it)
       try {
         const raw = localStorage.getItem(PENDING_KEY);
         const now = Date.now();
         const payload = raw ? JSON.parse(raw) : {};
         payload.email = email.trim().toLowerCase();
-        payload.cooldownUntil = now + 60 * 1000;
+        payload.cooldownUntil = now + COOLDOWN_TIME * 1000;
         // optionally: payload.expiresAt = Math.max(payload.expiresAt || 0, now + 15*60*1000);
         localStorage.setItem(PENDING_KEY, JSON.stringify(payload));
       } catch (e) {

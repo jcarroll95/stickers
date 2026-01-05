@@ -2,6 +2,7 @@ const request = require('supertest');
 const crypto = require('crypto');
 const app = require('../../server');
 const User = require('../../models/User');
+const { registerVerifyLogin, authHeader } = require('./authHelpers');
 
 describe('Additional auth verification and resend branches', () => {
   test('login returns 403 when email not verified', async () => {

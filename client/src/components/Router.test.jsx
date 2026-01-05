@@ -22,10 +22,10 @@ describe('Router', () => {
     window.location.hash = '';
   });
 
-  it('should render Home by default', () => {
+  it('should render Home by default', async () => {
     useAuthStore.mockReturnValue({ isAuthenticated: false });
     render(<Router />);
-    expect(screen.getByText(/welcome/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/Your GLP-1 Journey/i)).toBeInTheDocument());
   });
 
   it('should render RegisterVerify for #/register', async () => {
@@ -42,11 +42,11 @@ describe('Router', () => {
     await waitFor(() => expect(screen.getByTestId('explore')).toBeInTheDocument());
   });
 
-  it('should redirect to Home for #/board/create if unauthenticated', () => {
+  it('should redirect to Home for #/board/create if unauthenticated', async () => {
     useAuthStore.mockReturnValue({ isAuthenticated: false });
     window.location.hash = '#/board/create';
     render(<Router />);
-    expect(screen.getByText(/welcome/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/Your GLP-1 Journey/i)).toBeInTheDocument());
     expect(window.location.hash).toBe('#/');
   });
 
@@ -71,10 +71,10 @@ describe('Router', () => {
     await waitFor(() => expect(screen.getByTestId('user-settings')).toBeInTheDocument());
   });
 
-  it('should redirect to Home for #/settings if unauthenticated', () => {
+  it('should redirect to Home for #/settings if unauthenticated', async () => {
     useAuthStore.mockReturnValue({ isAuthenticated: false });
     window.location.hash = '#/settings';
     render(<Router />);
-    expect(screen.getByText(/welcome/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/Your GLP-1 Journey/i)).toBeInTheDocument());
   });
 });

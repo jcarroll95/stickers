@@ -104,25 +104,27 @@ describe('RegisterVerify', () => {
   it('should handle resend code', async () => {
     server.use(
       http.post('*/auth/register-start', () => HttpResponse.json({ success: true })),
-      http.post('*/auth/register-resend', () => {
-        console.log('MSW: Handling register-resend');
-        return HttpResponse.json({ success: true });
-      })
+      http.post('*/auth/register-resend', () => HttpResponse.json({ success: true }))
     );
 
     render(<RegisterVerify />);
     
-    // Trigger Step 2
     fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'John' } });
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john@example.com' } });
     fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
     fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } });
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
 
-    // Wait for the resend button to be available
+    // Wait for step 2 to appear and cooldown to be active (1s in test mode)
     const resendBtn = await screen.findByRole('button', { name: /resend code/i });
-    expect(resendBtn).not.toBeDisabled();
-    fireEvent.click(resendBtn);
+    expect(resendBtn).toBeDisabled();
+
+    // Wait for 1s cooldown to expire
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /resend code/i })).not.toBeDisabled();
+    }, { timeout: 3000 });
+
+    fireEvent.click(screen.getByRole('button', { name: /resend code/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/a new code has been sent/i)).toBeInTheDocument();

@@ -11,6 +11,11 @@ describe('CommentList', () => {
   });
 
   it('should render loading state initially', () => {
+    server.use(
+      http.get('*/stickerboards/123/comments', () => {
+        return new Promise(() => {}); // never resolves to stay in loading state
+      })
+    );
     render(<CommentList boardId="123" />);
     expect(screen.getByText(/loading comments…/i)).toBeInTheDocument();
   });

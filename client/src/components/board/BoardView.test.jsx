@@ -115,7 +115,7 @@ describe('BoardView', () => {
     render(<BoardView token="not-found" />);
 
     await waitFor(() => {
-      expect(screen.getByText(/no board found/i)).toBeInTheDocument();
+      expect(screen.getByText(/board not found/i)).toBeInTheDocument();
     });
   });
 

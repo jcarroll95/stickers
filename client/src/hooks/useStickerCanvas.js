@@ -1,218 +1,87 @@
 import { useCallback, useMemo, useState, useEffect } from "react";
 import useImage from "use-image";
 import throttle from "lodash.throttle";
-import apiClient from "../services/apiClient";
+import { useBoardAssets } from "./canvas/useBoardAssets";
+import { usePlacementState } from "./canvas/usePlacementState";
+import { useCanvasPersistence } from "./canvas/useCanvasPersistence";
 
-/**
- * useStickerCanvas Hook
- * 
- * Encapsulates all logic for the interactive stickerboard:
- * - Image loading for board and stickers
- * - Placement state and hover tracking
- * - Coordinate normalization and clamping
- * - Support for both 'controlled' (backend-driven) and 'demo' (localStorage) modes.
- * 
- * @param {Object} props - Hook properties
- * @param {string} props.boardSrc - Source URL for the board background image
- * @param {string|number} props.boardId - Unique identifier for the board (used for persistence)
- * @param {Array<Object>} [props.stickers] - Optional array of sticker objects (controlled mode)
- * @param {Array<Object>} [props.persistedStickers=[]] - Stickers already saved to the backend
- * @param {boolean} [props.readonly=false] - If true, disables placement interactions
- * @param {number|string} [props.displayLongEdge=600] - Target length for the longest edge of the board
- * @param {Function} [props.onPlaceSticker] - Callback fired when a sticker is placed in controlled mode
- * @param {Function} [props.onAddSticker] - Callback fired when a sticker is placed in demo mode
- * 
- * @returns {Object} {
- *   bgImage, legacyStickerImage, placingImage, isPlacing, hoverPos, boardSize,
- *   internalStickers, placingIndex, placingDefaultScale, legacyDefaultScale,
- *   placements, isControlled, getStickerSrc, isValidStickerId,
- *   enterPlacementMode, onStageMouseMove, placeSticker, persistPlacements,
- *   finalizeLatestPlacement
- * }
- */
+const EMPTY_ARRAY = [];
+
 export default function useStickerCanvas({
   boardSrc,
   boardId,
   stickers,
-  persistedStickers = [],
+  persistedStickers = EMPTY_ARRAY,
   readonly = false,
   displayLongEdge = 600,
   onPlaceSticker,
   onAddSticker,
   isOwner = true,
-  cheersStickers = [],
+  cheersStickers = EMPTY_ARRAY,
 }) {
-  const [bgImage] = useImage(boardSrc);
-  const [legacyStickerImage] = useImage("/assets/sticker0.png");
-
-  const [isPlacing, setIsPlacing] = useState(false);
-  const [placementStep, setPlacementStep] = useState('POSITION'); // 'POSITION', 'SCALE', 'ROTATE'
-  const [currentPlacement, setCurrentPlacement] = useState(null);
-  const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
-
-  // Cheers Mode logic
   const isCheersMode = !isOwner;
+  const isControlled = isCheersMode || Array.isArray(stickers);
+
   const effectiveInternalStickers = useMemo(() => {
     const boardStickers = Array.isArray(stickers) ? stickers : [];
     if (isCheersMode) {
-      // For Cheers! mode, we need to show existing stickers (stuck) 
-      // AND provide the user's available cheers stickers (not stuck) for placement.
       const cheers = (cheersStickers || []).map(id => ({ stickerId: id, stuck: false, isCheers: true }));
       return [...boardStickers, ...cheers];
     }
     return boardStickers;
   }, [isCheersMode, cheersStickers, stickers]);
 
-  // Helper: map stickerId (0..9) to asset path
-  const getStickerSrc = useCallback((stickerId, isCheers) => {
-    // If isCheers is provided (from the sticker object), use it.
-    // Otherwise fallback to global isCheersMode (useful for palette/initial placement)
-    const cheers = (typeof isCheers === 'boolean') ? isCheers : isCheersMode;
-    if (cheers) {
-      return `/assets/c${stickerId}.png`;
-    }
-    return `/assets/sticker${stickerId}.png`;
-  }, [isCheersMode]);
-
-  const isValidStickerId = useCallback((id, isCheers) => {
-    const cheers = (typeof isCheers === 'boolean') ? isCheers : isCheersMode;
-    return Number.isInteger(id) && id >= 0 && id <= 9;
-  }, [isCheersMode]);
-
-  // Internal unified stickers state for controlled mode (optimistic updates)
   const [internalStickers, setInternalStickers] = useState(effectiveInternalStickers);
-  const isControlled = isCheersMode || Array.isArray(stickers);
+  useEffect(() => { setInternalStickers(effectiveInternalStickers); }, [effectiveInternalStickers]);
 
-  // Synchronize internalStickers if prop changes
-  useEffect(() => {
-    setInternalStickers(effectiveInternalStickers);
-  }, [effectiveInternalStickers]);
+  const getStickerSrc = useCallback((stickerId, isCheers) => {
+    const cheers = (typeof isCheers === 'boolean') ? isCheers : isCheersMode;
+    return cheers ? `/assets/c${stickerId}.png` : `/assets/sticker${stickerId}.png`;
+  }, [isCheersMode]);
 
-  // Selection (for controlled mode): which sticker entry (by index in internalStickers) is being placed
-  const [placingIndex, setPlacingIndex] = useState(null);
-  
-  const placingSticker = useMemo(() => {
-    if (!isControlled || placingIndex == null) return null;
-    return internalStickers?.[placingIndex] || null;
-  }, [isControlled, placingIndex, internalStickers]);
+  const isValidStickerId = useCallback((id) => Number.isInteger(id) && id >= 0 && id <= 9, []);
 
-  const placingStickerId = placingSticker?.stickerId;
+  const { bgImage, legacyStickerImage, boardSize, legacyDefaultScale } = useBoardAssets(boardSrc, displayLongEdge);
+
+  const {
+    isPlacing, setIsPlacing,
+    placementStep, setPlacementStep,
+    currentPlacement, setCurrentPlacement,
+    hoverPos, setHoverPos,
+    placingIndex, setPlacingIndex,
+    placingSticker,
+    enterPlacementMode: baseEnterPlacementMode,
+    resetPlacement
+  } = usePlacementState(internalStickers, getStickerSrc, isValidStickerId, isControlled);
+
+  const {
+    placements,
+    persistPlacements,
+    finalizeLatestPlacement
+  } = useCanvasPersistence(boardId, isControlled, stickers, persistedStickers);
+
   const [placingImage] = useImage(
-    placingStickerId != null && isValidStickerId(placingStickerId, placingSticker?.isCheers)
-      ? getStickerSrc(placingStickerId, placingSticker?.isCheers)
+    placingSticker?.stickerId != null && isValidStickerId(placingSticker.stickerId)
+      ? getStickerSrc(placingSticker.stickerId, placingSticker?.isCheers)
       : null
   );
-
-  // Board render dimensions
-  const boardSize = useMemo(() => {
-    const TARGET_LONG_EDGE = Math.max(1, Number(displayLongEdge) || 600);
-    if (bgImage && bgImage.width && bgImage.height) {
-      const iw = bgImage.width;
-      const ih = bgImage.height;
-      const long = Math.max(iw, ih);
-      const scale = TARGET_LONG_EDGE / long;
-      return { width: Math.round(iw * scale), height: Math.round(ih * scale) };
-    }
-    return { width: TARGET_LONG_EDGE, height: TARGET_LONG_EDGE };
-  }, [bgImage, displayLongEdge]);
-
-  // Default scales
-  const legacyDefaultScale = useMemo(() => {
-    if (!legacyStickerImage) return 1;
-    const boardShort = Math.min(boardSize.width, boardSize.height);
-    const stickerLong = Math.max(legacyStickerImage.width, legacyStickerImage.height);
-    if (!boardShort || !stickerLong) return 1;
-    return Math.min(1, 0.35 * (boardShort / stickerLong));
-  }, [boardSize, legacyStickerImage]);
 
   const placingDefaultScale = useMemo(() => {
     if (!placingImage) return 1;
     const boardShort = Math.min(boardSize.width, boardSize.height);
     const stickerLong = Math.max(placingImage.width, placingImage.height);
-    if (!boardShort || !stickerLong) return 1;
     return Math.min(1, 0.25 * (boardShort / stickerLong));
   }, [boardSize, placingImage]);
 
-  // Demo mode persistence
-  const storageKey = useMemo(() => `stickerboard:${boardId}:placements`, [boardId]);
-  const [placements, setPlacements] = useState(() => {
-    if (Array.isArray(stickers)) return []; // isControlled
-    try {
-      const raw = localStorage.getItem(`stickerboard:${boardId}:placements`);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (e) {
-      console.error("[useStickerCanvas] LocalStorage initial read failed:", e);
-    }
-    return [];
-  });
-
-  const persistPlacements = useCallback((next) => {
-    if (isControlled) return;
-    setPlacements(next);
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(next));
-    } catch (e) {
-      console.error("[useStickerCanvas] LocalStorage write failed:", e);
-    }
-  }, [storageKey, isControlled]);
-
-  const finalizeLatestPlacement = useCallback(async () => {
-    if (isControlled) return;
-    const lastPlacement = placements[placements.length - 1];
-    if (!lastPlacement) return;
-    
-    // Check if the last placement is actually finished (it won't be in placements until it's finalized)
-    // Actually, in the new flow, the placement is ONLY pushed to placements on the final click.
-    // So finalizeLatestPlacement should still work for the last one in the list.
-    
-    try {
-      const persisted = Array.isArray(persistedStickers) ? persistedStickers : [];
-      const maxZ = persisted
-        .filter((s) => s && s.stuck)
-        .reduce((m, s) => (typeof s.zIndex === 'number' ? Math.max(m, s.zIndex) : m), 0);
-      const nextZ = (Number.isFinite(maxZ) ? maxZ : 0) + 1;
-
-      const stickerDoc = {
-        stickerId: 0,
-        x: lastPlacement.xNorm,
-        y: lastPlacement.yNorm,
-        scale: typeof lastPlacement.scale === 'number' ? lastPlacement.scale : legacyDefaultScale,
-        rotation: lastPlacement.rotation || 0,
-        zIndex: nextZ,
-        stuck: true,
-        createdAt: new Date().toISOString(),
-      };
-
-      await apiClient.put(`/stickerboards/${encodeURIComponent(boardId)}`, {
-        $push: { stickers: stickerDoc },
-      });
-
-      persistPlacements([]);
-      window.dispatchEvent(new CustomEvent('stickerboard:finalized', { detail: { boardId, sticker: stickerDoc } }));
-    } catch (err) {
-      console.error('[useStickerCanvas] Finalize failed:', err);
-      const errorMsg = err.response?.data?.error || err.message || String(err);
-      alert(`Failed to finalize sticker: ${errorMsg}`);
-    }
-  }, [isControlled, placements, persistedStickers, legacyDefaultScale, boardId, persistPlacements]);
-
-  // Handlers
   const enterPlacementMode = useCallback((index) => {
     if (readonly) return;
-    setPlacementStep('POSITION');
-    setCurrentPlacement(null);
     if (isControlled) {
-      if (index == null) return;
-      setPlacingIndex(index);
+      if (index != null) baseEnterPlacementMode(index);
+    } else if (legacyStickerImage) {
       setIsPlacing(true);
-    } else {
-      if (!legacyStickerImage) return;
-      setIsPlacing(true);
+      setPlacementStep('POSITION');
     }
-  }, [isControlled, legacyStickerImage, readonly]);
+  }, [readonly, isControlled, baseEnterPlacementMode, legacyStickerImage, setIsPlacing, setPlacementStep]);
 
   const updateHoverPos = useCallback((pos) => {
     setHoverPos({
@@ -221,59 +90,33 @@ export default function useStickerCanvas({
     });
 
     if (isPlacing && currentPlacement) {
+      const dx = pos.x - currentPlacement.x;
+      const dy = pos.y - currentPlacement.y;
       if (placementStep === 'SCALE') {
-        const dx = pos.x - currentPlacement.x;
-        const dy = pos.y - currentPlacement.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        // Scale is a multiplier of distance. 
-        // We'll use a sensitivity factor so it's intuitive.
-        // If distance is 0, scale is small (or default).
-        // Let's say 100px = 1.0 scale multiplier above default.
-        const scaleMultiplier = Math.max(0.1, dist / 100);
-        setCurrentPlacement(prev => ({ ...prev, scale: prev.baseScale * scaleMultiplier }));
+        setCurrentPlacement(prev => ({ ...prev, scale: prev.baseScale * Math.max(0.1, dist / 100) }));
       } else if (placementStep === 'ROTATE') {
-        const dx = pos.x - currentPlacement.x;
-        const dy = pos.y - currentPlacement.y;
-        // Calculate angle in degrees
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-        setCurrentPlacement(prev => ({ ...prev, rotation: angle }));
+        setCurrentPlacement(prev => ({ ...prev, rotation: Math.atan2(dy, dx) * (180 / Math.PI) }));
       }
     }
-  }, [boardSize, isPlacing, currentPlacement, placementStep]);
+  }, [boardSize, isPlacing, currentPlacement, placementStep, setHoverPos, setCurrentPlacement]);
 
-  const throttledUpdateHoverPos = useMemo(
-    () => throttle(updateHoverPos, 16),
-    [updateHoverPos]
-  );
-
-  useEffect(() => {
-    return () => {
-      throttledUpdateHoverPos.cancel();
-    };
-  }, [throttledUpdateHoverPos]);
+  const throttledUpdateHoverPos = useMemo(() => throttle(updateHoverPos, 16), [updateHoverPos]);
+  useEffect(() => () => throttledUpdateHoverPos.cancel(), [throttledUpdateHoverPos]);
 
   const onStageMouseMove = useCallback((e) => {
     if (!isPlacing) return;
-    const stage = e.target.getStage();
-    const pos = stage?.getPointerPosition();
-    if (!pos) return;
-    throttledUpdateHoverPos(pos);
+    const pos = e.target.getStage()?.getPointerPosition();
+    if (pos) throttledUpdateHoverPos(pos);
   }, [isPlacing, throttledUpdateHoverPos]);
 
-  const placeSticker = useCallback((e) => {
+  const placeSticker = useCallback(async (e) => {
     if (!isPlacing) return;
-    const stage = e.target.getStage();
-    const pos = stage?.getPointerPosition();
+    const pos = e.target.getStage()?.getPointerPosition();
     if (!pos) return;
 
-    const withinX = pos.x >= 0 && pos.x <= boardSize.width;
-    const withinY = pos.y >= 0 && pos.y <= boardSize.height;
-
-    if (!withinX || !withinY) {
-      setIsPlacing(false);
-      setPlacingIndex(null);
-      setPlacementStep('POSITION');
-      setCurrentPlacement(null);
+    if (pos.x < 0 || pos.x > boardSize.width || pos.y < 0 || pos.y > boardSize.height) {
+      resetPlacement();
       return;
     }
 
@@ -294,19 +137,16 @@ export default function useStickerCanvas({
       return;
     }
 
-    // placementStep === 'ROTATE' -> Finalize
     const xNorm = currentPlacement.x / boardSize.width;
     const yNorm = currentPlacement.y / boardSize.height;
 
     if (isControlled) {
-      if (placingIndex == null || !Array.isArray(internalStickers)) return;
-      const original = internalStickers[placingIndex];
+      const original = internalStickers?.[placingIndex];
       if (!original) return;
 
       const maxZ = internalStickers
-          .filter((s) => s && s.stuck)
-          .reduce((m, s) => (typeof s.zIndex === 'number' ? Math.max(m, s.zIndex) : m), 0);
-      const nextZ = (Number.isFinite(maxZ) ? maxZ : 0) + 1;
+          .filter(s => s?.stuck)
+          .reduce((m, s) => Math.max(m, s.zIndex || 0), 0);
 
       const placedSticker = {
         ...original,
@@ -314,64 +154,39 @@ export default function useStickerCanvas({
         y: yNorm,
         scale: currentPlacement.scale,
         rotation: currentPlacement.rotation,
-        zIndex: nextZ,
+        zIndex: maxZ + 1,
         stuck: true,
         createdAt: original.createdAt || new Date().toISOString(),
       };
 
       const next = internalStickers.map((s, i) => (i === placingIndex ? placedSticker : s));
       setInternalStickers(next);
-      setIsPlacing(false);
-      setPlacingIndex(null);
-      setPlacementStep('POSITION');
-      setCurrentPlacement(null);
+      resetPlacement();
 
       if (onPlaceSticker) {
-        // Only send stickers that are actually stuck to the backend
-        const onlyStuck = next.filter(s => s.stuck);
-        onPlaceSticker(onlyStuck, placedSticker, placingIndex);
+        await onPlaceSticker(isOwner ? next : next.filter(s => s.stuck), placedSticker, placingIndex);
       }
     } else {
-      const placement = {
+      const next = [...placements, {
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        xNorm,
-        yNorm,
+        xNorm, yNorm,
         scale: currentPlacement.scale,
         rotation: currentPlacement.rotation,
         asset: "/assets/sticker0.png",
-      };
-      const next = [...placements, placement];
+      }];
       persistPlacements(next);
-      setIsPlacing(false);
-      setPlacementStep('POSITION');
-      setCurrentPlacement(null);
-      if (onAddSticker) onAddSticker(placement);
+      resetPlacement();
+      if (onAddSticker) onAddSticker(next[next.length - 1]);
     }
-  }, [isPlacing, boardSize, isControlled, internalStickers, placingIndex, placingDefaultScale, placements, persistPlacements, onAddSticker, legacyDefaultScale, onPlaceSticker, placementStep, currentPlacement]);
+  }, [isPlacing, boardSize, isControlled, internalStickers, placingIndex, placingDefaultScale, placements, persistPlacements, onAddSticker, legacyDefaultScale, onPlaceSticker, placementStep, currentPlacement, resetPlacement, isOwner, setCurrentPlacement, setPlacementStep]);
 
   return {
-    bgImage,
-    legacyStickerImage,
-    placingImage,
-    isPlacing,
-    hoverPos,
-    boardSize,
-    internalStickers,
-    placingIndex,
-    placingDefaultScale,
-    legacyDefaultScale,
-    placements,
-    isControlled,
-    getStickerSrc,
-    isValidStickerId,
-    enterPlacementMode,
-    onStageMouseMove,
-    placeSticker,
-    persistPlacements,
-    finalizeLatestPlacement,
-    placementStep,
-    currentPlacement,
-    isCheersMode,
-    cheersStickers,
+    bgImage, legacyStickerImage, placingImage,
+    isPlacing, hoverPos, boardSize,
+    internalStickers, placingIndex, placingDefaultScale, legacyDefaultScale,
+    placements, isControlled, getStickerSrc, isValidStickerId,
+    enterPlacementMode, onStageMouseMove, placeSticker,
+    persistPlacements, finalizeLatestPlacement,
+    placementStep, currentPlacement, isCheersMode, cheersStickers
   };
 }

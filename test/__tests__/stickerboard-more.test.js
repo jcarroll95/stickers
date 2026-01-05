@@ -1,14 +1,8 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../../server');
-
-async function registerAndLogin({ name = 'User', email, password = 'Pass123!', role = 'user' } = {}) {
-  const reg = await request(app)
-    .post('/api/v1/auth/register')
-    .send({ name, email, password, role })
-    .expect(200);
-  return reg.body.token;
-}
+const { registerVerifyLogin, authHeader } = require('./authHelpers');
+const { createBoard } = require('./boardHelpers');
 
 describe('Stickerboard controller additional coverage', () => {
   test('GET /:id non-existent returns 404', async () => {
@@ -17,39 +11,38 @@ describe('Stickerboard controller additional coverage', () => {
   });
 
   test('unauthorized update and delete by non-owner → 401', async () => {
-    const ownerToken = await registerAndLogin({ email: 'owner1@example.com' });
-    const intruderToken = await registerAndLogin({ email: 'intruder1@example.com' });
+    const { token: ownerToken } = await registerVerifyLogin({ email: 'owner1@example.com' });
+    const { token: intruderToken } = await registerVerifyLogin({ email: 'intruder1@example.com' });
 
-    const created = await request(app)
-      .post('/api/v1/stickerboards')
-      .set('Authorization', `Bearer ${ownerToken}`)
-      .send({ name: 'Private Board', description: 'Owned by User A' })
-      .expect(201);
-    const id = created.body.data._id;
+    const { boardId } = await createBoard({
+      token: ownerToken,
+      name: 'Private Board',
+      description: 'Owned by User A'
+    });
 
     await request(app)
-      .put(`/api/v1/stickerboards/${id}`)
-      .set('Authorization', `Bearer ${intruderToken}`)
+      .put(`/api/v1/stickerboards/${boardId}`)
+      .set(authHeader(intruderToken))
       .send({ description: 'hacked' })
       .expect(401);
 
     await request(app)
-      .delete(`/api/v1/stickerboards/${id}`)
-      .set('Authorization', `Bearer ${intruderToken}`)
+      .delete(`/api/v1/stickerboards/${boardId}`)
+      .set(authHeader(intruderToken))
       .expect(401);
   });
 
   test('advancedResults branches: select/sort/pagination', async () => {
     // vipuser can create multiple boards
-    const token = await registerAndLogin({ email: 'query@example.com', role: 'vipuser' });
+    const { token } = await registerVerifyLogin({ email: 'query@example.com', role: 'vipuser' });
 
     // Seed some boards
     for (let i = 0; i < 3; i++) {
-      await request(app)
-        .post('/api/v1/stickerboards')
-        .set('Authorization', `Bearer ${token}`)
-        .send({ name: `Board${i}-${Date.now()}`, description: 'desc' })
-        .expect(201);
+      await createBoard({
+        token,
+        name: `Board${i}-${Date.now()}`,
+        description: 'desc'
+      });
     }
 
     const res = await request(app)
@@ -62,17 +55,16 @@ describe('Stickerboard controller additional coverage', () => {
   });
 
   test('photo upload route without file returns 400 (authorized vipuser)', async () => {
-    const token = await registerAndLogin({ email: 'vipu@example.com', role: 'vipuser' });
-    const created = await request(app)
-      .post('/api/v1/stickerboards')
-      .set('Authorization', `Bearer ${token}`)
-      .send({ name: `PhotoBoard-${Date.now()}`, description: 'desc' })
-      .expect(201);
-    const id = created.body.data._id;
+    const { token } = await registerVerifyLogin({ email: 'vipu@example.com', role: 'vipuser' });
+    const { boardId } = await createBoard({
+      token,
+      name: `PhotoBoard-${Date.now()}`,
+      description: 'desc'
+    });
 
     await request(app)
-      .put(`/api/v1/stickerboards/${id}/photo`)
-      .set('Authorization', `Bearer ${token}`)
+      .put(`/api/v1/stickerboards/${boardId}/photo`)
+      .set(authHeader(token))
       .expect(400);
   });
 });

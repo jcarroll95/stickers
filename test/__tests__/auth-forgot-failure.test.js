@@ -3,6 +3,7 @@ jest.mock('../../utils/sendEmail', () => jest.fn().mockRejectedValue(new Error('
 
 const request = require('supertest');
 const app = require('../../server');
+const { registerVerifyLogin } = require('./authHelpers');
 
 describe('Auth forgotPassword failure branch', () => {
   test('returns 500 when email send fails and resets token fields', async () => {

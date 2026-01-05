@@ -14,7 +14,7 @@ exports.getStix = asyncHandler(async (req, res, next) => {
 
     if (req.params.belongsToBoard) {
         // This setup will not apply advancedResults if you're pulling stix from only one board
-        const stix = await Stick.find({ belongsToBoard: req.params.belongsToBoard } );
+        const stix = await Stick.find({ belongsToBoard: req.params.belongsToBoard }).sort({ stickNumber: 1 });
         return res.status(200).json( { success: true, count: stix.length, data: stix });
     } else {
         // if you request ALL stix it will paginate via advancedResults

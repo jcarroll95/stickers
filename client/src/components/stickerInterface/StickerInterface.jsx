@@ -4,15 +4,8 @@ import useStickerCanvas from "../../hooks/useStickerCanvas";
 import CanvasStage from "./CanvasStage";
 import StickerPalette from "./StickerPalette";
 import BoardSidebar from "./BoardSidebar";
+import styles from "./StickerInterface.module.css";
 
-/**
- * StickerInterface
- *
- * Interactive stickerboard using Konva.
- * Decomposed into smaller components and a custom hook for improved maintainability.
- * 
- * @param {Object} props - Component properties
- */
 export default function StickerInterface(props) {
   const { readonly = false } = props;
   const stageRef = useRef(null);
@@ -44,8 +37,7 @@ export default function StickerInterface(props) {
   } = useStickerCanvas(props);
 
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-      {/* Left: Konva Stage with background and stickers */}
+    <div className={styles.container}>
       <CanvasStage
         stageRef={stageRef}
         boardSize={boardSize}
@@ -69,9 +61,8 @@ export default function StickerInterface(props) {
         currentPlacement={currentPlacement}
       />
 
-      {/* Right: Palette and Sidebar controls */}
       {!readonly && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className={styles.controls}>
           <StickerPalette
             isControlled={isControlled}
             internalStickers={internalStickers}

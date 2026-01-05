@@ -1,0 +1,35 @@
+.container {
+  padding: 2rem;
+  text-align: center;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+  margin: 2rem;
+}
+
+.title {
+  color: #991b1b;
+}
+
+.message {
+  color: #7f1d1d;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  background-color: #b91c1c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.devLog {
+  text-align: left;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #fff;
+  overflow: auto;
+  font-size: 12px;
+}
