@@ -15,8 +15,8 @@ A lightweight social “stickerboard” that helps GLP-1 users stay consistent w
 
 - [Problem](#problem)
 - [Technical approach](#technical-approach)
-    - [Architecture overview](#architecture-overview)
-    - [Key design decisions](#key-design-decisions)
+  - [Architecture overview](#architecture-overview)
+  - [Key design decisions](#key-design-decisions)
 - [Project structure](#project-structure)
 - [Security considerations](#security-considerations)
 - [MVP status](#mvp-status)
@@ -170,23 +170,22 @@ Deploy workflow
 If this product grew beyond a single-node deployment, the next steps would be:
 
 1) Data and query scaling
-Cap pagination limits and parameterize search fields in generic query middleware
-Add/verify indexes on common access paths (board lookups, comments by board, stix by board)
-Consider extracting sticker placements to a separate collection if boards grow large
-Introduce caching for hot board reads (or precomputed snapshots)
+   Cap pagination limits and parameterize search fields in generic query middleware
+   Add/verify indexes on common access paths (board lookups, comments by board, stix by board)
+   Consider extracting sticker placements to a separate collection if boards grow large
+   Introduce caching for hot board reads (or precomputed snapshots)
 
 2) Reliability and operations
-Move from console logs to structured logs with correlation IDs
-Add health checks and basic metrics dashboards (latency, error rate, DB ops)
-Artifact-based deploys (build in CI, deploy artifacts) for safer rollback and less server drift
+   Move from console logs to structured logs with correlation IDs
+   Add health checks and basic metrics dashboards (latency, error rate, DB ops)
+   Artifact-based deploys (build in CI, deploy artifacts) for safer rollback and less server drift
 
 3) Security hardening
-Add explicit CSRF protection if cookie auth is the dominant mechanism
-Tighten upload handling (signature checks, object storage, scanning where appropriate)
-Token rotation / refresh strategy if session security requirements increase
+   Add explicit CSRF protection if cookie auth is the dominant mechanism
+   Tighten upload handling (signature checks, object storage, scanning where appropriate)
+   Token rotation / refresh strategy if session security requirements increase
 
 
 ### License
 [MIT](LICENSE)
-
 
