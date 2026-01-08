@@ -113,12 +113,12 @@ This is a portfolio project, but it intentionally uses production-shaped control
 - JWT in HttpOnly cookie to reduce token theft via XSS (with secure in production and sameSite=lax)
 - Route protection and role checks via middleware (protect, authorize)
 - Registration hardening:
-- **verification flow with resend cooldown**
-- **lockout after repeated invalid verification attempts**
-- **per-route rate limiting on registration endpoints**
+    - verification flow with resend cooldown
+    - lockout after repeated invalid verification attempts
+    - per-route rate limiting on registration endpoints
 - Input hardening:
-- **XSS sanitizer**
-- **mongo query sanitization**
+    - XSS sanitizer
+    - mongo query sanitization
 - HPP protection
 - Helmet
 
@@ -127,12 +127,12 @@ Known security gaps / next hardening steps:
 - structured logging + sensitive-data redaction for production
 - stronger file validation (signature checks, object storage, malware scanning in higher-risk settings)
 
-MVP status: 
+## MVP status: 
 
 Backend: v1.0.0 API is implemented, tested, documented, and deployed.
 Frontend: deployed and functional against the API.
 
-MVP flow coverage includes:
+### MVP flow coverage includes:
 
 Register → verify email → login
 Create a board
@@ -140,28 +140,28 @@ Log sticks (“stix”) with dose + notes
 Place stickers on your board
 Comment on other boards
 Send “cheers” stickers to other boards (consumable inventory model)
-CI runs on every push/PR and publishes a coverage artifact:
+
+## GitHub Actions for CI/CD
+
+### CI runs on every push/PR and publishes a coverage artifact:
 CI workflow
 
-Deployment is automated on main:
+### Deployment is automated on main:
 Deploy workflow
-Next version features
 
-Short list of the next meaningful additions (beyond MVP):
+## Next version features
 
-Analytics/trends view for side effects (time-to-onset, duration, mitigations)
+### Short list of the next meaningful additions (beyond MVP):
+- Analytics/trends view for side effects (time-to-onset, duration, mitigations)
+- Progress photos / measurements (opt-in, privacy controls)
+- Improved board discovery (filters, search, pagination caps)
 
-Progress photos / measurements (opt-in, privacy controls)
-
-Improved board discovery (filters, search, pagination caps)
-
-VIP insights:
-
-- LLM-backed summarization of a user’s stix logs
+### VIP insights:
+- Integrate LLM-backed summarization of a user’s stix logs
 - trend highlights with clear limitations and safety disclaimers
 - RAG over user-owned logs (no cross-user leakage)
 
-Scaling plan
+## Scaling plan
 
 If this product grew beyond a single-node deployment, the next steps would be:
 
