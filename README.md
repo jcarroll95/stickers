@@ -43,7 +43,7 @@ The full scope and acceptance criteria are captured in the MVP spec: [`/docs/mvp
 
 ### Architecture overview
 
-- **Frontend:** React + Vite SPA
+- **Frontend:** React + Vite SPA, Konva for sticker board interface
 - **Backend:** Node.js + Express REST API
 - **Database:** MongoDB (Mongoose ODM)
 - **Auth:** JWT issued by the API; stored as an HttpOnly cookie (`sameSite=lax`, `secure` in production) with Bearer-token support for API clients/tests
@@ -52,6 +52,8 @@ The full scope and acceptance criteria are captured in the MVP spec: [`/docs/mvp
 At runtime, the system is split intentionally:
 - Nginx serves `client/dist` (static SPA build)
 - Express serves `/api/v1/*` and also exposes `/public` for uploaded assets
+
+[`docs/architecture.md`](./docs/architecture.md)
 
 ### Key design decisions
 
