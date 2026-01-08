@@ -10,6 +10,7 @@ const asyncHandler = require('../middleware/async');
  * @access Public
 */
 exports.getStickerboards = asyncHandler(async (req, res, next) => {
+    /* Legacy pagination which has been moved to advancedResults and called by routing:
     let query;  // just initialize
 
     // Spread operator fun
@@ -80,6 +81,7 @@ exports.getStickerboards = asyncHandler(async (req, res, next) => {
             limit
         }
     }
+    */
 
     // Publish the response
     res
@@ -113,7 +115,6 @@ exports.getStickerboard = asyncHandler(async (req, res, next) => {
 exports.createStickerboard = asyncHandler(async (req, res, next) => {
     // Add user to req.body
     req.body.user = req.user.id;
-    console.log(req.body);
 
     // Check if this user already has a published stickerboard
     const publishedStickerboard = await Stickerboard.findOne({ user: req.user.id });

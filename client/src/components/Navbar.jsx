@@ -83,7 +83,17 @@ const Navbar = () => {
                         {navigatingCheer ? 'Cheering…' : 'Cheer!'}
                     </button>
                 </li>
-                <li className={styles.link}>Developer Docs</li>
+                <li>
+                    <a
+                        href="https://github.com/jcarroll95/stickers"
+                        className={styles.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                        GitHub
+                    </a>
+                </li>
             </ul>
 
             <div className={styles.auth}>
