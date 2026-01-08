@@ -32,10 +32,10 @@ I'm trying to be transparent about unforced errors during this project build so 
 
 ## 2. Separate Build-Time and Runtime Dependencies
 
-Frontend builds and backend runtime have different requirements.
+The front and backend of this project were scaffolded differently and I ran into some friction integrating them on the deployed server.
 
-- Frontend builds require devDependencies (e.g. Vite)
-- Backend runtime should exclude devDependencies
+- Frontend use of Vite as a dev dependency required inclusion since I built on server
+- Backend runtime excludes dev dependencies
 
 **Correct pattern**
 ```bash
@@ -125,37 +125,3 @@ This improves:
 - Debuggability
 - Deployment reliability
 
----
-
-## 8. Debug Bottom-Up, Not Top-Down
-
-The root causes were:
-- Nginx not running
-- Filesystem permissions
-- Invalid config
-
-**Correct debug order**
-1. Is the service running?
-2. Is it listening on the port?
-3. Can it read the files?
-4. Is routing correct?
-
----
-
-## Core Mental Model
-
-> **Build where it’s convenient. Serve from where it’s safe.**
-
-- CI builds
-- Nginx serves static files
-- Node serves APIs
-- Each layer does exactly one job
-
----
-
-## One Key Takeaway
-
-> **Static frontend = filesystem problem**  
-> **API backend = process problem**
-
-Treat them separately to keep production stable and boring.

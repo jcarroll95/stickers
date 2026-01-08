@@ -83,6 +83,9 @@ app.use(cookieParser());
 // file upload for express
 app.use(fileupload());
 
+// helmet
+app.use(helmet());
+
 // mount routers
 app.use('/api/v1/stickerboards', stickerboard); // connecting our route to the file
 app.use('/api/v1/stix', stick);
@@ -91,8 +94,7 @@ app.use('/api/v1/auth/users', users);
 app.use('/api/v1/comments', comments)
 app.use('/api/v1/admin', admin);
 
-// helmet
-app.use(helmet());
+
 
 // sanitize data (Express 5 has a getter-only req.query; use manual sanitizer to avoid reassigning req.query)
 app.use((req, res, next) => {
