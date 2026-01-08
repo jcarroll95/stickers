@@ -132,7 +132,7 @@ Known security gaps / next hardening steps:
 Backend: v1.0.0 API is implemented, tested, documented, and deployed.
 Frontend: deployed and functional against the API.
 
-There are some minor changes necessary to achieve full MVP - expand stick description into side effects, add strength factor. 
+There are some minor changes necessary to achieve full MVP - expand stick description into side effects, add strength factor. We need a method to aggregate and visualize trends though this is out of scope at v1. Some routes have slightly changed since the MVP doc was drafted. 
 
 ### MVP flow coverage includes:
 
