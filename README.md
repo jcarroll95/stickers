@@ -15,8 +15,8 @@ A lightweight social “stickerboard” that helps GLP-1 users stay consistent w
 
 - [Problem](#problem)
 - [Technical approach](#technical-approach)
-    - [Architecture overview](#architecture-overview)
-    - [Key design decisions](#key-design-decisions)
+  - [Architecture overview](#architecture-overview)
+  - [Key design decisions](#key-design-decisions)
 - [Project structure](#project-structure)
 - [Security considerations](#security-considerations)
 - [MVP status](#mvp-status)
@@ -43,7 +43,7 @@ The full scope and acceptance criteria are captured in the MVP spec: [`/docs/mvp
 
 ### Architecture overview
 
-- **Frontend:** React + Vite SPA
+- **Frontend:** React + Vite SPA, Konva for sticker board interface
 - **Backend:** Node.js + Express REST API
 - **Database:** MongoDB (Mongoose ODM)
 - **Auth:** JWT issued by the API; stored as an HttpOnly cookie (`sameSite=lax`, `secure` in production) with Bearer-token support for API clients/tests
@@ -52,6 +52,8 @@ The full scope and acceptance criteria are captured in the MVP spec: [`/docs/mvp
 At runtime, the system is split intentionally:
 - Nginx serves `client/dist` (static SPA build)
 - Express serves `/api/v1/*` and also exposes `/public` for uploaded assets
+
+[`docs/architecture.md`](./docs/architecture.md)
 
 ### Key design decisions
 
@@ -113,12 +115,12 @@ This is a portfolio project, but it intentionally uses production-shaped control
 - JWT in HttpOnly cookie to reduce token theft via XSS (with secure in production and sameSite=lax)
 - Route protection and role checks via middleware (protect, authorize)
 - Registration hardening:
-- **verification flow with resend cooldown**
-- **lockout after repeated invalid verification attempts**
-- **per-route rate limiting on registration endpoints**
+  - verification flow with resend cooldown
+  - lockout after repeated invalid verification attempts
+  - per-route rate limiting on registration endpoints
 - Input hardening:
-- **XSS sanitizer**
-- **mongo query sanitization**
+  - XSS sanitizer
+  - mongo query sanitization
 - HPP protection
 - Helmet
 
@@ -127,12 +129,14 @@ Known security gaps / next hardening steps:
 - structured logging + sensitive-data redaction for production
 - stronger file validation (signature checks, object storage, malware scanning in higher-risk settings)
 
-MVP status: 
+## MVP status:
 
 Backend: v1.0.0 API is implemented, tested, documented, and deployed.
 Frontend: deployed and functional against the API.
 
-MVP flow coverage includes:
+There are some minor changes necessary to achieve full MVP - expand stick description into side effects, add strength factor. We need a method to aggregate and visualize trends though this is out of scope at v1. Some routes have slightly changed since the MVP doc was drafted.
+
+### MVP flow coverage includes:
 
 Register → verify email → login
 Create a board
@@ -140,49 +144,48 @@ Log sticks (“stix”) with dose + notes
 Place stickers on your board
 Comment on other boards
 Send “cheers” stickers to other boards (consumable inventory model)
-CI runs on every push/PR and publishes a coverage artifact:
+
+## GitHub Actions for CI/CD
+
+### CI runs on every push/PR and publishes a coverage artifact:
 CI workflow
 
-Deployment is automated on main:
+### Deployment is automated on main:
 Deploy workflow
-Next version features
 
-Short list of the next meaningful additions (beyond MVP):
+## Next version features
 
-Analytics/trends view for side effects (time-to-onset, duration, mitigations)
+### Short list of the next meaningful additions (beyond MVP):
+- Analytics/trends view for side effects (time-to-onset, duration, mitigations)
+- Progress photos / measurements (opt-in, privacy controls)
+- Improved board discovery (filters, search, pagination caps)
 
-Progress photos / measurements (opt-in, privacy controls)
-
-Improved board discovery (filters, search, pagination caps)
-
-VIP insights:
-
-- LLM-backed summarization of a user’s stix logs
+### VIP insights:
+- Integrate LLM-backed summarization of a user’s stix logs
 - trend highlights with clear limitations and safety disclaimers
 - RAG over user-owned logs (no cross-user leakage)
 
-Scaling plan
+## Scaling plan
 
 If this product grew beyond a single-node deployment, the next steps would be:
 
 1) Data and query scaling
-Cap pagination limits and parameterize search fields in generic query middleware
-Add/verify indexes on common access paths (board lookups, comments by board, stix by board)
-Consider extracting sticker placements to a separate collection if boards grow large
-Introduce caching for hot board reads (or precomputed snapshots)
+   Cap pagination limits and parameterize search fields in generic query middleware
+   Add/verify indexes on common access paths (board lookups, comments by board, stix by board)
+   Consider extracting sticker placements to a separate collection if boards grow large
+   Introduce caching for hot board reads (or precomputed snapshots)
 
 2) Reliability and operations
-Move from console logs to structured logs with correlation IDs
-Add health checks and basic metrics dashboards (latency, error rate, DB ops)
-Artifact-based deploys (build in CI, deploy artifacts) for safer rollback and less server drift
+   Move from console logs to structured logs with correlation IDs
+   Add health checks and basic metrics dashboards (latency, error rate, DB ops)
+   Artifact-based deploys (build in CI, deploy artifacts) for safer rollback and less server drift
 
 3) Security hardening
-Add explicit CSRF protection if cookie auth is the dominant mechanism
-Tighten upload handling (signature checks, object storage, scanning where appropriate)
-Token rotation / refresh strategy if session security requirements increase
+   Add explicit CSRF protection if cookie auth is the dominant mechanism
+   Tighten upload handling (signature checks, object storage, scanning where appropriate)
+   Token rotation / refresh strategy if session security requirements increase
 
 
 ### License
 [MIT](LICENSE)
-
 
