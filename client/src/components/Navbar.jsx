@@ -94,6 +94,17 @@ const Navbar = () => {
                         GitHub
                     </a>
                 </li>
+                <li>
+                    <a
+                        href="https://stickerboards.app/apidocs.html"
+                        className={styles.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                        API Docs
+                    </a>
+                </li>
             </ul>
 
             <div className={styles.auth}>
