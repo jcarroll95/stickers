@@ -13,4 +13,4 @@
     - Total JS size (KB)
     - Total transferred bytes 
     - Number of requests
-    - Main-thread blocking time
+    - Main-thread blocking time 
