@@ -115,12 +115,12 @@ This is a portfolio project, but it intentionally uses production-shaped control
 - JWT in HttpOnly cookie to reduce token theft via XSS (with secure in production and sameSite=lax)
 - Route protection and role checks via middleware (protect, authorize)
 - Registration hardening:
-    - verification flow with resend cooldown
-    - lockout after repeated invalid verification attempts
-    - per-route rate limiting on registration endpoints
+  - verification flow with resend cooldown
+  - lockout after repeated invalid verification attempts
+  - per-route rate limiting on registration endpoints
 - Input hardening:
-    - XSS sanitizer
-    - mongo query sanitization
+  - XSS sanitizer
+  - mongo query sanitization
 - HPP protection
 - Helmet
 
@@ -129,12 +129,26 @@ Known security gaps / next hardening steps:
 - structured logging + sensitive-data redaction for production
 - stronger file validation (signature checks, object storage, malware scanning in higher-risk settings)
 
-## MVP status: 
+### Performance considerations
+
+We want to optimize the application for performance and user experience. The initial approach will include:
+- Implementing code splitting and lazy loading for improved initial load time
+- Minifying and bundling assets for reduced file size
+- Examine the value of implementing a CDN for static assets
+- Optimizing image asset packs for size
+
+Check out [`performance-testing/performance.md`](performance-testing/performance.md) for performance metrics and before/after measurements
+
+In subsequent versions we'll revisit:
+- Optimizing database queries for faster response times
+- Sub-scale parallel image asset packs for faster sticker loading
+
+## MVP status:
 
 Backend: v1.0.0 API is implemented, tested, documented, and deployed.
 Frontend: deployed and functional against the API.
 
-There are some minor changes necessary to achieve full MVP - expand stick description into side effects, add strength factor. We need a method to aggregate and visualize trends though this is out of scope at v1. Some routes have slightly changed since the MVP doc was drafted. 
+There are some minor changes necessary to achieve full MVP - expand stick description into side effects, add strength factor. We need a method to aggregate and visualize trends though this is out of scope at v1. Some routes have slightly changed since the MVP doc was drafted.
 
 ### MVP flow coverage includes:
 

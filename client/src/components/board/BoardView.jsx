@@ -1,8 +1,8 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, Suspense, lazy } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-hot-toast';
 import DOMPurify from 'dompurify';
-import StickerInterface from '../stickerInterface/StickerInterface.jsx'
+// import StickerInterface from '../stickerInterface/StickerInterface.jsx'
 import AddStickForm from '../stix/AddStickForm.jsx';
 import CommentList from '../comments/CommentList.jsx';
 import AddCommentForm from '../comments/AddCommentForm.jsx';
@@ -13,6 +13,8 @@ import { parseError } from '../../utils/errorUtils';
 import StixList from './subcomponents/StixList';
 import styles from './BoardView.module.css';
 import formStyles from '../stix/AddStickForm.module.css';
+
+const StickerInterface = lazy(() => import('../stickerInterface/StickerInterface.jsx'));
 
 export default function BoardView({ token }) {
   const { board, loading, error, refreshBoard } = useBoardData(token);
@@ -96,20 +98,22 @@ export default function BoardView({ token }) {
         };
 
         return (
-          <StickerInterface
-            {...sharedProps}
-            onPlaceSticker={onPlace}
-            onClearStickers={isOwner ? async (next) => {
-              const toastId = toast.loading('Clearing...');
-              try {
-                await apiClient.put(`/stickerboards/${board._id || board.id}`, { stickers: next });
-                window.dispatchEvent(new CustomEvent('stickerboard:cleared', { detail: { boardId: board._id || board.id } }));
-                toast.success('Cleared!', { id: toastId });
-              } catch (err) {
-                toast.error(parseError(err), { id: toastId });
-              }
-            } : undefined}
-          />
+          <Suspense fallback={<LoadingSpinner message="Loading canvas..." />}>
+            <StickerInterface
+              {...sharedProps}
+              onPlaceSticker={onPlace}
+              onClearStickers={isOwner ? async (next) => {
+                const toastId = toast.loading('Clearing...');
+                try {
+                  await apiClient.put(`/stickerboards/${board._id || board.id}`, { stickers: next });
+                  window.dispatchEvent(new CustomEvent('stickerboard:cleared', { detail: { boardId: board._id || board.id } }));
+                  toast.success('Cleared!', { id: toastId });
+                } catch (err) {
+                  toast.error(parseError(err), { id: toastId });
+                }
+              } : undefined}
+            />
+          </Suspense>
         );
       })()}
 
