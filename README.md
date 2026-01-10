@@ -129,6 +129,20 @@ Known security gaps / next hardening steps:
 - structured logging + sensitive-data redaction for production
 - stronger file validation (signature checks, object storage, malware scanning in higher-risk settings)
 
+### Performance considerations
+
+We want to optimize the application for performance and user experience. The initial approach will include:
+- Implementing code splitting and lazy loading for improved initial load time
+- Minifying and bundling assets for reduced file size
+- Examine the value of implementing a CDN for static assets
+- Optimizing image asset packs for size
+
+Check out [`performance-testing/performance.md`](performance-testing/performance.md) for performance metrics and before/after measurements
+
+In subsequent versions we'll revisit:
+- Optimizing database queries for faster response times
+- Sub-scale parallel image asset packs for faster sticker loading
+
 ## MVP status:
 
 Backend: v1.0.0 API is implemented, tested, documented, and deployed.
