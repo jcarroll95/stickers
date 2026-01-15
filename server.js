@@ -16,6 +16,7 @@ const bodyParser = require('body-parser');
 const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const cors = require('cors');
+const compression = require('compression');
 // tack on middleware for admin metrics
 const { performanceMiddleware } = require('./middleware/performance');
 
@@ -37,6 +38,9 @@ const admin = require('./routes/admin');
 
 // define express app
 const app = express();
+
+// Use compression middleware
+app.use(compression());
 
 // Use performance middleware to track http requests
 app.use(performanceMiddleware);
@@ -107,7 +111,19 @@ app.use((req, res, next) => {
 });
 
 // set static folder
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: '1d',
+    etag: true
+}));
+
+// Also serve the client build if it exists
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, 'client/dist'), {
+        maxAge: '1y',
+        etag: true,
+        immutable: true
+    }));
+}
 
 // Bring in the error wrapper
 const errorHandler = require('./middleware/error');
