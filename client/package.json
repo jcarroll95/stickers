@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "optimize-images": "node optimize-images.js"
   },
   "lint-staged": {
     "*.{js,jsx}": "eslint --fix"
@@ -24,7 +25,9 @@
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
     "react-konva": "^19.2.1",
+    "sharp": "^0.34.5",
     "use-image": "^1.1.4",
+    "vite-plugin-image-optimizer": "^2.0.3",
     "zustand": "^5.0.9"
   },
   "devDependencies": {
