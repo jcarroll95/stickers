@@ -36,9 +36,10 @@ const LandingPage = () => {
                       sizes="(max-width: 600px) 400px, (max-width: 900px) 800px"
                   />
                   <img
-                      src="/assets/sb0-1200w.png"
+                      src="/assets/sb0-800w.png"
                       srcSet="/assets/sb0-400w.png 400w, /assets/sb0-800w.png 800w"
                       sizes="(max-width: 600px) 400px, (max-width: 900px) 800px"
+                      fetchpriority="high"
                       alt="Stickerboard Preview"
                       className={styles.heroImage}
                   />
