@@ -33,7 +33,7 @@ const LandingPage = () => {
                   <source
                       type="image/webp"
                       srcSet="/assets/sb0-400w.webp 400w, /assets/sb0-800w.webp 800w"
-                      sizes="(max-width: 600px) 400px, (max-width: 900px) 800px"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                   />
                   <img
                       src="/assets/sb0-800w.png"
@@ -75,25 +75,25 @@ const LandingPage = () => {
               <picture>
                   <source type="image/webp" srcSet="/assets/sb1-400w.webp 400w, /assets/sb1-800w.webp 800w"/>
                   <img src="/assets/sb1-800w.png" srcSet="/assets/sb1-400w.png 400w, /assets/sb1-800w.png 800w"
-                       sizes="(max-width: 600px) 400px, 800px" alt="Gallery 1" className={styles.gridImage}/>
+                       sizes="(max-width: 768px) 45vw, 400px" alt="Gallery 1" className={styles.gridImage}/>
               </picture>
 
               <picture>
                   <source type="image/webp" srcSet="/assets/sb5-400w.webp 400w, /assets/sb5-800w.webp 800w"/>
                   <img src="/assets/sb5-800w.png" srcSet="/assets/sb5-400w.png 400w, /assets/sb5-800w.png 800w"
-                       sizes="(max-width: 600px) 400px, 800px" alt="Gallery 2" className={styles.gridImage}/>
+                       sizes="(max-width: 768px) 45vw, 400px" alt="Gallery 2" className={styles.gridImage}/>
               </picture>
 
               <picture>
                   <source type="image/webp" srcSet="/assets/sb3-400w.webp 400w, /assets/sb3-800w.webp 800w"/>
                   <img src="/assets/sb3-800w.png" srcSet="/assets/sb3-400w.png 400w, /assets/sb3-800w.png 800w"
-                       sizes="(max-width: 600px) 400px, 800px" alt="Gallery 3" className={styles.gridImage}/>
+                       sizes="(max-width: 768px) 45vw, 400px" alt="Gallery 3" className={styles.gridImage}/>
               </picture>
 
               <picture>
                   <source type="image/webp" srcSet="/assets/sb4-400w.webp 400w, /assets/sb4-800w.webp 800w"/>
                   <img src="/assets/sb4-800w.png" srcSet="/assets/sb4-400w.png 400w, /assets/sb4-800w.png 800w"
-                       sizes="(max-width: 600px) 400px, 800px" alt="Gallery 4" className={styles.gridImage}/>
+                       sizes="(max-width: 768px) 45vw, 400px" alt="Gallery 4" className={styles.gridImage}/>
               </picture>
           </div>
       </section>
