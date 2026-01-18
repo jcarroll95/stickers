@@ -50,6 +50,7 @@
     "msw": "^2.12.7",
     "rollup-plugin-visualizer": "^6.0.5",
     "vite": "^7.2.4",
+    "vite-plugin-html": "^3.2.2",
     "vitest": "^4.0.16",
     "vitest-canvas-mock": "^1.1.3"
   }

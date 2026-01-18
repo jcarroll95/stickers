@@ -33,3 +33,21 @@
 - **Image Optimization**: Convert large PNG assets in `/assets/` to WebP or AVIF format. 
 - **Image Resizing**: Provide responsive image sizes (srcset) to avoid sending 2MB images to mobile devices.
 - **HTTP/2**: Ensure the production environment (e.g., NGINX or hosting provider) supports HTTP/2 to allow multiplexing of requests.
+
+## Updates for first performance optimizations:
+- **Image Optimization**: added a dev script to automatically produce multiple sizes of image assets in webp and png formats.
+- **Loading Optimization**: employed srcset to serve responsive images.
+- **HTTP/2**: enabled HTTP/2 on the server's NGINX configuration.
+- **Caching**: added cache headers to static assets.
+- **Compression**: enabled gzip compression on the server.
+- **Konva**: updated vite package chunking and selective lazy loading to ensure Konva does not load on the landing page
+- **Vite Config**: added vite-plugin-html to inline CSS into the HTML during build
+
+#### Results:
+- First Contentful Paint 4.3 -> 2.1s (2.3x faster)
+- Largest Contentful Paint 5.2 -> 2.7s (1.8x faster)
+- Reduced landing image delivery by over 2,000 KB
+
+Next steps:
+- Further image optimization
+- Refactor Explore page to use generated thumbnail images instead of rendering 9x konva boards

@@ -1,17 +1,38 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { createHtmlPlugin } from 'vite-plugin-html';
+import fs from 'fs';
 
 export default defineConfig({
     plugins: [
         react(),
-        visualizer({ open: true })
+        visualizer({ open: true }),
+        createHtmlPlugin({
+            minify: true,
+            inject: {
+                data: {
+                    injectCss: () => {
+                        // This will inline the CSS during build
+                        const cssPath = './dist/assets/index-*.css';
+                        try {
+                            const files = fs.readdirSync('./dist/assets').filter(f => f.startsWith('index-') && f.endsWith('.css'));
+                            if (files[0]) {
+                                return fs.readFileSync(`./dist/assets/${files[0]}`, 'utf-8');
+                            }
+                        } catch (e) {
+                            return '';
+                        }
+                        return '';
+                    }
+                }
+            }
+        })
     ],
     build: {
         rollupOptions: {
             output: {
-                // Remove manualChunks - let Vite handle it automatically
-                // This will only bundle Konva with routes that actually use it
+                // Let Vite handle chunking automatically
             }
         }
     },
