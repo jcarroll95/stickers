@@ -12,7 +12,17 @@ export default defineConfig({
             output: {
                 manualChunks: {
                     'konva-vendor': ['konva', 'react-konva'],
-                }
+                },
+                // Disable modulepreload for better code splitting
+                experimentalMinChunkSize: 500000,
+            }
+        },
+        // Disable automatic modulepreload injection in index.html and only load konva-vendor when called for in explore/board pages
+        modulePreload: {
+            polyfill: false,
+            resolveDependencies: (filename, deps, { hostId, hostType }) => {
+                // Filter out konva-vendor from being preloaded
+                return deps.filter(dep => !dep.includes('konva-vendor'));
             }
         }
     },
@@ -20,7 +30,6 @@ export default defineConfig({
         port: 5173,
         strictPort: true,
         proxy: {
-            // Anything starting with /api will be proxied to your Express server
             '/api': {
                 target: 'http://localhost:5050',
                 changeOrigin: true,
