@@ -10,19 +10,8 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks: {
-                    'konva-vendor': ['konva', 'react-konva'],
-                },
-                // Disable modulepreload for better code splitting
-                experimentalMinChunkSize: 500000,
-            }
-        },
-        // Disable automatic modulepreload injection in index.html and only load konva-vendor when called for in explore/board pages
-        modulePreload: {
-            polyfill: false,
-            resolveDependencies: (filename, deps, { hostId, hostType }) => {
-                // Filter out konva-vendor from being preloaded
-                return deps.filter(dep => !dep.includes('konva-vendor'));
+                // Remove manualChunks - let Vite handle it automatically
+                // This will only bundle Konva with routes that actually use it
             }
         }
     },
