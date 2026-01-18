@@ -1,6 +1,6 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, lazy, Suspense } from 'react';
 import PropTypes from 'prop-types';
-import StickerInterface from '../stickerInterface/StickerInterface.jsx';
+const StickerInterface = lazy(() => import('../stickerInterface/StickerInterface.jsx'));
 
 /**
  * ThumbnailBoard Component
@@ -46,18 +46,20 @@ export default function ThumbnailBoard({ board }) {
 
   return (
     <div ref={containerRef} style={{ maxWidth: 300, minHeight: 200 }}>
-      {isVisible ? (
-        <StickerInterface
-          board={board}
-          boardId={board?._id || board?.id || 'board'}
-          boardSrc={boardSrc}
-          stickers={Array.isArray(board?.stickers) ? board.stickers : []}
-          persistedStickers={Array.isArray(board?.stickers) ? board.stickers : []}
-          readonly
-          isOwner={false}
-          displayLongEdge={300}
-        />
-      ) : (
+        {isVisible ? (
+            <Suspense fallback={<div style={{ minHeight: 200 }}>Loading...</div>}>
+                <StickerInterface
+                    board={board}
+                    boardId={board?._id || board?.id || 'board'}
+                    boardSrc={boardSrc}
+                    stickers={Array.isArray(board?.stickers) ? board.stickers : []}
+                    persistedStickers={Array.isArray(board?.stickers) ? board.stickers : []}
+                    readonly
+                    isOwner={false}
+                    displayLongEdge={300}
+                />
+            </Suspense>
+        ) : (
         <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: 8 }}>
           Loading thumbnail...
         </div>
