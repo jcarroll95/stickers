@@ -31,6 +31,9 @@ jobs:
           git pull --ff-only origin main
           git reset --hard origin/main
           git clean -fd
+          # Create config.env from GitHub Secret
+          mkdir -p config
+          echo "${{ secrets.ENV_FILE_CONTENT }}" > config/config.env
           export NODE_ENV=production
           npm ci --omit=dev
           # now we'll build the vite files on the server, must include=dev since vite is dev dep
