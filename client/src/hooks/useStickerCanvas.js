@@ -25,14 +25,36 @@ export default function useStickerCanvas({
   const effectiveInternalStickers = useMemo(() => {
     const boardStickers = Array.isArray(stickers) ? stickers : [];
     if (isCheersMode) {
-      const cheers = (cheersStickers || []).map(id => ({ stickerId: id, stuck: false, isCheers: true }));
+      const cheers = (cheersStickers || []).map((id, index) => ({
+        stickerId: id,
+        stuck: false,
+        isCheers: true,
+        tempId: `cheers-${index}-${id}`
+      }));
       return [...boardStickers, ...cheers];
     }
     return boardStickers;
   }, [isCheersMode, cheersStickers, stickers]);
 
   const [internalStickers, setInternalStickers] = useState(effectiveInternalStickers);
-  useEffect(() => { setInternalStickers(effectiveInternalStickers); }, [effectiveInternalStickers]);
+  useEffect(() => {
+    setInternalStickers(prev => {
+      // If we're in cheers mode, we want to preserve the "stuck" state for stickers
+      // that might have been locally placed but not yet reflected in the parent's cheersStickers prop.
+      if (isCheersMode) {
+        // Map new stickers from props, but if they match a tempId that we already marked as stuck,
+        // keep them stuck.
+        return effectiveInternalStickers.map(newSticker => {
+          const matchingPrev = prev.find(p => p.tempId === newSticker.tempId);
+          if (matchingPrev && matchingPrev.stuck) {
+            return { ...newSticker, stuck: true };
+          }
+          return newSticker;
+        });
+      }
+      return effectiveInternalStickers;
+    });
+  }, [effectiveInternalStickers, isCheersMode]);
 
   const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
 
@@ -41,7 +63,11 @@ export default function useStickerCanvas({
     return cheers ? `${assetsBaseUrl}/c${stickerId}.png` : `${assetsBaseUrl}/sticker${stickerId}.png`;
   }, [isCheersMode, assetsBaseUrl]);
 
-  const isValidStickerId = useCallback((id) => Number.isInteger(id) && id >= 0 && id <= 9, []);
+  const isValidStickerId = useCallback((id, isCheers) => {
+    const num = Number(id);
+    if (!Number.isInteger(num) || num < 0) return false;
+    return isCheers ? num <= 10000 : num <= 9;
+  }, []);
 
   const { bgImage, legacyStickerImage, boardSize, legacyDefaultScale } = useBoardAssets(boardSrc, displayLongEdge);
 
