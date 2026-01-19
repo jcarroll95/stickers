@@ -54,7 +54,7 @@ export default function BoardView({ token }) {
   const handleRegenerateThumbnail = async () => {
     const toastId = toast.loading('Generating thumbnail...');
     try {
-      await uploadThumbnail(board._id || board.id, stageRef, { force: true });
+      await uploadThumbnail(board._id || board.id, stageRef);
       toast.success('Thumbnail regenerated!', { id: toastId });
       refreshBoard();
     } catch (err) {
