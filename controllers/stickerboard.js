@@ -10,78 +10,7 @@ const asyncHandler = require('../middleware/async');
  * @access Public
 */
 exports.getStickerboards = asyncHandler(async (req, res, next) => {
-    /* Legacy pagination which has been moved to advancedResults and called by routing:
-    let query;  // just initialize
-
-    // Spread operator fun
-    const reqQuery = { ...req.query };
-
-    // Array of Fields to exclude when filtering
-    // select chooses to return a limited selection of fields from the query
-    // sort chooses sortby field and establishes a default
-    // page and limit are for pagination. limit = results per page
-    const removeFields = ['select', 'sort', 'page', 'limit'];
-
-    // Loop over removeFields and delete them from reqQuery so we aren't searching the DB for 'select'
-    removeFields.forEach(param => delete reqQuery[param]);
-
-    // Create query string against the SANITIZED version of reqQuery so we don't re-insert the removed fields
-    let queryStr = JSON.stringify(reqQuery);
-
-    // regex goes between //s, \b word boundary, /g global
-    // Create comparison operators we can pass to mongoose
-    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in|ne)\b/g, match => `$${match}`);
-
-    // Find the resource now that queryStr has been massaged to work for the mongoose method
-    query = Stickerboard.find(JSON.parse(queryStr)).populate('stix').populate('comments');
-
-    // Sort the query with default by created date descending
-    if (req.query.sort) {
-        const sortBy = req.query.sort.split(',').join(' ');
-        query = query.sort(sortBy);
-    } else {
-        query = query.sort('-createdAt');   // -1 is mongoose for descending
-    }
-
-    // Select fields if select was included in the query
-    if (req.query.select) {
-        // Selected fields are comma delimited in our request, but Mongoose wants them space delimited
-        // .split turns them into an array, join rejoins them space delimited
-        const fields = req.query.select.split(',').join(' ');
-        query = query.select(fields);
-    }
-
-    // Pagination stuff
-    const page = parseInt(req.query.page, 10) || 1;       // requested page, default 1
-    const limit = parseInt(req.query.limit, 10) || 20;    // requested perpage, default 20
-    const startIndex = (page - 1) * limit;                      // which result to start listing on this page
-    const endIndex = page * limit;                              // last result
-    const total = await Stickerboard.countDocuments(JSON.parse(queryStr));
-
-    // mongoose .skip() means skips this number of results before returning results
-    // .limit() means restrict the number of documents returned by this query
-    query = query.skip(startIndex).limit(limit);
-
-    // Execute the query
-    const stickerboards = await query;
-
-    // Pagination result object
-    const pagination = {}
-
-    if (endIndex < total) {
-        pagination.next = {
-            page: page + 1,
-            limit
-        }
-    }
-
-    if (startIndex > 0) {
-        pagination.prev = {
-            page: page - 1,
-            limit
-        }
-    }
-    */
+    //Legacy pagination which has been moved to advancedResults and called by routing:
 
     // Publish the response
     res
@@ -379,4 +308,38 @@ exports.stickerboardPhotoUpload= asyncHandler(async (req, res, next) => {
         });
     });
 
+});
+
+/**
+ * @desc System-generated thumbnail update for stickerboard
+ * @route POST /api/v1/stickerboards/:id/thumbnail
+ * @access Private
+ */
+exports.postThumbnail = asyncHandler(async (req, res, next) => {
+    const stickerboard = await Stickerboard.findById(req.params.id);
+
+    if (!stickerboard) {
+        return next(
+            new ErrorResponse(`Stickerboard not found with id of ${req.params.id}`, 404)
+        );
+    }
+
+    // Allow owner, admin, or any authenticated user (for cheers stickers)
+    // Authentication is handled by the protect middleware
+
+    try {
+        // Dynamically import the ES module helper
+        const { generateThumbnailUploadUrl } = await import('../utils/s3Helper.js');
+
+        // Generate the presigned URL
+        const result = await generateThumbnailUploadUrl(stickerboard.id);
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    } catch (err) {
+        console.error('Error in postThumbnail:', err);
+        return next(new ErrorResponse(`Failed to generate thumbnail upload URL: ${err.message}`, 500));
+    }
 });
