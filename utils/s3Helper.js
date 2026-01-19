@@ -1,12 +1,12 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 
 /**
- * Generates a presigned URL for uploading a thumbnail to DigitalOcean Spaces
+ * Uploads a thumbnail buffer directly to DigitalOcean Spaces
  * @param {string} stickerboardId - The ID of the stickerboard
- * @returns {Promise<{uploadUrl: string, publicUrl: string, key: string, version: number, contentType: string}>}
+ * @param {Buffer} buffer - The image buffer to upload
+ * @returns {Promise<{publicUrl: string, key: string, version: number, contentType: string, bytes: number}>}
  */
-export async function generateThumbnailUploadUrl(stickerboardId) {
+export async function uploadThumbnailToS3(stickerboardId, buffer) {
     const s3 = new S3Client({
         region: "us-east-1",
         endpoint: process.env.DO_SPACES_ENDPOINT,
@@ -15,8 +15,6 @@ export async function generateThumbnailUploadUrl(stickerboardId) {
             accessKeyId: process.env.DO_SPACES_KEY,
             secretAccessKey: process.env.DO_SPACES_SECRET,
         },
-        // Disable request checksums for DigitalOcean Spaces compatibility
-        requestChecksumCalculation: "WHEN_REQUIRED",
     });
 
     // Define versioned key
@@ -25,22 +23,76 @@ export async function generateThumbnailUploadUrl(stickerboardId) {
     const bucket = process.env.DO_SPACES_BUCKET;
     const contentType = "image/webp";
 
-    // Create presigned PUT command
-    // Note: DO NOT include ContentType here - it must be sent as a header instead
+    // Upload directly to S3
     const cmd = new PutObjectCommand({
         Bucket: bucket,
         Key: key,
+        Body: buffer,
+        ContentType: contentType,
         CacheControl: "public, max-age=31536000, immutable",
-        ChecksumAlgorithm: undefined, // Disable checksums for DO Spaces
+        ACL: "public-read",
     });
 
-    const uploadUrl = await getSignedUrl(s3, cmd, {
-        expiresIn: 60,
-        unhoistableHeaders: new Set(['x-amz-checksum-crc32']),
-        // Don't sign the Content-Type header - let it be sent by the client
-        signableHeaders: new Set(['host']),
-    });
+    await s3.send(cmd);
+
     const publicUrl = `${process.env.MEDIA_CDN_ORIGIN}/${key}`;
 
-    return { uploadUrl, publicUrl, key, version, contentType };
+    return { publicUrl, key, version, contentType, bytes: buffer.length };
+}
+
+/**
+ * Cleans up old thumbnail versions for a stickerboard, keeping only the latest N versions
+ * @param {string} stickerboardId - The ID of the stickerboard
+ * @param {number} keepCount - Number of recent versions to keep (default: 3)
+ * @returns {Promise<number>} Number of thumbnails deleted
+ */
+export async function cleanupOldThumbnails(stickerboardId, keepCount = 3) {
+    const s3 = new S3Client({
+        region: "us-east-1",
+        endpoint: process.env.DO_SPACES_ENDPOINT,
+        forcePathStyle: false,
+        credentials: {
+            accessKeyId: process.env.DO_SPACES_KEY,
+            secretAccessKey: process.env.DO_SPACES_SECRET,
+        },
+    });
+
+    const bucket = process.env.DO_SPACES_BUCKET;
+    const prefix = `thumbnails/${stickerboardId}/`;
+
+    // List all thumbnails for this board
+    const listCmd = new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix,
+    });
+
+    const listResponse = await s3.send(listCmd);
+    const objects = listResponse.Contents || [];
+
+    if (objects.length <= keepCount) {
+        return 0; // Nothing to delete
+    }
+
+    // Sort by last modified date (newest first)
+    objects.sort((a, b) => b.LastModified - a.LastModified);
+
+    // Get objects to delete (keep the newest N)
+    const toDelete = objects.slice(keepCount);
+
+    if (toDelete.length === 0) {
+        return 0;
+    }
+
+    // Delete old versions
+    const deleteCmd = new DeleteObjectsCommand({
+        Bucket: bucket,
+        Delete: {
+            Objects: toDelete.map(obj => ({ Key: obj.Key })),
+            Quiet: true,
+        },
+    });
+
+    await s3.send(deleteCmd);
+
+    return toDelete.length;
 }
