@@ -388,6 +388,13 @@ exports.postThumbnail = asyncHandler(async (req, res, next) => {
         });
     } catch (err) {
         console.error('Error in postThumbnail:', err);
-        return next(new ErrorResponse(`Failed to upload thumbnail: ${err.message}`, 500));
+        console.error('Error details:', {
+            name: err.name,
+            message: err.message,
+            code: err.code,
+            statusCode: err.$metadata?.httpStatusCode,
+            requestId: err.$metadata?.requestId,
+        });
+        return next(new ErrorResponse(`Failed to upload thumbnail: ${err.name} - ${err.message}`, 500));
     }
 });
