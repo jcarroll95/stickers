@@ -7,8 +7,8 @@ import BoardSidebar from "./BoardSidebar";
 import styles from "./StickerInterface.module.css";
 
 export default function StickerInterface(props) {
-  const { readonly = false } = props;
-  const stageRef = useRef(null);
+  const { readonly = false, forwardStageRef } = props;
+  const stageRef = forwardStageRef || useRef(null);
 
   const {
     bgImage,
@@ -99,4 +99,8 @@ StickerInterface.propTypes = {
   onAddSticker: PropTypes.func,
   isOwner: PropTypes.bool,
   cheersStickers: PropTypes.arrayOf(PropTypes.number),
+  forwardStageRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.any })
+  ]),
 };

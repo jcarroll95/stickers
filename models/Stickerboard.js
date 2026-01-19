@@ -30,6 +30,14 @@ const StickerboardSchema = new mongoose.Schema({
         type: String,
         default: 'no-photo.jpg'
     },
+    thumbnail: {
+        version: Number,          // epoch ms
+        width: Number,
+        height: Number,
+        contentType: String,      // image/webp
+        bytes: Number,
+        url: String               // full CDN URL
+    },
     totalCost: Number,
     averageRating: Number,
     averageCost: Number,

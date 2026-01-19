@@ -18,7 +18,8 @@ const {
   createStickerboard,
   updateStickerboard,
   deleteStickerboard,
-  stickerboardPhotoUpload
+  stickerboardPhotoUpload,
+  postThumbnail
 } = require('../controllers/stickerboard');
 
 const Stickerboard = require('../models/Stickerboard');
@@ -33,6 +34,9 @@ router.route('/:id')
   .get(getStickerboard)
   .put(protect, updateStickerboard)
   .delete(protect, deleteStickerboard);
+
+router.route('/:id/thumbnail')
+    .post(protect, postThumbnail);
 
 router.route('/:id/photo')
     .put(protect, authorize('vipuser'), stickerboardPhotoUpload);
