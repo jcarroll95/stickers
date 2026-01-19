@@ -10,7 +10,7 @@ import useImage from "use-image";
 const StickerSprite = React.memo(({ entry, boardSize, displayLongEdge, getStickerSrc, isValidStickerId }) => {
   const isValid = isValidStickerId(entry?.stickerId, entry?.isCheers);
   const src = isValid ? getStickerSrc(entry.stickerId, entry?.isCheers) : null;
-  const [img] = useImage(src);
+  const [img] = useImage(src, 'anonymous');
 
   const scale = useMemo(() => {
     if (!isValid) return 1;

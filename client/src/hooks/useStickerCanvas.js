@@ -65,7 +65,8 @@ export default function useStickerCanvas({
   const [placingImage] = useImage(
     placingSticker?.stickerId != null && isValidStickerId(placingSticker.stickerId)
       ? getStickerSrc(placingSticker.stickerId, placingSticker?.isCheers)
-      : null
+      : null,
+    'anonymous'
   );
 
   const placingDefaultScale = useMemo(() => {
