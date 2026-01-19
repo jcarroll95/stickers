@@ -25,7 +25,7 @@ A lightweight social “stickerboard” that helps GLP-1 users stay consistent w
 - [Local development](#local-development)
 - [License](#license)
 
----
+--- 
 
 ## Problem
 
