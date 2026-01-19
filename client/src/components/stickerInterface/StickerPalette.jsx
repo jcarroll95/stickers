@@ -18,6 +18,7 @@ const StickerPalette = ({
   isCheersMode,
   cheersStickers,
 }) => {
+  const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 140 }}>
       <div style={{ fontSize: 14, color: "#444" }}>
@@ -99,7 +100,7 @@ const StickerPalette = ({
             {isPlacing ? "Placing… click board" : "Sticker 0"}
           </div>
           <img
-            src="/assets/sticker0.png"
+            src={`${assetsBaseUrl}/sticker0.png`}
             alt="sticker"
             style={{ display: "block", maxWidth: "100%", height: "auto" }}
           />

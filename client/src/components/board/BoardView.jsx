@@ -93,10 +93,11 @@ export default function BoardView({ token }) {
       )}
 
       {(() => {
+        const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
         const p = String(board?.photo || '').trim();
         const isHttp = /^https?:\/\//i.test(p);
         const isSbPng = /^sb[0-9]+\.png$/i.test(p);
-        const boardSrc = isHttp ? p : (isSbPng ? `/assets/${p}` : '/assets/sb0.png');
+        const boardSrc = isHttp ? p : (isSbPng ? `${assetsBaseUrl}/${p}` : `${assetsBaseUrl}/sb0.png`);
         const sharedProps = {
           board,
           boardId: board._id || board.id,

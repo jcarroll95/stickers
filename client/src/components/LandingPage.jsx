@@ -10,6 +10,8 @@ const LandingPage = () => {
     window.location.hash = '#/explore';
   };
 
+  const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
+
   return (
     <div className={styles.landingContainer}>
       {/* Hero Section */}
@@ -32,12 +34,12 @@ const LandingPage = () => {
               <picture>
                   <source
                       type="image/webp"
-                      srcSet="/assets/sb0-400w.webp 400w, /assets/sb0-800w.webp 800w"
+                      srcSet={`${assetsBaseUrl}/sb0-400w.webp 400w, ${assetsBaseUrl}/sb0-800w.webp 800w`}
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                   />
                   <img
-                      src="/assets/sb0-800w.png"
-                      srcSet="/assets/sb0-400w.png 400w, /assets/sb0-800w.png 800w"
+                      src={`${assetsBaseUrl}/sb0-800w.png`}
+                      srcSet={`${assetsBaseUrl}/sb0-400w.png 400w, ${assetsBaseUrl}/sb0-800w.png 800w`}
                       sizes="(max-width: 600px) 400px, (max-width: 900px) 800px"
                       fetchpriority="high"
                       alt="Stickerboard Preview"
@@ -73,26 +75,26 @@ const LandingPage = () => {
         <h2 className={styles.sectionTitle}>Stickerboard Gallery</h2>
           <div className={styles.imageGrid}>
               <picture>
-                  <source type="image/webp" srcSet="/assets/sb1-400w.webp 400w, /assets/sb1-800w.webp 800w"/>
-                  <img src="/assets/sb1-800w.png" srcSet="/assets/sb1-400w.png 400w, /assets/sb1-800w.png 800w"
+                  <source type="image/webp" srcSet={`${assetsBaseUrl}/sb1-400w.webp 400w, ${assetsBaseUrl}/sb1-800w.webp 800w`}/>
+                  <img src={`${assetsBaseUrl}/sb1-800w.png`} srcSet={`${assetsBaseUrl}/sb1-400w.png 400w, ${assetsBaseUrl}/sb1-800w.png 800w`}
                        sizes="(max-width: 768px) 45vw, 400px" alt="Gallery 1" className={styles.gridImage}/>
               </picture>
 
               <picture>
-                  <source type="image/webp" srcSet="/assets/sb5-400w.webp 400w, /assets/sb5-800w.webp 800w"/>
-                  <img src="/assets/sb5-800w.png" srcSet="/assets/sb5-400w.png 400w, /assets/sb5-800w.png 800w"
+                  <source type="image/webp" srcSet={`${assetsBaseUrl}/sb5-400w.webp 400w, ${assetsBaseUrl}/sb5-800w.webp 800w`}/>
+                  <img src={`${assetsBaseUrl}/sb5-800w.png`} srcSet={`${assetsBaseUrl}/sb5-400w.png 400w, ${assetsBaseUrl}/sb5-800w.png 800w`}
                        sizes="(max-width: 768px) 45vw, 400px" alt="Gallery 2" className={styles.gridImage}/>
               </picture>
 
               <picture>
-                  <source type="image/webp" srcSet="/assets/sb3-400w.webp 400w, /assets/sb3-800w.webp 800w"/>
-                  <img src="/assets/sb3-800w.png" srcSet="/assets/sb3-400w.png 400w, /assets/sb3-800w.png 800w"
+                  <source type="image/webp" srcSet={`${assetsBaseUrl}/sb3-400w.webp 400w, ${assetsBaseUrl}/sb3-800w.webp 800w`}/>
+                  <img src={`${assetsBaseUrl}/sb3-800w.png`} srcSet={`${assetsBaseUrl}/sb3-400w.png 400w, ${assetsBaseUrl}/sb3-800w.png 800w`}
                        sizes="(max-width: 768px) 45vw, 400px" alt="Gallery 3" className={styles.gridImage}/>
               </picture>
 
               <picture>
-                  <source type="image/webp" srcSet="/assets/sb4-400w.webp 400w, /assets/sb4-800w.webp 800w"/>
-                  <img src="/assets/sb4-800w.png" srcSet="/assets/sb4-400w.png 400w, /assets/sb4-800w.png 800w"
+                  <source type="image/webp" srcSet={`${assetsBaseUrl}/sb4-400w.webp 400w, ${assetsBaseUrl}/sb4-800w.webp 800w`}/>
+                  <img src={`${assetsBaseUrl}/sb4-800w.png`} srcSet={`${assetsBaseUrl}/sb4-400w.png 400w, ${assetsBaseUrl}/sb4-800w.png 800w`}
                        sizes="(max-width: 768px) 45vw, 400px" alt="Gallery 4" className={styles.gridImage}/>
               </picture>
           </div>

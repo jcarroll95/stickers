@@ -12,15 +12,17 @@ export default function CreateStickerboard() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
+
   // Available backgrounds: concrete Konva canvas backgrounds sb0.png - sb8.png
   // Located at /client/public/assets/sb0.png ... sb8.png and served from /assets/...
   const backgrounds = useMemo(() => (
     Array.from({ length: 9 }, (_, i) => ({
       id: `sb${i}.png`,               // store exact file name in the photo field
       label: `Background sb${i}`,
-      url: `/assets/sb${i}.png`,      // public URL used for preview and Konva background
+      url: `${assetsBaseUrl}/sb${i}.png`,      // public URL used for preview and Konva background
     }))
-  ), []);
+  ), [assetsBaseUrl]);
 
   const canSubmit = !!selectedBg && name.trim().length > 0 && !submitting;
 
