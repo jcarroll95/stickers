@@ -16,23 +16,30 @@ export default defineConfig(({ mode }) => {
     
     // Let's use fs and a simple parser or just import dotenv if available.
     // Given this is a node environment in vite.config.js, we can read it.
-    let env = {};
+    let envFromFile = {};
     const envPath = path.resolve(__dirname, '../config/config.env');
     
     if (fs.existsSync(envPath)) {
         const content = fs.readFileSync(envPath, 'utf-8');
-        content.split('\n').forEach(line => {
-            const [key, ...valueParts] = line.split('=');
+        content.split(/\r?\n/).forEach(line => {
+            const trimmedLine = line.trim();
+            if (!trimmedLine || trimmedLine.startsWith('#')) return;
+            
+            const [key, ...valueParts] = trimmedLine.split('=');
             if (key && valueParts.length > 0) {
                 const value = valueParts.join('=').trim();
-                env[key.trim()] = value;
+                envFromFile[key.trim()] = value;
             }
         });
     }
 
-    // Also load standard Vite envs just in case
-    const viteEnv = loadEnv(mode, process.cwd());
-    const assetsBaseUrl = env.VITE_ASSETS_BASE_URL || viteEnv.VITE_ASSETS_BASE_URL || '/assets';
+    // Also load standard Vite envs
+    const viteEnv = loadEnv(mode, process.cwd(), '');
+    
+    // Priority: Process Env > config.env file > .env files > default
+    const assetsBaseUrl = process.env.VITE_ASSETS_BASE_URL || envFromFile.VITE_ASSETS_BASE_URL || viteEnv.VITE_ASSETS_BASE_URL || '/assets';
+
+    console.log(`[Vite Build] Using VITE_ASSETS_BASE_URL: ${assetsBaseUrl} (Mode: ${mode})`);
 
     return {
         plugins: [
@@ -45,7 +52,6 @@ export default defineConfig(({ mode }) => {
                         VITE_ASSETS_BASE_URL: assetsBaseUrl,
                         injectCss: () => {
                             // This will inline the CSS during build
-                            const cssPath = './dist/assets/index-*.css';
                             try {
                                 const files = fs.readdirSync('./dist/assets').filter(f => f.startsWith('index-') && f.endsWith('.css'));
                                 if (files[0]) {
@@ -60,6 +66,10 @@ export default defineConfig(({ mode }) => {
                 }
             })
         ],
+        // Expose the variable to the client-side code via import.meta.env
+        define: {
+            'import.meta.env.VITE_ASSETS_BASE_URL': JSON.stringify(assetsBaseUrl)
+        },
         build: {
             rollupOptions: {
                 output: {
