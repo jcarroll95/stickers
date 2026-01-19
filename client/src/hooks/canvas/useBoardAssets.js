@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import useImage from 'use-image';
 
 export function useBoardAssets(boardSrc, displayLongEdge = 600) {
+  const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
   const [bgImage] = useImage(boardSrc);
-  const [legacyStickerImage] = useImage("/assets/sticker0.png");
+  const [legacyStickerImage] = useImage(`${assetsBaseUrl}/sticker0.png`);
 
   const boardSize = useMemo(() => {
     const TARGET = Math.max(1, Number(displayLongEdge) || 600);

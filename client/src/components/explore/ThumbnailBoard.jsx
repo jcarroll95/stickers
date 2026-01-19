@@ -10,8 +10,9 @@ import PropTypes from 'prop-types';
  * @param {Object} props.board - The stickerboard object to render
  */
 export default function ThumbnailBoard({ board }) {
+  const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
   const thumbnailUrl = board?.thumbnail?.url;
-  const placeholderUrl = '/assets/placeholder-thumbnail.svg';
+  const placeholderUrl = `${assetsBaseUrl}/placeholder-thumbnail.svg`;
 
   const imageUrl = thumbnailUrl || placeholderUrl;
   const altText = board?.name || 'Stickerboard thumbnail';

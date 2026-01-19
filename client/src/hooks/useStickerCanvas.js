@@ -34,10 +34,12 @@ export default function useStickerCanvas({
   const [internalStickers, setInternalStickers] = useState(effectiveInternalStickers);
   useEffect(() => { setInternalStickers(effectiveInternalStickers); }, [effectiveInternalStickers]);
 
+  const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
+
   const getStickerSrc = useCallback((stickerId, isCheers) => {
     const cheers = (typeof isCheers === 'boolean') ? isCheers : isCheersMode;
-    return cheers ? `/assets/c${stickerId}.png` : `/assets/sticker${stickerId}.png`;
-  }, [isCheersMode]);
+    return cheers ? `${assetsBaseUrl}/c${stickerId}.png` : `${assetsBaseUrl}/sticker${stickerId}.png`;
+  }, [isCheersMode, assetsBaseUrl]);
 
   const isValidStickerId = useCallback((id) => Number.isInteger(id) && id >= 0 && id <= 9, []);
 
@@ -172,7 +174,7 @@ export default function useStickerCanvas({
         xNorm, yNorm,
         scale: currentPlacement.scale,
         rotation: currentPlacement.rotation,
-        asset: "/assets/sticker0.png",
+        asset: `${assetsBaseUrl}/sticker0.png`,
       }];
       persistPlacements(next);
       resetPlacement();

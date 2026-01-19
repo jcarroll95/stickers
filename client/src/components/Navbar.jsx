@@ -61,10 +61,12 @@ const Navbar = () => {
         };
     }, [loginOpen, menuOpen, setLoginOpen]);
 
+    const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
+
     return (
         <nav className={styles.nav}>
             <div className={styles.logoContainer} onClick={() => { window.location.hash = '#/'; }}>
-                <img src="/assets/stickerboards_star_fixed.png" alt="Logo" className={styles.logoImage} />
+                <img src={`${assetsBaseUrl}/stickerboards_star_fixed.png`} alt="Logo" className={styles.logoImage} />
             </div>
 
             <ul className={styles.navLinks}>
