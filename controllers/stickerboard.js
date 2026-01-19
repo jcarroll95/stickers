@@ -316,6 +316,8 @@ exports.stickerboardPhotoUpload= asyncHandler(async (req, res, next) => {
  * @access Private
  */
 exports.postThumbnail = asyncHandler(async (req, res, next) => {
+    const { isRateLimited, updateRateLimit, getTimeRemaining } = require('../utils/rateLimiter');
+
     const stickerboard = await Stickerboard.findById(req.params.id);
 
     if (!stickerboard) {
@@ -324,22 +326,68 @@ exports.postThumbnail = asyncHandler(async (req, res, next) => {
         );
     }
 
+    // Check rate limit (per user per board)
+    if (isRateLimited(req.user.id, req.params.id)) {
+        const remaining = Math.ceil(getTimeRemaining(req.user.id, req.params.id) / 1000);
+        return next(
+            new ErrorResponse(`Rate limit exceeded. Please wait ${remaining} seconds before uploading another thumbnail for this board.`, 429)
+        );
+    }
+
+    // Expect base64 encoded image data in request body
+    if (!req.body.imageData) {
+        return next(new ErrorResponse('Image data is required', 400));
+    }
+
     // Allow owner, admin, or any authenticated user (for cheers stickers)
     // Authentication is handled by the protect middleware
 
     try {
-        // Dynamically import the ES module helper
-        const { generateThumbnailUploadUrl } = await import('../utils/s3Helper.js');
+        // Convert base64 to buffer
+        const base64Data = req.body.imageData.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
 
-        // Generate the presigned URL
-        const result = await generateThumbnailUploadUrl(stickerboard.id);
+        // Dynamically import the ES module helper
+        const { uploadThumbnailToS3, cleanupOldThumbnails } = await import('../utils/s3Helper.js');
+
+        // Upload to S3
+        const result = await uploadThumbnailToS3(stickerboard.id, buffer);
+
+        // Update database with thumbnail metadata
+        const { publicUrl, key, version, contentType, bytes } = result;
+        const width = req.body.width || 0;
+        const height = req.body.height || 0;
+
+        await Stickerboard.findByIdAndUpdate(req.params.id, {
+            thumbnail: {
+                version,
+                width,
+                height,
+                contentType,
+                bytes,
+                url: publicUrl,
+            }
+        });
+
+        // Update rate limit after successful upload
+        updateRateLimit(req.user.id, req.params.id);
+
+        // Trigger cleanup of old thumbnails (async, don't wait for it)
+        cleanupOldThumbnails(stickerboard.id, 3).catch(err => {
+            console.error('Failed to cleanup old thumbnails:', err);
+        });
 
         res.status(200).json({
             success: true,
-            data: result
+            data: {
+                publicUrl,
+                version,
+                width,
+                height,
+            }
         });
     } catch (err) {
         console.error('Error in postThumbnail:', err);
-        return next(new ErrorResponse(`Failed to generate thumbnail upload URL: ${err.message}`, 500));
+        return next(new ErrorResponse(`Failed to upload thumbnail: ${err.message}`, 500));
     }
 });

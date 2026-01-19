@@ -57,38 +57,24 @@ export async function uploadThumbnail(boardId, stageRef, options = {}) {
 
   try {
     // Step 1: Generate thumbnail from stage
-    const { blob, width, height, bytes, contentType } = await generateThumbnailFromStage(stageRef);
+    const { blob, width, height } = await generateThumbnailFromStage(stageRef);
 
-    // Step 2: Request presigned URL from server
-    const response = await apiClient.post(`/stickerboards/${boardId}/thumbnail`);
-    const { uploadUrl, publicUrl, version } = response.data;
-
-    // Step 3: Upload blob directly to S3
-    const uploadResponse = await fetch(uploadUrl, {
-      method: 'PUT',
-      body: blob,
-      headers: {
-        'Content-Type': contentType,
-      },
+    // Step 2: Convert blob to base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
     });
 
-    if (!uploadResponse.ok) {
-      throw new Error(`S3 upload failed: ${uploadResponse.statusText}`);
-    }
-
-    // Step 4: Confirm upload by updating database with thumbnail metadata
-    await apiClient.put(`/stickerboards/${boardId}`, {
-      thumbnail: {
-        version,
-        width,
-        height,
-        contentType,
-        bytes,
-        url: publicUrl,
-      },
+    // Step 3: Send to backend (backend handles S3 upload, DB update, and cleanup)
+    await apiClient.post(`/stickerboards/${boardId}/thumbnail`, {
+      imageData: base64,
+      width,
+      height,
     });
 
-    // Step 5: Update rate limit timestamp
+    // Step 4: Update rate limit timestamp
     updateRateLimitTimestamp(boardId);
 
     console.log('Thumbnail uploaded successfully');
