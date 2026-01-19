@@ -58,7 +58,7 @@ const StickerPalette = ({
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
             {available.map(({ entry, index }) => (
               <button
-                key={`avail-${index}`}
+                key={entry.tempId ? entry.tempId : `avail-${index}`}
                 type="button"
                 onClick={() => onSelectSticker(index)}
                 style={{
