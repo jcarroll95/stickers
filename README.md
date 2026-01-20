@@ -110,8 +110,6 @@ A map of the most relevant directories/files:
 
 ### Security considerations
 
-This is a portfolio project, but it intentionally uses production-shaped controls:
-
 - JWT in HttpOnly cookie to reduce token theft via XSS (with secure in production and sameSite=lax)
 - Route protection and role checks via middleware (protect, authorize)
 - Registration hardening:

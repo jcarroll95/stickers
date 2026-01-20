@@ -24,6 +24,30 @@ export default function BoardView({ token }) {
   const [commentsVersion, setCommentsVersion] = useState(0);
   const stageRef = useRef(null);
 
+  const isOwner = me && board && (board.user?._id || board.user) === (me._id || me.id);
+
+  const [activeTab, setActiveTab] = useState(isOwner ? 'stix' : 'comments');
+
+  // Ensure activeTab is set correctly when board/me data loads
+  useEffect(() => {
+    if (board && me) {
+      setActiveTab(isOwner ? 'stix' : 'comments');
+    }
+  }, [isOwner, board, me]);
+
+  // Auto-generate thumbnail if it doesn't exist (e.g. newly created board)
+  useEffect(() => {
+    // Only proceed if board data is loaded, user is owner, and thumbnail is missing
+    const boardId = board?._id || board?.id;
+    if (board && isOwner && !board.thumbnail?.url && stageRef.current) {
+      console.log('No thumbnail found for board, triggering auto-generation...');
+      uploadThumbnail(boardId, stageRef).catch(err => {
+        // Silently fail as this is a background task
+        console.warn('Auto-thumbnail generation failed:', err);
+      });
+    }
+  }, [board, isOwner]);
+
   useEffect(() => {
     const handler = (e) => {
       if (e?.detail?.boardId === (board?._id || board?.id)) {
@@ -48,7 +72,6 @@ export default function BoardView({ token }) {
   if (error) return <div className={styles.error}>Error: {error}</div>;
   if (!board) return <div className={styles.error}>Board not found</div>;
 
-  const isOwner = me && (board.user?._id || board.user) === (me._id || me.id);
   const isAdmin = me?.role === 'admin';
 
   const handleRegenerateThumbnail = async () => {
@@ -147,14 +170,31 @@ export default function BoardView({ token }) {
       })()}
 
       {isOwner && (
-        <section>
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${activeTab === 'stix' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('stix')}
+          >
+            My Stix
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'comments' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('comments')}
+          >
+            Comments
+          </button>
+        </div>
+      )}
+
+      {activeTab === 'stix' && isOwner && (
+        <section className={styles.tabContent}>
           <h2>Stix</h2>
           <StixList stix={board.stix} />
         </section>
       )}
 
-      {!isOwner && (
-        <section style={{ marginTop: 24 }}>
+      {activeTab === 'comments' && (
+        <section className={styles.tabContent} style={{ marginTop: isOwner ? 0 : 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2>Comments</h2>
             <AddCommentForm boardId={board._id || board.id} onSubmitted={() => setCommentsVersion(v => v + 1)} />

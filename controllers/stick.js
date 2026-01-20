@@ -81,7 +81,9 @@ exports.addStick = asyncHandler(async (req, res, next) => {
         user: req.user.id
     };
     allowedFields.forEach(field => {
-        if (req.body[field] !== undefined) stickData[field] = req.body[field];
+        if (req.body[field] !== undefined && req.body[field] !== '') {
+            stickData[field] = req.body[field];
+        }
     });
 
     // Start session for atomic update
@@ -211,7 +213,12 @@ exports.updateStick = asyncHandler(async (req, res, next) => {
     ];
     const updateData = {};
     allowedFields.forEach(field => {
-        if (req.body[field] !== undefined) updateData[field] = req.body[field];
+        if (req.body[field] !== undefined) {
+            // If the field is sent as an empty string, we treat it as wanting to clear the field (null)
+            // unless it's a numeric field where we might want to handle it differently.
+            // But for enums, null or omitting is better than "".
+            updateData[field] = req.body[field] === '' ? null : req.body[field];
+        }
     });
 
     stick = await Stick.findByIdAndUpdate(req.params.stickId, updateData, {

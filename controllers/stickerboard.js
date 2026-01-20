@@ -173,17 +173,19 @@ exports.updateStickerboard = asyncHandler(async (req, res, next) => {
             }
 
             // 1. Consume sticker first (atomic conditional update)
-            const consumeRes = await User.updateOne(
-                { _id: req.user.id, cheersStickers: stickerToInsert.stickerId },
-                { $pull: { cheersStickers: stickerToInsert.stickerId } },
-                sessionOpt
-            );
+            // Use a more precise approach than $pull to avoid removing all instances of the same sticker ID.
+            // We find the user, remove one instance of the sticker from their array, and save.
+            const user = await User.findById(req.user.id).session(useTransaction ? session : null);
+            const stickerIdx = user.cheersStickers.indexOf(stickerToInsert.stickerId);
 
-            if (consumeRes.modifiedCount !== 1) {
+            if (stickerIdx === -1) {
                 if (useTransaction) await session.abortTransaction();
                 session.endSession();
                 return next(new ErrorResponse(`User does not have the required Cheers! sticker`, 400));
             }
+
+            user.cheersStickers.splice(stickerIdx, 1);
+            await user.save(sessionOpt);
 
             // 2. Append to board
             stickerboard = await Stickerboard.findOneAndUpdate(

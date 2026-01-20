@@ -14,12 +14,13 @@ export function useExplore(initialPage = 1) {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiClient.get(`/stickerboards?page=${p}&limit=12`);
-      const data = response.data || response;
+      const response = await apiClient.get(`/stickerboards?page=${p}&limit=9`);
+      const data = response;
       setItems(data.data || (Array.isArray(data) ? data : []));
-      setPage(data.page || p);
-      setHasPrev(data.hasPrev || p > 1);
-      setHasNext(data.hasNext || false);
+      setPage(data.pagination?.page || p);
+      setHasPrev(!!data.pagination?.prev);
+      setHasNext(!!data.pagination?.next);
+
     } catch (err) {
       setError(parseError(err));
     } finally {

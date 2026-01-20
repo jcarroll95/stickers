@@ -35,7 +35,7 @@ export async function uploadThumbnailToS3(stickerboardId, buffer) {
 
     await s3.send(cmd);
 
-    const publicUrl = `${process.env.MEDIA_CDN_ORIGIN}/${key}`;
+    const publicUrl = `${process.env.MEDIA_BASE_URL}/${key}`;
 
     return { publicUrl, key, version, contentType, bytes: buffer.length };
 }

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import useStickerCanvas from "../../hooks/useStickerCanvas";
 import CanvasStage from "./CanvasStage";
@@ -28,6 +28,7 @@ export default function StickerInterface(props) {
     enterPlacementMode,
     onStageMouseMove,
     placeSticker,
+    resetPlacement,
     persistPlacements,
     finalizeLatestPlacement,
     placementStep,
@@ -35,6 +36,18 @@ export default function StickerInterface(props) {
     isCheersMode,
     cheersStickers,
   } = useStickerCanvas(props);
+
+  useEffect(() => {
+    const handleGlobalClick = (e) => {
+      if (!isPlacing) return;
+      if (stageRef.current && !stageRef.current.content.contains(e.target)) {
+        resetPlacement();
+      }
+    };
+
+    window.addEventListener("mousedown", handleGlobalClick);
+    return () => window.removeEventListener("mousedown", handleGlobalClick);
+  }, [isPlacing, resetPlacement, stageRef]);
 
   return (
     <div className={styles.container}>
