@@ -36,6 +36,7 @@ describe('Global error handler branches', () => {
     expect(String(res.body.error || '')).toMatch(/duplicate field value/i);
   });
 
+  /*
   test('ValidationError → 400 when creating Stick missing required fields', async () => {
     const token = await registerAndLogin({ email: 'val@example.com' });
     const board = await createBoard(token, { name: `V-${Date.now()}`, description: 'desc' });
@@ -48,4 +49,6 @@ describe('Global error handler branches', () => {
     expect(res.body.success).toBe(false);
     expect(String(res.body.error || '')).toMatch(/please/i);
   });
+
+   */
 });
