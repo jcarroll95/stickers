@@ -14,6 +14,7 @@ const StickSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    stickType: String,
     stickNumber: Number,
     stickMed: {
         type: String,
@@ -21,24 +22,20 @@ const StickSchema = new mongoose.Schema({
     },
     stickLocation: {
         type: String,
-        enum: stickLocations,
-        required: [true, 'Please enter a valid stick location']
+        enum: stickLocations
     },
     stickLocMod: {
         type: String,
-        enum: stickLocMod,
-        required: [true, 'Please enter a valid stick location']
+        enum: stickLocMod
     },
     stickDose: {
         type: Number,
-        required: true,
         default: 2.5
     },
     userTime: Date,
     userDate: Date,
     description: {
         type: String,
-        required: [true, 'Please describe this stick'],
         maxlength: [500, 'Max description length is 500 characters']
     },
     nsv: {

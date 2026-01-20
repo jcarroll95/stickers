@@ -85,7 +85,7 @@ Note: v1.0.0 endpoints included first followed by proposed additions for doses, 
 
 Acceptance tests
 
-```gherkin
+```javascript
 Feature: User authentication
   Scenario: Register a new user
     Given I have a unique email and valid password
@@ -122,7 +122,7 @@ See also Postman collection: [../postman/](../postman)
 
 Acceptance tests
 
-```gherkin
+```javascript
 Feature: Admin users management
   Scenario: Only admin can list users
     Given I am authenticated as role "user"
@@ -160,7 +160,7 @@ See also Postman collection: [../postman/](../postman)
 
 Acceptance tests
 
-```gherkin
+```javascript
 Feature: Stickerboards CRUD
   Scenario: Create board (authorized)
     Given I am authenticated as role "user"
@@ -208,7 +208,7 @@ Recommended small additions for MVP persistence convenience:
 
 Acceptance tests
 
-```gherkin
+```javascript
 Feature: Stix nested routes
   Scenario: List stix for a board
     When I GET /api/v1/stickerboards/{belongsToBoard}/stix
@@ -231,12 +231,12 @@ Feature: Stix nested routes
 
 See also Postman collection: [../postman/](../postman)
 
-#### Reviews (existing)
+#### Comments (existing)
 - Mounted under stickerboards: `/api/v1/stickerboards/:belongsToBoard/reviews` CRUD (already integrated). Optional for MVP; can keep minimal.
 
 Acceptance tests
 
-```gherkin
+```javascript
 Feature: Reviews access control
   Scenario: Create review as regular user
     Given I am authenticated as role "user"
@@ -267,7 +267,7 @@ See also Postman collection: [../postman/](../postman)
 
 Acceptance tests
 
-```gherkin
+```javascript
 Feature: Doses
   Scenario: Create dose (authorized)
     Given I am authenticated
@@ -298,7 +298,7 @@ See also Postman collection: [../postman/](../postman)
 
 Acceptance tests
 
-```gherkin
+```javascript
 Feature: Side effects
   Scenario: Create side effect (authorized)
     Given I am authenticated
@@ -328,7 +328,7 @@ See also Postman collection: [../postman/](../postman)
 
 Acceptance tests
 
-```gherkin
+```javascript
 Feature: Analytics
   Scenario: Adherence analytics
     Given I have logged doses across multiple days
@@ -350,7 +350,7 @@ See also Postman collection: [../postman/](../postman)
 
 Security & robustness acceptance tests
 
-```gherkin
+```javascript
 Feature: Security and resilience
   Scenario: Input sanitization
     When I attempt a NoSQL injection via query parameters

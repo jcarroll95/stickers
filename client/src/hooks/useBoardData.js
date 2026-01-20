@@ -45,6 +45,7 @@ export function useMe() {
   const loadMe = useCallback(async () => {
     try {
       const response = await apiClient.get('/auth/me');
+      console.log('refreshMe() got user data:', response.data?.cheersStickers);
       setMe(response.data || response);
     } catch (err) {
       setMe(null);

@@ -8,7 +8,7 @@ const StixList = ({ stix }) => {
     const sortedStix = [...stix].sort((a, b) => {
         const aNum = (typeof a?.stickNumber === 'number' && !isNaN(a.stickNumber)) ? a.stickNumber : -Infinity;
         const bNum = (typeof b?.stickNumber === 'number' && !isNaN(b.stickNumber)) ? b.stickNumber : -Infinity;
-        return aNum - bNum;
+        return bNum - aNum;
     });
 
     return (

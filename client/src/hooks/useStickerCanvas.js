@@ -38,23 +38,9 @@ export default function useStickerCanvas({
 
   const [internalStickers, setInternalStickers] = useState(effectiveInternalStickers);
   useEffect(() => {
-    setInternalStickers(prev => {
-      // If we're in cheers mode, we want to preserve the "stuck" state for stickers
-      // that might have been locally placed but not yet reflected in the parent's cheersStickers prop.
-      if (isCheersMode) {
-        // Map new stickers from props, but if they match a tempId that we already marked as stuck,
-        // keep them stuck.
-        return effectiveInternalStickers.map(newSticker => {
-          const matchingPrev = prev.find(p => p.tempId === newSticker.tempId);
-          if (matchingPrev && matchingPrev.stuck) {
-            return { ...newSticker, stuck: true };
-          }
-          return newSticker;
-        });
-      }
-      return effectiveInternalStickers;
-    });
-  }, [effectiveInternalStickers, isCheersMode]);
+    console.log('Updating internalStickers, cheersStickers:', cheersStickers);
+    setInternalStickers(effectiveInternalStickers);
+  }, [effectiveInternalStickers]);
 
   const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
 
@@ -145,6 +131,9 @@ export default function useStickerCanvas({
     if (!pos) return;
 
     if (pos.x < 0 || pos.x > boardSize.width || pos.y < 0 || pos.y > boardSize.height) {
+      // NOTE: resetPlacement is also called by global click listener in StickerInterface
+      // for clicks outside the canvas. This check handles clicks that might still be 
+      // within the Konva Stage but outside the board bounds.
       resetPlacement();
       return;
     }
@@ -173,7 +162,7 @@ export default function useStickerCanvas({
       const original = internalStickers?.[placingIndex];
       if (!original) return;
 
-      const maxZ = internalStickers
+      const maxZ = (isOwner ? internalStickers : (stickers || []))
           .filter(s => s?.stuck)
           .reduce((m, s) => Math.max(m, s.zIndex || 0), 0);
 
@@ -188,12 +177,27 @@ export default function useStickerCanvas({
         createdAt: original.createdAt || new Date().toISOString(),
       };
 
-      const next = internalStickers.map((s, i) => (i === placingIndex ? placedSticker : s));
-      setInternalStickers(next);
-      resetPlacement();
-
-      if (onPlaceSticker) {
-        await onPlaceSticker(isOwner ? next : next.filter(s => s.stuck), placedSticker, placingIndex);
+      if (isOwner) {
+        const next = internalStickers.map((s, i) => (i === placingIndex ? placedSticker : s));
+        setInternalStickers(next);
+        resetPlacement();
+        if (onPlaceSticker) {
+            await onPlaceSticker(next, placedSticker, placingIndex);
+        }
+      } else {
+        resetPlacement();
+        if (onPlaceSticker) {
+            // In Cheers mode, we don't send the full list from local state, 
+            // the backend just needs to know which sticker is being added.
+            // BoardView.jsx onPlace will send { stickers: next } to the backend.
+            // We pass the new sticker as part of a minimal "next" array or similar 
+            // if BoardView expects it to be the "full" list, but actually 
+            // BoardView.jsx's onPlace implementation just sends whatever we pass as 'next'.
+            
+            // To simplify and ensure atomicity on backend:
+            // The backend expects an array that is LONGER than current board stickers.
+            await onPlaceSticker([...(stickers || []), placedSticker], placedSticker, placingIndex);
+        }
       }
     } else {
       const next = [...placements, {
@@ -215,7 +219,7 @@ export default function useStickerCanvas({
     internalStickers, placingIndex, placingDefaultScale, legacyDefaultScale,
     placements, isControlled, getStickerSrc, isValidStickerId,
     enterPlacementMode, onStageMouseMove, placeSticker,
-    persistPlacements, finalizeLatestPlacement,
+    persistPlacements, finalizeLatestPlacement, resetPlacement,
     placementStep, currentPlacement, isCheersMode, cheersStickers
   };
 }
