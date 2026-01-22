@@ -29,9 +29,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // load npm-cron jobs if not in test
-if (process.env.NODE_ENV !== 'development') {
-    require('./scripts/emailJobs.js');
-    require('./scripts/emailTemplates.js');
+if (process.env.NODE_ENV !== 'test') {
     require('./scripts/jobScheduler.js');
     console.log('Scheduled jobs initialized'.green);
 }

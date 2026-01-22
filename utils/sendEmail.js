@@ -50,6 +50,9 @@ const sendEmail = async (options) => {
         console.error(`  Subject: ${options.subject}`);
         console.error(`  Error: ${error.message}`);
         throw error; // Re-throw so calling code can handle it
+    } finally {
+        // Close transporter to prevent hanging connections
+        transporter.close();
     }
 }
 
