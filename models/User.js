@@ -18,6 +18,26 @@ const UserSchema = new mongoose.Schema({
             'Please enter a valid email address'
         ]
     },
+    lastEmailSent: {
+        type: Date,
+        default: null
+    },
+    lastLoginAt: {
+        type: Date,
+        default: null
+    },
+    emailHardOff : {
+        type: Boolean,
+        default: false
+    },
+    emailPreferences: {
+        motivationalEmails: { type: Boolean, default: true },
+        marketingEmails: { type: Boolean, default: true }
+    },
+    welcomeEmailSent: {
+        type: Boolean,
+        default: false
+    },
     role: {
         type: String,
         enum: ['user', 'vipuser', 'admin'],

@@ -28,6 +28,12 @@ if (process.env.NODE_ENV !== 'test') {
     connectDB();
 }
 
+// load npm-cron jobs if not in test
+if (process.env.NODE_ENV !== 'test') {
+    require('./scripts/jobScheduler.js');
+    console.log('Scheduled jobs initialized'.green);
+}
+
 // route files
 const stickerboard = require('./routes/stickerboard');
 const stick = require('./routes/stix');

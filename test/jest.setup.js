@@ -38,9 +38,12 @@ afterAll(async () => {
   if (mongo) await mongo.stop();
 });
 
-// Mock nodemailer so sendEmail() doesn’t really send
+// Mock nodemailer so sendEmail() doesn't really send
 jest.mock('nodemailer', () => ({
-  createTransport: () => ({ sendMail: jest.fn().mockResolvedValue({ messageId: 'test' }) })
+  createTransport: () => ({
+    sendMail: jest.fn().mockResolvedValue({ messageId: 'test' }),
+    close: jest.fn() // Prevent open handles
+  })
 }));
 
 // Silence/neutralize noisy middlewares in tests

@@ -79,6 +79,8 @@ exports.register = asyncHandler(async (req, res, next) => {
     }
 
     sendTokenResponse(user, 200, res);
+    user.lastLoginAt = new Date();
+    await user.save();
 })
 
 /**
