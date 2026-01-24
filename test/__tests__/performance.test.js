@@ -8,18 +8,18 @@ describe('Performance Middleware', () => {
     beforeEach(() => {
         app = express();
         app.use(performanceMiddleware);
-        app.get('/test', (req, res) => res.status(200).send('OK'));
-        app.get('/error', (req, res) => res.status(500).send('Error'));
+        app.get('/api/test', (req, res) => res.status(200).send('OK'));
+        app.get('/api/error', (req, res) => res.status(500).send('Error'));
     });
 
     it('should track requests and response times', async () => {
-        await request(app).get('/test');
+        await request(app).get('/api/test');
         
         const metrics = getMetrics();
         expect(metrics.totalRequests).toBeGreaterThan(0);
         expect(metrics.statusCodes['200']).toBe(1);
         expect(metrics.recentRequests.length).toBe(1);
-        expect(metrics.recentRequests[0].url).toBe('/test');
+        expect(metrics.recentRequests[0].url).toBe('/api/test');
     });
 
     it('should track error rates', async () => {
@@ -29,7 +29,7 @@ describe('Performance Middleware', () => {
         const initialMetrics = getMetrics();
         const initialRequests = initialMetrics.totalRequests;
 
-        await request(app).get('/error');
+        await request(app).get('/api/error');
         
         const metrics = getMetrics();
         expect(metrics.totalRequests).toBe(initialRequests + 1);
