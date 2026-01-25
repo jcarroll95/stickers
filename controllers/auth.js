@@ -12,14 +12,19 @@ function normalizeEmail(email) {
 
 // Helper: minimal validators (keep deps minimal)
 function assertValidEmailAndPassword(email, password) {
-  const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/;
-  if (!email || !emailRegex.test(email)) {
-    throw new ErrorResponse('Please provide a valid email address', 400);
-  }
-  if (!password || String(password).length < 6) {
-    throw new ErrorResponse('Password must be at least 6 characters', 400);
-  }
+    const e = String(email || '').trim();
+    // Sanity-check email: no spaces, one "@", domain contains dot, TLD 2–63 letters.
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,63}$/;
+
+    if (!e || !emailRegex.test(e)) {
+        throw new ErrorResponse('Please provide a valid email address', 400);
+    }
+
+    if (!password || String(password).length < 6) {
+        throw new ErrorResponse('Password must be at least 6 characters', 400);
+    }
 }
+
 
 /**
  * @desc    Register User
