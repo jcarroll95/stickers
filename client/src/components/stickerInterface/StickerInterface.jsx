@@ -12,6 +12,7 @@ export default function StickerInterface(props) {
 
   const {
     bgImage,
+    bgStatus,
     legacyStickerImage,
     placingImage,
     isPlacing,
@@ -36,6 +37,12 @@ export default function StickerInterface(props) {
     isCheersMode,
     cheersStickers,
   } = useStickerCanvas(props);
+
+  useEffect(() => {
+    if (bgStatus === 'loaded' && props.onReady) {
+      props.onReady();
+    }
+  }, [bgStatus, props.onReady]);
 
   useEffect(() => {
     const handleGlobalClick = (e) => {

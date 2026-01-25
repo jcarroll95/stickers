@@ -55,7 +55,7 @@ export default function useStickerCanvas({
     return isCheers ? num <= 10000 : num <= 9;
   }, []);
 
-  const { bgImage, legacyStickerImage, boardSize, legacyDefaultScale } = useBoardAssets(boardSrc, displayLongEdge);
+  const { bgImage, bgStatus, legacyStickerImage, boardSize, legacyDefaultScale } = useBoardAssets(boardSrc, displayLongEdge);
 
   const {
     isPlacing, setIsPlacing,
@@ -214,7 +214,7 @@ export default function useStickerCanvas({
   }, [isPlacing, boardSize, isControlled, internalStickers, placingIndex, placingDefaultScale, placements, persistPlacements, onAddSticker, legacyDefaultScale, onPlaceSticker, placementStep, currentPlacement, resetPlacement, isOwner, setCurrentPlacement, setPlacementStep]);
 
   return {
-    bgImage, legacyStickerImage, placingImage,
+    bgImage, bgStatus, legacyStickerImage, placingImage,
     isPlacing, hoverPos, boardSize,
     internalStickers, placingIndex, placingDefaultScale, legacyDefaultScale,
     placements, isControlled, getStickerSrc, isValidStickerId,

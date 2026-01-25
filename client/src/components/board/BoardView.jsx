@@ -22,6 +22,7 @@ export default function BoardView({ token }) {
   const { me, refreshMe } = useMe();
   const [showAddModal, setShowAddModal] = useState(false);
   const [commentsVersion, setCommentsVersion] = useState(0);
+  const [isAssetsReady, setIsAssetsReady] = useState(false);
   const stageRef = useRef(null);
 
   const isOwner = me && board && (board.user?._id || board.user) === (me._id || me.id);
@@ -37,16 +38,16 @@ export default function BoardView({ token }) {
 
   // Auto-generate thumbnail if it doesn't exist (e.g. newly created board)
   useEffect(() => {
-    // Only proceed if board data is loaded, user is owner, and thumbnail is missing
+    // Only proceed if board data is loaded, user is owner, assets are loaded, and thumbnail is missing
     const boardId = board?._id || board?.id;
-    if (board && isOwner && !board.thumbnail?.url && stageRef.current) {
+    if (board && isOwner && isAssetsReady && !board.thumbnail?.url && stageRef.current) {
       console.log('No thumbnail found for board, triggering auto-generation...');
       uploadThumbnail(boardId, stageRef).catch(err => {
         // Silently fail as this is a background task
         console.warn('Auto-thumbnail generation failed:', err);
       });
     }
-  }, [board, isOwner]);
+  }, [board, isOwner, isAssetsReady]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -153,6 +154,7 @@ export default function BoardView({ token }) {
             <StickerInterface
               {...sharedProps}
               forwardStageRef={stageRef}
+              onReady={() => setIsAssetsReady(true)}
               onPlaceSticker={onPlace}
               onClearStickers={isOwner ? async (next) => {
                 const toastId = toast.loading('Clearing...');

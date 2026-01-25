@@ -11,6 +11,10 @@ export async function generateThumbnailFromStage(stageRef, maxDimension = 600) {
 
   const stage = stageRef.current;
 
+  // Force a redraw and wait a tiny bit to ensure all assets are rendered in the current frame
+  stage.batchDraw();
+  await new Promise(resolve => requestAnimationFrame(resolve));
+
   // Get the current stage dimensions
   const stageWidth = stage.width();
   const stageHeight = stage.height();

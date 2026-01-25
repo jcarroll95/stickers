@@ -3,7 +3,7 @@ import useImage from 'use-image';
 
 export function useBoardAssets(boardSrc, displayLongEdge = 600) {
   const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
-  const [bgImage] = useImage(boardSrc, 'anonymous');
+  const [bgImage, bgStatus] = useImage(boardSrc, 'anonymous');
   const [legacyStickerImage] = useImage(`${assetsBaseUrl}/sticker0.png`, 'anonymous');
 
   const boardSize = useMemo(() => {
@@ -22,5 +22,5 @@ export function useBoardAssets(boardSrc, displayLongEdge = 600) {
     return Math.min(1, 0.35 * (boardShort / stickerLong));
   }, [boardSize, legacyStickerImage]);
 
-  return { bgImage, legacyStickerImage, boardSize, legacyDefaultScale };
+  return { bgImage, bgStatus, legacyStickerImage, boardSize, legacyDefaultScale };
 }
