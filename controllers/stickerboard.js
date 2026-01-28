@@ -3,6 +3,9 @@ const path = require('path');
 const ErrorResponse = require('../utils/errorResponse');
 const Stickerboard = require('../models/Stickerboard');
 const asyncHandler = require('../middleware/async');
+const { v4: uuidv4 } = require('uuid');
+const OperationLog = require('../models/OperationLog');
+const { consumeSticker, hasSticker } = require('../services/stickerInventory');
 
 /**
  * @desc Get all stickerboards
@@ -61,6 +64,67 @@ exports.createStickerboard = asyncHandler(async (req, res, next) => {
 
 });
 
+
+/**
+ * @desc Helper: handles sticker placement with idempotency
+ *
+ * @param { req.body.opId } opId - the UUIDv4 from the client
+ * @access
+ */
+const placeStickerWithIdempotency = async (req, res, next) => {
+    const opId = req.body.opId || uuidv4();
+
+    try {
+        // Check if this operation has already been processed
+        const existingOp = await OperationLog.findOne({ opId });
+
+        if (existingOp && existingOp.status === 'completed') {
+            // Return the result from the completed operation
+            return res.status(200).json({
+                success: true,
+                message: 'Operation already completed',
+                data: existingOp.result
+            });
+        }
+
+        // Create operation log entry
+        const operationLog = await OperationLog.create({
+            opId,
+            userId: req.user.id,
+            operationType: 'placeSticker',
+            status: 'pending',
+            payload: req.body
+        });
+
+        // Process the actual sticker placement
+        const result = await placeSticker(req, res, next);
+
+        // Update operation log to completed
+        await OperationLog.findByIdAndUpdate(operationLog._id, {
+            status: 'completed',
+            result: result.data,
+            completedAt: Date.now()
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: result.data
+        });
+
+    } catch (error) {
+        // Update operation log to failed
+        await OperationLog.findOneAndUpdate(
+            { opId },
+            {
+                status: 'failed',
+                result: { error: error.message },
+                completedAt: Date.now()
+            }
+        );
+        return next(error);
+    }
+};
+
 /**
  * Helper: constructs a validated cheers sticker object
  * @param {Object} input - Raw sticker data from client
@@ -96,6 +160,10 @@ function buildCheersSticker(input) {
 exports.updateStickerboard = asyncHandler(async (req, res, next) => {
     const mongoose = require('mongoose');
     const User = require('../models/User');
+    const { opId } = req.body;
+
+    // If opId is provided, it's handled by idempotency middleware
+    // This controller just needs to execute the business logic
 
     // Start session
     const session = await mongoose.startSession();
@@ -212,7 +280,14 @@ exports.updateStickerboard = asyncHandler(async (req, res, next) => {
         if (useTransaction) await session.commitTransaction();
         session.endSession();
 
-        res.status(200).json({ success: true, data: stickerboard });
+        const response = { success: true, data: stickerboard };
+
+        // Include opId in response if provided
+        if (opId) {
+            response.opId = opId;
+        }
+
+        res.status(200).json(response);
     } catch (err) {
         if (useTransaction) await session.abortTransaction();
         session.endSession();

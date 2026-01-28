@@ -23,7 +23,10 @@ const registerVerifyLogin = async ({ name = 'Test User', email, password = 'Pass
     .send({ email, password })
     .expect(200);
 
-  return { token: loginRes.body.token };
+  // 4. Get userId from DB
+  const user = await User.findOne({ email });
+
+  return { token: loginRes.body.token, userId: user._id };
 };
 
 /**

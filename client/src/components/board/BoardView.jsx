@@ -11,6 +11,7 @@ import { useBoardData, useMe } from '../../hooks/useBoardData';
 import apiClient from '../../services/apiClient';
 import { parseError } from '../../utils/errorUtils';
 import { uploadThumbnail } from '../../utils/thumbnailUploader';
+import { generateOpId, storePendingOperation, completeOperation, failOperation } from '../../utils/operationIdGenerator';
 import StixList from './subcomponents/StixList';
 import styles from './BoardView.module.css';
 import formStyles from '../stix/AddStickForm.module.css';
@@ -50,10 +51,22 @@ export default function BoardView({ token }) {
   }, [board, isOwner, isAssetsReady]);
 
   useEffect(() => {
-    const handler = (e) => {
+    const handler = async (e) => {
       if (e?.detail?.boardId === (board?._id || board?.id)) {
-        refreshBoard();
+        await refreshBoard();
         refreshMe();
+
+        // After board refresh, wait for next render cycle and generate thumbnail
+        // This ensures the new sticker is rendered in the Konva stage
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (stageRef.current) {
+              uploadThumbnail(board?._id || board?.id, stageRef).catch(err =>
+                console.warn('Post-finalize thumbnail upload failed:', err)
+              );
+            }
+          });
+        });
       }
     };
     window.addEventListener('stickerboard:finalized', handler);
@@ -134,18 +147,48 @@ export default function BoardView({ token }) {
 
         const onPlace = async (next, placed, index) => {
           const toastId = toast.loading('Saving...');
+
+          // Generate operation ID for idempotency
+          const opId = generateOpId();
+
           try {
-            await apiClient.put(`/stickerboards/${board._id || board.id}`, { stickers: next });
+            // Store as pending operation
+            storePendingOperation(opId, {
+              type: 'updateStickerboard',
+              boardId: board._id || board.id,
+              payload: { stickers: next }
+            });
 
-            // Generate thumbnail after sticker placement (rate-limited to 60s)
-            uploadThumbnail(board._id || board.id, stageRef).catch(err =>
-              console.warn('Thumbnail upload failed:', err)
-            );
+            const response = await apiClient.put(`/stickerboards/${board._id || board.id}`, {
+              stickers: next,
+              opId // Include operation ID for idempotency
+            });
 
-            window.dispatchEvent(new CustomEvent('stickerboard:finalized', { detail: { boardId: board._id || board.id, sticker: placed, index } }));
+            // Check if operation was already completed (cached response)
+            if (response.data.cached) {
+              console.log('[BoardView] Operation already completed:', opId);
+            }
+
+            // Mark operation as complete
+            completeOperation(opId);
+
+            // Thumbnail generation now happens after board refresh (see useEffect above)
+            // This ensures the new sticker is rendered before capturing
+
+            window.dispatchEvent(new CustomEvent('stickerboard:finalized', { detail: { boardId: board._id || board.id, sticker: placed, index, opId } }));
             toast.success('Saved!', { id: toastId });
           } catch (err) {
-            toast.error(parseError(err), { id: toastId });
+            // Handle specific error cases
+            if (err.response?.status === 409) {
+              // Operation already in progress or completed
+              console.warn('[BoardView] Operation conflict (409):', opId);
+              completeOperation(opId); // Remove from pending since server has it
+              toast.success('Saved!', { id: toastId }); // Still show success to user
+            } else {
+              // Mark as failed for potential retry
+              failOperation(opId, err.message);
+              toast.error(parseError(err), { id: toastId });
+            }
           }
         };
 
@@ -158,12 +201,34 @@ export default function BoardView({ token }) {
               onPlaceSticker={onPlace}
               onClearStickers={isOwner ? async (next) => {
                 const toastId = toast.loading('Clearing...');
+                const opId = generateOpId();
                 try {
-                  await apiClient.put(`/stickerboards/${board._id || board.id}`, { stickers: next });
-                  window.dispatchEvent(new CustomEvent('stickerboard:cleared', { detail: { boardId: board._id || board.id } }));
+                  storePendingOperation(opId, {
+                    type: 'clearStickers',
+                    boardId: board._id || board.id,
+                    payload: { stickers: next }
+                  });
+
+                  const response = await apiClient.put(`/stickerboards/${board._id || board.id}`, {
+                    stickers: next,
+                    opId
+                  });
+
+                  if (response.data.cached) {
+                    console.log('[BoardView] Clear operation already completed:', opId);
+                  }
+
+                  completeOperation(opId);
+                  window.dispatchEvent(new CustomEvent('stickerboard:cleared', { detail: { boardId: board._id || board.id, opId } }));
                   toast.success('Cleared!', { id: toastId });
                 } catch (err) {
-                  toast.error(parseError(err), { id: toastId });
+                  if (err.response?.status === 409) {
+                    completeOperation(opId);
+                    toast.success('Cleared!', { id: toastId });
+                  } else {
+                    failOperation(opId, err.message);
+                    toast.error(parseError(err), { id: toastId });
+                  }
                 }
               } : undefined}
             />
