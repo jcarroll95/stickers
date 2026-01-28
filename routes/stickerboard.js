@@ -10,6 +10,7 @@ const commentRouter = require('./comments');
 router.use('/:belongsToBoard/comments', commentRouter);
 
 const { protect, authorize } = require('../middleware/auth');
+const { idempotencyMiddleware } = require('../middleware/idempotency');
 
 // Bring in controller functions
 const {
@@ -32,7 +33,7 @@ router.route('/')
 
 router.route('/:id')
   .get(getStickerboard)
-  .put(protect, updateStickerboard)
+  .put(protect, idempotencyMiddleware('updateStickerboard'), updateStickerboard)
   .delete(protect, deleteStickerboard);
 
 router.route('/:id/thumbnail')

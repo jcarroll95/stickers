@@ -3,6 +3,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const Stick = require('../models/Stick');
 const Stickerboard = require('../models/Stickerboard');
+const OperationLog = require('../models/OperationLog');
 
 /**
  * @desc    Get stix
@@ -69,11 +70,15 @@ exports.getStick = asyncHandler(async (req, res, next) => {
 */
 exports.addStick = asyncHandler(async (req, res, next) => {
     const mongoose = require('mongoose');
+    const { opId } = req.body;
+
+    // If opId is provided, it's handled by idempotency middleware
+    // This controller just needs to execute the business logic
 
     // Field allowlist for Stick
     const allowedFields = [
-        'stickNumber', 'stickMed', 'stickLocation', 'stickLocMod', 
-        'stickDose', 'userTime', 'userDate', 'description', 
+        'stickNumber', 'stickMed', 'stickLocation', 'stickLocMod',
+        'stickDose', 'userTime', 'userDate', 'description',
         'nsv', 'weight', 'cost'
     ];
     const stickData = {
@@ -174,10 +179,17 @@ exports.addStick = asyncHandler(async (req, res, next) => {
         if (useTransaction) await session.commitTransaction();
         session.endSession();
 
-        res.status(200).json({
+        const response = {
             success: true,
             data: newStick
-        });
+        };
+
+        // Include opId in response if provided
+        if (opId) {
+            response.opId = opId;
+        }
+
+        res.status(200).json(response);
     } catch (err) {
         if (useTransaction) await session.abortTransaction();
         session.endSession();
