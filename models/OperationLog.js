@@ -14,7 +14,7 @@ const OperationLogSchema = new mongoose.Schema({
     },
     operationType: {
         type: String,
-        enum: ['placeSticker', 'removeSticker', 'consumeSticker', 'transferSticker'],
+        enum: ['placeSticker', 'removeSticker', 'consumeSticker', 'transferSticker', 'updateStickerboard'],
         required: true
     },
     status: {

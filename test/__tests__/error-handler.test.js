@@ -2,8 +2,16 @@ const request = require('supertest');
 const app = require('../../server');
 
 async function registerAndLogin({ name = 'User', email, password = 'Pass123!', role = 'vipuser' } = {}) {
-  const reg = await request(app).post('/api/v1/auth/register').send({ name, email, password, role }).expect(200);
-  return reg.body.token;
+  const User = require('../../models/User');
+
+  await request(app).post('/api/v1/auth/register').send({ name, email, password, role }).expect(200);
+
+  // Verify user before login
+  await User.updateOne({ email }, { isVerified: true });
+
+  // Login to get token
+  const loginRes = await request(app).post('/api/v1/auth/login').send({ email, password }).expect(200);
+  return loginRes.body.token;
 }
 
 async function createBoard(token, { name, description } = {}) {
