@@ -31,6 +31,7 @@ const UserMenuDropdown = ({
             <>
                 <a className={styles.dropdownItem} href="#/admin/metrics">Admin Metrics</a>
                 <a className={styles.dropdownItem} href="#/admin/users">User Manager</a>
+                <a className={styles.dropdownItem} href="#/admin/stickers">Sticker Picker</a>
             </>
         )}
         <button className={styles.dropdownItemButton} onClick={onLogout}>Logout</button>
