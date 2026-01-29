@@ -12,6 +12,7 @@ const RegisterVerify = lazy(() => import('./auth/RegisterVerify.jsx'));
 const CreateStickerboard = lazy(() => import('./board/CreateStickerboard.jsx'));
 const MetricsDashboard = lazy(() => import('./admin/MetricsDashboard.jsx'));
 const UserManager = lazy(() => import('./admin/UserManager.jsx'));
+const StickerPicker = lazy(() => import('./admin/StickerPicker.jsx'));
 const UserSettings = lazy(() => import('./user/UserSettings.jsx'));
 const LandingPage = lazy(() => import('./LandingPage.jsx'));
 
@@ -73,6 +74,7 @@ export default function Router() {
         if (!isAuthenticated || user?.role !== 'admin') return <LandingPage />;
         if (second === 'metrics') return <MetricsDashboard />;
         if (second === 'users') return <UserManager />;
+        if (second === 'stickers') return <StickerPicker />;
         return <NotFound hash={hash} />;
 
       default:
