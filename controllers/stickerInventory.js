@@ -58,12 +58,23 @@ exports.addStickerToInventory = asyncHandler(async (req, res, next) => {
 
     if (inventoryEntry) {
         inventoryEntry.quantity += quantity;
+        // Ensure packId is set for existing entries
+        if (!inventoryEntry.packId) {
+            const stickerDef = await StickerDefinition.findById(stickerId);
+            if (stickerDef && stickerDef.packId) {
+                inventoryEntry.packId = stickerDef.packId;
+            }
+        }
         inventoryEntry.updatedAt = Date.now();
         await inventoryEntry.save();
     } else {
+        // Fetch sticker definition to get packId
+        const stickerDef = await StickerDefinition.findById(stickerId);
+        
         inventoryEntry = await StickerInventory.create({
             userId,
             stickerId,
+            packId: stickerDef ? stickerDef.packId : null,
             quantity
         });
     }
@@ -111,12 +122,17 @@ exports.addPackToInventory = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(`Sticker pack not found`, 404));
     }
 
+    // Get all stickers in the pack to ensure we have their IDs
+    // The pack.stickers are already ObjectIds
     const operations = pack.stickers.map(stickerId => ({
         updateOne: {
             filter: { userId, stickerId },
             update: { 
                 $inc: { quantity: 1 },
-                $set: { updatedAt: Date.now() },
+                $set: { 
+                    updatedAt: Date.now(),
+                    packId: packId // Ensure packId is set
+                },
                 $setOnInsert: { createdAt: Date.now() }
             },
             upsert: true

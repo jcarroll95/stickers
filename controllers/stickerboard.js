@@ -132,15 +132,26 @@ const placeStickerWithIdempotency = async (req, res, next) => {
  */
 function buildCheersSticker(input) {
     if (!input || typeof input !== 'object') return null;
-    const stickerId = Number(input.stickerId);
+    
+    // stickerId can be Number (legacy) or ObjectId string (new inventory)
+    let stickerId = input.stickerId;
+    if (typeof stickerId === 'string' && !stickerId.match(/^[0-9a-fA-F]{24}$/)) {
+        stickerId = Number(stickerId);
+    }
+    
     const x = Number(input.x);
     const y = Number(input.y);
 
-    // basic numeric checks (schema will also validate)
-    if (!Number.isFinite(stickerId) || !Number.isFinite(x) || !Number.isFinite(y)) return null;
+    // basic validation
+    const isValidId = (typeof stickerId === 'number' && Number.isFinite(stickerId)) || 
+                      (typeof stickerId === 'string' && stickerId.match(/^[0-9a-fA-F]{24}$/));
+
+    if (!isValidId || !Number.isFinite(x) || !Number.isFinite(y)) return null;
 
     return {
         stickerId,
+        imageUrl: input.imageUrl,
+        name: input.name,
         x,
         y,
         scale: Number.isFinite(Number(input.scale)) ? Number(input.scale) : 1,
@@ -241,19 +252,40 @@ exports.updateStickerboard = asyncHandler(async (req, res, next) => {
             }
 
             // 1. Consume sticker first (atomic conditional update)
-            // Use a more precise approach than $pull to avoid removing all instances of the same sticker ID.
-            // We find the user, remove one instance of the sticker from their array, and save.
+            // Handle both legacy (Number) and new (ObjectId) stickers
             const user = await User.findById(req.user.id).session(useTransaction ? session : null);
-            const stickerIdx = user.cheersStickers.indexOf(stickerToInsert.stickerId);
+            
+            let stickerIdx = -1;
+            if (typeof stickerToInsert.stickerId === 'number') {
+                stickerIdx = user.cheersStickers.indexOf(stickerToInsert.stickerId);
+            } else {
+                // For ObjectId, we need to check the new inventory system
+                // However, non-owner updates currently assume Cheers! stickers
+                // If we want to support inventory stickers for Cheers!, we should check StickerInventory
+                const StickerInventory = require('../models/StickerInventory');
+                const inventoryEntry = await StickerInventory.findOne({ 
+                    userId: req.user.id, 
+                    stickerId: stickerToInsert.stickerId 
+                }).session(useTransaction ? session : null);
+
+                if (inventoryEntry && inventoryEntry.quantity > 0) {
+                    inventoryEntry.quantity -= 1;
+                    inventoryEntry.updatedAt = new Date();
+                    await inventoryEntry.save(sessionOpt);
+                    stickerIdx = 999; // bypass legacy check
+                }
+            }
 
             if (stickerIdx === -1) {
                 if (useTransaction) await session.abortTransaction();
                 session.endSession();
-                return next(new ErrorResponse(`User does not have the required Cheers! sticker`, 400));
+                return next(new ErrorResponse(`User does not have the required sticker`, 400));
             }
 
-            user.cheersStickers.splice(stickerIdx, 1);
-            await user.save(sessionOpt);
+            if (stickerIdx !== 999) {
+                user.cheersStickers.splice(stickerIdx, 1);
+                await user.save(sessionOpt);
+            }
 
             // 2. Append to board
             stickerboard = await Stickerboard.findOneAndUpdate(
@@ -269,6 +301,33 @@ exports.updateStickerboard = asyncHandler(async (req, res, next) => {
             allowedBoardFields.forEach(field => {
                 if (req.body[field] !== undefined) updateData[field] = req.body[field];
             });
+
+            // If updating stickers as owner, check if we need to consume from inventory
+            if (updateData.stickers && Array.isArray(updateData.stickers) && stickerboard.stickers) {
+                const isAppending = updateData.stickers.length === stickerboard.stickers.length + 1;
+                if (isAppending) {
+                    const newSticker = updateData.stickers[updateData.stickers.length - 1];
+                    // Check if it's an inventory sticker (ObjectId)
+                    if (typeof newSticker.stickerId === 'string' && newSticker.stickerId.match(/^[0-9a-fA-F]{24}$/)) {
+                        const StickerInventory = require('../models/StickerInventory');
+                        const inventoryEntry = await StickerInventory.findOne({ 
+                            userId: req.user.id, 
+                            stickerId: newSticker.stickerId 
+                        }).session(useTransaction ? session : null);
+
+                        if (inventoryEntry && inventoryEntry.quantity > 0) {
+                            inventoryEntry.quantity -= 1;
+                            inventoryEntry.updatedAt = new Date();
+                            await inventoryEntry.save(sessionOpt);
+                        } else if (!isAdmin) {
+                            // Only admins can place stickers they don't have
+                            if (useTransaction) await session.abortTransaction();
+                            session.endSession();
+                            return next(new ErrorResponse(`User does not have the required sticker in inventory`, 400));
+                        }
+                    }
+                }
+            }
 
             stickerboard = await Stickerboard.findOneAndUpdate(
                 { _id: req.params.id },

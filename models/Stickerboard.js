@@ -46,7 +46,9 @@ const StickerboardSchema = new mongoose.Schema({
     height: Number,            // logical height (e.g. 700)
     stickers: [
         {
-            stickerId: { type: Number, required: true, min: 0, max: 10000 },     // predefined asset id
+            stickerId: { type: mongoose.Schema.Types.Mixed, required: true },     // supports both Number (legacy) and ObjectId (new)
+            imageUrl: String,                                                     // Persisted URL for inventory stickers
+            name: String,                                                         // Persisted name
             x: { type: Number, required: true, min: -5000, max: 5000 },             // normalized or absolute coordinates
             y: { type: Number, required: true, min: -5000, max: 5000 },
             scale: { type: Number, default: 1, min: 0.0001, max: 10 },

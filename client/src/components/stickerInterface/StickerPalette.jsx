@@ -1,124 +1,150 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { useStickerInventory } from '../../hooks/useStickerInventory';
+import styles from './StickerInterface.module.css';
 
-/**
- * StickerPalette Component
- * Renders the sticker selection UI.
- * 
- * @param {Object} props - Component properties
- */
-const StickerPalette = ({
-  isControlled,
-  internalStickers,
-  isValidStickerId,
-  isPlacing,
-  placingIndex,
-  getStickerSrc,
-  onSelectSticker,
-  isCheersMode,
-  cheersStickers,
-}) => {
-  const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 140 }}>
-      <div style={{ fontSize: 14, color: "#444" }}>
-        {isCheersMode ? "Cheers! stickers" : "Sticker palette"}
-      </div>
-      
-      {isControlled ? (() => {
-        const available = (internalStickers || [])
-          .map((s, i) => ({ entry: s, index: i }))
-          .filter(({ entry }) => 
-            !entry.stuck && 
-            isValidStickerId(entry?.stickerId, entry?.isCheers) &&
-            (isCheersMode ? entry.isCheers : !entry.isCheers)
-          );
+const StickerPalette = ({ userId, onStickerSelect }) => {
+  const [activeTab, setActiveTab] = useState(0);
+  const [stickerPacks, setStickerPacks] = useState([]);
+  const [userStickers, setUserStickers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-        if (available.length === 0) {
-          return (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#9ca3af",
-                border: "1px dashed #e5e7eb",
-                borderRadius: 6,
-                height: 96,
-                fontSize: 13,
-              }}
-              aria-label="Sticker palette empty"
-            >
-              Empty
-            </div>
-          );
+  const {
+    fetchUserStickerInventory,
+    awardSticker,
+    revokeSticker
+  } = useStickerInventory();
+
+  useEffect(() => {
+    const loadInventory = async () => {
+      try {
+        const inventory = await fetchUserStickerInventory(userId);
+        setUserStickers(inventory);
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to load sticker inventory:', error);
+        setLoading(false);
+      }
+    };
+
+    if (userId) {
+      loadInventory();
+    } else {
+      setLoading(false);
+    }
+  }, [userId, fetchUserStickerInventory]);
+
+  // Group stickers by pack for tabbed display
+  useEffect(() => {
+    if (userStickers.length > 0) {
+      // Group stickers by packId
+      const grouped = userStickers.reduce((acc, sticker) => {
+        const packId = sticker.packId || 'default';
+        if (!acc[packId]) {
+          acc[packId] = {
+            name: sticker.packName || 'Assorted',
+            stickers: []
+          };
         }
+        acc[packId].stickers.push(sticker);
+        return acc;
+      }, {});
 
-        return (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
-            {available.map(({ entry, index }) => (
-              <button
-                key={entry.tempId ? entry.tempId : `avail-${index}`}
-                type="button"
-                onClick={() => onSelectSticker(index)}
-                style={{
-                  padding: 6,
-                  border: "1px solid #ccc",
-                  background: isPlacing && placingIndex === index ? "#eef7ff" : "#fff",
-                  cursor: "pointer",
-                  borderRadius: 6,
-                }}
-                title={isPlacing && placingIndex === index ? "Click on the board to place" : "Click to place this sticker"}
-              >
-                <div style={{ fontSize: 12, marginBottom: 6 }}>
-                  {isCheersMode ? `Cheers ${entry.stickerId}` : `Sticker ${entry.stickerId}`}
-                </div>
-                <img
-                  src={getStickerSrc(entry.stickerId, entry?.isCheers)}
-                  alt={`sticker ${entry.stickerId}`}
-                  style={{ display: "block", maxWidth: "100%", height: "auto" }}
-                />
-              </button>
-            ))}
-          </div>
-        );
-      })() : (
-        <button
-          type="button"
-          onClick={() => onSelectSticker(null)}
-          style={{
-            padding: 6,
-            border: "1px solid #ccc",
-            background: isPlacing ? "#eef7ff" : "#fff",
-            cursor: "pointer",
-            borderRadius: 6,
-            width: 120,
-          }}
-          title={isPlacing ? "Click on the board to place" : "Click to place this sticker"}
+      // Convert to array of pack objects with sticker counts
+      const packs = Object.entries(grouped).map(([packId, data]) => ({
+        id: packId,
+        name: data.name,
+        stickers: data.stickers,
+        count: data.stickers.length
+      }));
+
+      setStickerPacks(packs);
+    } else {
+      // Reset stickerPacks when userStickers is empty
+      setStickerPacks([]);
+    }
+  }, [userStickers]);
+
+  const handleStickerClick = (sticker) => {
+    // Check if user has available quantity
+    if (!sticker || sticker.quantity <= 0) return;
+
+    // Trigger callback for parent component to enter placement mode
+    if (onStickerSelect) {
+      onStickerSelect(sticker);
+    }
+  };
+
+  const renderStickerIcon = (sticker) => {
+    return (
+        <div
+            key={sticker.id}
+            className={`${styles.stickerIcon} ${sticker.quantity > 0 ? styles.available : styles.consumed}`}
+            onClick={() => handleStickerClick(sticker)}
+            title={sticker.name}
         >
-          <div style={{ fontSize: 12, marginBottom: 6 }}>
-            {isPlacing ? "Placing… click board" : "Sticker 0"}
-          </div>
           <img
-            src={`${assetsBaseUrl}/sticker0.png`}
-            alt="sticker"
-            style={{ display: "block", maxWidth: "100%", height: "auto" }}
+              src={sticker.imageUrl}
+              alt={sticker.name}
+              className={styles.stickerImage}
           />
-        </button>
-      )}
-    </div>
+          <span className={styles.stickerName}>{sticker.name}</span>
+          <span className={styles.stickerCount}>x{sticker.quantity}</span>
+        </div>
+    );
+  };
+
+  const renderTabs = () => {
+    if (stickerPacks.length === 0) return null;
+
+    return (
+        <div className={styles.stickerPaletteTabs}>
+          {stickerPacks.map((pack, index) => (
+              <button
+                  key={pack.id}
+                  className={`${styles.tabButton} ${activeTab === index ? styles.active : ''}`}
+                  onClick={() => setActiveTab(index)}
+              >
+                {pack.name} ({pack.count})
+              </button>
+          ))}
+        </div>
+    );
+  };
+
+  const renderStickers = () => {
+    if (loading) {
+      return <div className={styles.loading}>Loading stickers...</div>;
+    }
+
+    if (stickerPacks.length === 0) {
+      return <div className={styles.noStickers}>No stickers available</div>;
+    }
+
+    const currentPack = stickerPacks[activeTab];
+    if (!currentPack) return null;
+
+    return (
+        <div className={styles.stickerGrid}>
+          {currentPack.stickers.map(sticker => renderStickerIcon(sticker))}
+        </div>
+    );
+  };
+
+  return (
+      <div className={styles.stickerPalette}>
+        <h3>Sticker Palette</h3>
+        {renderTabs()}
+        <div className={styles.stickerContent}>
+          {renderStickers()}
+        </div>
+      </div>
   );
-}
+};
 
 StickerPalette.propTypes = {
-  isControlled: PropTypes.bool.isRequired,
-  internalStickers: PropTypes.arrayOf(PropTypes.object),
-  isValidStickerId: PropTypes.func.isRequired,
-  isPlacing: PropTypes.bool.isRequired,
-  placingIndex: PropTypes.number,
-  getStickerSrc: PropTypes.func.isRequired,
-  onSelectSticker: PropTypes.func.isRequired,
-  isCheersMode: PropTypes.bool,
-  cheersStickers: PropTypes.arrayOf(PropTypes.number),
+  userId: PropTypes.string,
+  onStickerSelect: PropTypes.func
 };
-export default React.memo(StickerPalette);
+
+export default StickerPalette;

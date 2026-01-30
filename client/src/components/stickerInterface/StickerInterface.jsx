@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import useStickerCanvas from "../../hooks/useStickerCanvas";
+import useAuthStore from "../../store/authStore";
 import CanvasStage from "./CanvasStage";
 import StickerPalette from "./StickerPalette";
 import BoardSidebar from "./BoardSidebar";
@@ -9,6 +10,7 @@ import styles from "./StickerInterface.module.css";
 export default function StickerInterface(props) {
   const { readonly = false, forwardStageRef } = props;
   const stageRef = forwardStageRef || useRef(null);
+  const { user } = useAuthStore();
 
   const {
     bgImage,
@@ -84,13 +86,14 @@ export default function StickerInterface(props) {
       {!readonly && (
         <div className={styles.controls}>
           <StickerPalette
+            userId={user?._id || user?.id}
+            onStickerSelect={enterPlacementMode}
             isControlled={isControlled}
             internalStickers={internalStickers}
             isValidStickerId={isValidStickerId}
             isPlacing={isPlacing}
             placingIndex={placingIndex}
             getStickerSrc={getStickerSrc}
-            onSelectSticker={enterPlacementMode}
             isCheersMode={isCheersMode}
             cheersStickers={cheersStickers}
           />

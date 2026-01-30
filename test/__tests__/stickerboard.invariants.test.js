@@ -152,7 +152,7 @@ describe('Stickerboard invariants', () => {
       .expect(400);
 
     // Assertions
-    expect(res.body.error).toMatch(/User does not have the required Cheers! sticker/i);
+    expect(res.body.error).toMatch(/User does not have the required sticker/i);
 
     // Board unchanged
     const board = await Stickerboard.findById(boardId);
