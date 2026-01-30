@@ -9,3 +9,103 @@
   flex-direction: column;
   gap: 16px;
 }
+
+.stickerPalette {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.stickerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.stickerIcon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  position: relative;
+  border: 2px solid transparent;
+}
+
+.stickerIcon:hover {
+  transform: translateY(-2px);
+  background-color: #e9ecef;
+}
+
+.available {
+  background-color: #fff;
+}
+
+.consumed {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.stickerImage {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+
+.stickerName {
+  font-size: 12px;
+  text-align: center;
+  color: #495057;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.stickerCount {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #007bff;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.stickerPaletteTabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 8px;
+  overflow-x: auto;
+}
+
+.tabButton {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  background: white;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.tabButton.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.loading, .noStickers {
+  padding: 20px;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+}

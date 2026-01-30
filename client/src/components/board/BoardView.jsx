@@ -8,6 +8,7 @@ import CommentList from '../comments/CommentList.jsx';
 import AddCommentForm from '../comments/AddCommentForm.jsx';
 import LoadingSpinner from '../common/LoadingSpinner.jsx';
 import { useBoardData, useMe } from '../../hooks/useBoardData';
+import { useStickerInventory } from '../../hooks/useStickerInventory';
 import apiClient from '../../services/apiClient';
 import { parseError } from '../../utils/errorUtils';
 import { uploadThumbnail } from '../../utils/thumbnailUploader';
@@ -21,6 +22,7 @@ const StickerInterface = lazy(() => import('../stickerInterface/StickerInterface
 export default function BoardView({ token }) {
   const { board, loading, error, refreshBoard } = useBoardData(token);
   const { me, refreshMe } = useMe();
+  const { fetchUserStickerInventory } = useStickerInventory();
   const [showAddModal, setShowAddModal] = useState(false);
   const [commentsVersion, setCommentsVersion] = useState(0);
   const [isAssetsReady, setIsAssetsReady] = useState(false);
@@ -55,18 +57,27 @@ export default function BoardView({ token }) {
       if (e?.detail?.boardId === (board?._id || board?.id)) {
         await refreshBoard();
         refreshMe();
+        if (me?._id || me?.id) {
+          fetchUserStickerInventory(me?._id || me?.id);
+        }
 
         // After board refresh, wait for next render cycle and generate thumbnail
         // This ensures the new sticker is rendered in the Konva stage
-        requestAnimationFrame(() => {
+        // We use a small delay to ensure high-res inventory images are loaded
+        setTimeout(() => {
           requestAnimationFrame(() => {
-            if (stageRef.current) {
-              uploadThumbnail(board?._id || board?.id, stageRef).catch(err =>
-                console.warn('Post-finalize thumbnail upload failed:', err)
-              );
-            }
+            requestAnimationFrame(() => {
+              if (stageRef.current) {
+                console.log('Generating post-finalize thumbnail for board:', board?._id || board?.id);
+                uploadThumbnail(board?._id || board?.id, stageRef).catch(err =>
+                  console.warn('Post-finalize thumbnail upload failed:', err)
+                );
+              } else {
+                console.warn('Post-finalize thumbnail failed: stageRef.current is null');
+              }
+            });
           });
-        });
+        }, 1000); // Increased delay to ensure all assets are definitely ready
       }
     };
     window.addEventListener('stickerboard:finalized', handler);

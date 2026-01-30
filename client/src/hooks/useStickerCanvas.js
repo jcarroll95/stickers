@@ -44,12 +44,32 @@ export default function useStickerCanvas({
 
   const assetsBaseUrl = import.meta.env.VITE_ASSETS_BASE_URL || '/assets';
 
-  const getStickerSrc = useCallback((stickerId, isCheers) => {
+  const getStickerSrc = useCallback((stickerId, isCheers, entry) => {
     const cheers = (typeof isCheers === 'boolean') ? isCheers : isCheersMode;
+    
+    // 1. If we have an explicit imageUrl in the entry, use it (newly persisted boards)
+    if (entry?.imageUrl) {
+      console.log('getStickerSrc using entry.imageUrl:', entry.imageUrl);
+      return entry.imageUrl;
+    }
+
+    // 2. If stickerId is an ObjectId (24 hex chars), it should be from the inventory system
+    if (typeof stickerId === 'string' && stickerId.match(/^[0-9a-fA-F]{24}$/)) {
+      // Search in internalStickers/stickers (might have the URL if it's currently being placed or was just loaded)
+      const found = [...(internalStickers || []), ...(stickers || [])].find(s => (s.stickerId === stickerId || s.id === stickerId) && s.imageUrl);
+      if (found) {
+        console.log('getStickerSrc found imageUrl in state for:', stickerId);
+        return found.imageUrl;
+      }
+      
+      console.warn('getStickerSrc could not resolve URL for inventory sticker:', stickerId);
+      return null;
+    }
     return cheers ? `${assetsBaseUrl}/c${stickerId}.png` : `${assetsBaseUrl}/sticker${stickerId}.png`;
-  }, [isCheersMode, assetsBaseUrl]);
+  }, [isCheersMode, assetsBaseUrl, internalStickers, stickers]);
 
   const isValidStickerId = useCallback((id, isCheers) => {
+    if (typeof id === 'string' && id.match(/^[0-9a-fA-F]{24}$/)) return true;
     const num = Number(id);
     if (!Number.isInteger(num) || num < 0) return false;
     return isCheers ? num <= 10000 : num <= 9;
@@ -74,10 +94,14 @@ export default function useStickerCanvas({
     finalizeLatestPlacement
   } = useCanvasPersistence(boardId, isControlled, stickers, persistedStickers);
 
+  const [placingInventorySticker, setPlacingInventorySticker] = useState(null);
+
   const [placingImage] = useImage(
-    placingSticker?.stickerId != null && isValidStickerId(placingSticker.stickerId)
-      ? getStickerSrc(placingSticker.stickerId, placingSticker?.isCheers)
-      : null,
+    placingInventorySticker 
+      ? placingInventorySticker.imageUrl 
+      : (placingSticker?.stickerId != null && isValidStickerId(placingSticker.stickerId)
+          ? getStickerSrc(placingSticker.stickerId, placingSticker?.isCheers)
+          : null),
     'anonymous'
   );
 
@@ -88,10 +112,19 @@ export default function useStickerCanvas({
     return Math.min(1, 0.25 * (boardShort / stickerLong));
   }, [boardSize, placingImage]);
 
-  const enterPlacementMode = useCallback((index) => {
+  const enterPlacementMode = useCallback((item) => {
     if (readonly) return;
-    if (isControlled) {
-      if (index != null) baseEnterPlacementMode(index);
+    
+    // Check if item is an index (for controlled board stix) or an inventory object
+    if (typeof item === 'number') {
+      if (isControlled) {
+        baseEnterPlacementMode(item);
+      }
+    } else if (item && typeof item === 'object') {
+      // Inventory sticker placement
+      setPlacingInventorySticker(item);
+      setIsPlacing(true);
+      setPlacementStep('POSITION');
     } else if (legacyStickerImage) {
       setIsPlacing(true);
       setPlacementStep('POSITION');
@@ -135,6 +168,7 @@ export default function useStickerCanvas({
       // for clicks outside the canvas. This check handles clicks that might still be 
       // within the Konva Stage but outside the board bounds.
       resetPlacement();
+      setPlacingInventorySticker(null);
       return;
     }
 
@@ -142,8 +176,8 @@ export default function useStickerCanvas({
       setCurrentPlacement({
         x: pos.x,
         y: pos.y,
-        baseScale: isControlled ? placingDefaultScale : legacyDefaultScale,
-        scale: isControlled ? placingDefaultScale : legacyDefaultScale,
+        baseScale: (isControlled && !placingInventorySticker) ? placingDefaultScale : legacyDefaultScale,
+        scale: (isControlled && !placingInventorySticker) ? placingDefaultScale : legacyDefaultScale,
         rotation: 0
       });
       setPlacementStep('SCALE');
@@ -157,6 +191,33 @@ export default function useStickerCanvas({
 
     const xNorm = currentPlacement.x / boardSize.width;
     const yNorm = currentPlacement.y / boardSize.height;
+
+    if (placingInventorySticker) {
+      // Placing from inventory
+      const maxZ = (stickers || [])
+        .filter(s => s?.stuck)
+        .reduce((m, s) => Math.max(m, s.zIndex || 0), 0);
+
+      const placedSticker = {
+        stickerId: placingInventorySticker.id,
+        imageUrl: placingInventorySticker.imageUrl,
+        name: placingInventorySticker.name,
+        x: xNorm,
+        y: yNorm,
+        scale: currentPlacement.scale,
+        rotation: currentPlacement.rotation,
+        zIndex: maxZ + 1,
+        stuck: true,
+        createdAt: new Date().toISOString(),
+      };
+
+      resetPlacement();
+      setPlacingInventorySticker(null);
+      if (onPlaceSticker) {
+        await onPlaceSticker([...(stickers || []), placedSticker], placedSticker, -1);
+      }
+      return;
+    }
 
     if (isControlled) {
       const original = internalStickers?.[placingIndex];

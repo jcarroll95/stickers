@@ -9,8 +9,13 @@ import useImage from "use-image";
  */
 const StickerSprite = React.memo(({ entry, boardSize, displayLongEdge, getStickerSrc, isValidStickerId }) => {
   const isValid = isValidStickerId(entry?.stickerId, entry?.isCheers);
-  const src = isValid ? getStickerSrc(entry.stickerId, entry?.isCheers) : null;
-  const [img] = useImage(src, 'anonymous');
+  const src = isValid ? getStickerSrc(entry.stickerId, entry?.isCheers, entry) : null;
+  const [img, status] = useImage(src, 'anonymous');
+
+  // Log only if src is expected but img is not loading
+  if (src && status === 'failed') {
+    console.warn(`StickerSprite failed to load image: ${src}`, entry);
+  }
 
   const scale = useMemo(() => {
     if (!isValid) return 1;
@@ -206,7 +211,6 @@ const CanvasStage = ({
     legacyStickerImage,
     legacyDefaultScale,
     currentPlacement,
-    placementStep,
   ]);
 
   return (
