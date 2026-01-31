@@ -1,6 +1,7 @@
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const User = require('../models/User');
+const { assignStarterPackToUser } = require('../services/stickerInventory');
 
 /**
  * @desc    Get all users
@@ -39,7 +40,7 @@ exports.createUser = asyncHandler(async (req, res, next) => {
     });
 
     const user = await User.create(userData);
-
+    await assignStarterPackToUser(user._id);
     res.status(201).json({
         success: true,
         data: user

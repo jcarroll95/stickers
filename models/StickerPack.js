@@ -7,7 +7,7 @@ const StickerPackSchema = new mongoose.Schema({
     description: { type: String, required: false },
     slug: { type: String, unique: true },
     packType: { type: String, enum: ['Basic', 'Premium', 'Event'] },
-    theme: { type: String, enum: ['Holiday', 'Achievement', 'Mood'] },
+    theme: { type: String, enum: ['Holiday', 'Achievement', 'Mood', 'Starter'] },
     stickers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'StickerDefinition' }],
     price: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
