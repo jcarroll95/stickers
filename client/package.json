@@ -17,6 +17,7 @@
     "*.{js,jsx}": "eslint --fix"
   },
   "dependencies": {
+    "@sentry/react": "^10.38.0",
     "axios": "^1.13.2",
     "dompurify": "^3.3.1",
     "konva": "^10.0.12",
