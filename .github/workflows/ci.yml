@@ -1,34 +1,61 @@
-  name: CI
-  on:
-    push:
-      branches: ["**"]
-    pull_request:
-      branches: ["**"]
+name: CI
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
 
-  jobs:
-    test:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-        - name: Use Node 20
-          uses: actions/setup-node@v4
-          with:
-            node-version: '20'
-            cache: 'npm'
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          # Cache both workspace lockfiles (since you're keeping per-app installs)
+          cache-dependency-path: |
+            apps/api/package-lock.json
+            apps/web/package-lock.json
 
-        - name: Install deps (clean)
-          run: npm ci
+      # --- API ---
+      - name: Install API deps (clean)
+        working-directory: apps/api
+        run: npm ci
 
-        - name: Run tests with coverage gate
-          run: npm test
-          env:
-            CI: true
+      - name: API tests (coverage gate)
+        working-directory: apps/api
+        run: npm test
+        env:
+          CI: true
 
-        - name: Upload coverage artifact (HTML report)
-          uses: actions/upload-artifact@v4
-          if: always()
-          with:
-            name: coverage-html
-            path: coverage
+      # --- Web ---
+      - name: Install Web deps (clean)
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Web tests
+        working-directory: apps/web
+        run: npm test
+        env:
+          CI: true
+
+      # --- Coverage artifacts ---
+      - name: Upload API coverage artifact (HTML report)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-api-html
+          path: apps/api/coverage
+
+      # Only include this if your web tests actually generate coverage in CI
+      - name: Upload Web coverage artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-web
+          path: apps/web/coverage
