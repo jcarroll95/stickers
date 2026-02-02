@@ -1,7 +1,7 @@
 ### MVP product spec (v1)
 
 #### Problem and goal
-GLP‑1 users face wide-ranging side effects, infrequent doses, routinely changing doses, and other issues that can create a challenging treatment experience. 
+GLP‑1 users face wide-ranging side effects, infrequent doses, routinely changing doses, and other issues that can create a challenging treatment experience.
 The MVP helps them: (1) record doses and side effects quickly, (2) gain insight into how dosing behaviors affect their experience and (3) stay engaged with a playful sticker board.
 
 #### Primary personas
@@ -111,7 +111,7 @@ Feature: User authentication
     Then the response status is 200
 ```
 
-See also Postman collection: [../postman/](../postman)
+See also Postman collection: [../postman/](../../docs/api/postman)
 
 #### Users (admin only, existing)
 - GET `/api/v1/auth/users` — List users (admin)
@@ -146,7 +146,7 @@ Feature: Admin users management
     Then status is 200
 ```
 
-See also Postman collection: [../postman/](../postman)
+See also Postman collection: [../postman/](../../docs/api/postman)
 
 #### Stickerboards (existing)
 - GET `/api/v1/stickerboards` — List with `advancedResults` (supports population of `stix`)
@@ -188,7 +188,7 @@ Feature: Stickerboards CRUD
     Then status is 400
 ```
 
-See also Postman collection: [../postman/](../postman)
+See also Postman collection: [../postman/](../../docs/api/postman)
 
 Nested routers under `stickerboards`:
 - Stix (mounted at `/:belongsToBoard/stix`)
@@ -229,7 +229,7 @@ Feature: Stix nested routes
     Then status is 200 and response indicates upserted count
 ```
 
-See also Postman collection: [../postman/](../postman)
+See also Postman collection: [../postman/](../../docs/api/postman)
 
 #### Comments (existing)
 - Mounted under stickerboards: `/api/v1/stickerboards/:belongsToBoard/reviews` CRUD (already integrated). Optional for MVP; can keep minimal.
@@ -253,7 +253,7 @@ Feature: Reviews access control
     Then status is 200
 ```
 
-See also Postman collection: [../postman/](../postman)
+See also Postman collection: [../postman/](../../docs/api/postman)
 
 #### Doses (new)
 - POST `/api/v1/doses` (protected)
@@ -285,7 +285,7 @@ Feature: Doses
     Then status is 403
 ```
 
-See also Postman collection: [../postman/](../postman)
+See also Postman collection: [../postman/](../../docs/api/postman)
 
 #### Side effects (new)
 - POST `/api/v1/side-effects` (protected)
@@ -316,7 +316,7 @@ Feature: Side effects
     Then status is 403
 ```
 
-See also Postman collection: [../postman/](../postman)
+See also Postman collection: [../postman/](../../docs/api/postman)
 
 #### Analytics (new)
 - GET `/api/v1/analytics/adherence` (protected)
@@ -341,7 +341,7 @@ Feature: Analytics
     Then status is 200 and data is a time series of avgSeverity
 ```
 
-See also Postman collection: [../postman/](../postman)
+See also Postman collection: [../postman/](../../docs/api/postman)
 
 #### Errors and conventions
 - Error shape (consistent): `{ success: false, error: { code, message, details? } }`
