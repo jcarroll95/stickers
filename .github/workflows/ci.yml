@@ -9,8 +9,29 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout (PR head or push SHA)
         uses: actions/checkout@v4
+        with:
+          # For pull_request events, this checks out the PR's head commit (not main).
+          # For push events, it checks out the pushed commit.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Debug: show repo root and apps/
+        run: |
+          pwd
+          ls -la
+          echo "---- apps/ ----"
+          ls -la apps || true
+          echo "---- apps/api ----"
+          ls -la apps/api || true
+          echo "---- apps/web ----"
+          ls -la apps/web || true
+
+      - name: Assert monorepo directories exist
+        run: |
+          test -d apps/api || (echo "ERROR: apps/api not found in checked-out ref" && exit 1)
+          test -d apps/web || (echo "ERROR: apps/web not found in checked-out ref" && exit 1)
 
       - name: Use Node 20
         uses: actions/setup-node@v4
