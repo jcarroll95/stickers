@@ -8,17 +8,21 @@
     "apps/*"
   ],
   "scripts": {
+    "dev": "npm run dev:all",
     "dev:all": "concurrently --kill-others-on-fail -n api,web -c auto \"npm -w apps/api run dev\" \"npm -w apps/web run dev\"",
     "dev:api": "npm -w apps/api run dev",
     "dev:web": "npm -w apps/web run dev",
 
     "start:api": "npm -w apps/api run start",
 
-    "test": "npm -w apps/api run test && npm -w apps/web run test -- --run",
-    "test:coverage": "npm -w apps/api run test:coverage",
-    "test:all": "npm -w apps/api run test && npm -w apps/web run test",
+    "test": "npm run test:api && npm run test:web",
     "test:api": "npm -w apps/api run test",
-    "test:web": "npm -w apps/web run test"
+    "test:web": "npm -w apps/web run test -- --run",
+
+    "test:ci": "npm run test:api && npm run test:web",
+
+    "test:coverage:api": "npm -w apps/api run test:coverage",
+    "test:coverage": "npm run test:coverage:api"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
