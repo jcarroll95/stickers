@@ -14,6 +14,8 @@
 
     "start:api": "npm -w apps/api run start",
 
+    "test": "npm -w apps/api run test && npm -w apps/web run test -- --run",
+    "test:coverage": "npm -w apps/api run test:coverage",
     "test:all": "npm -w apps/api run test && npm -w apps/web run test",
     "test:api": "npm -w apps/api run test",
     "test:web": "npm -w apps/web run test"
