@@ -17,7 +17,6 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-          # Cache both workspace lockfiles (since you're keeping per-app installs)
           cache-dependency-path: |
             apps/api/package-lock.json
             apps/web/package-lock.json
@@ -27,9 +26,9 @@ jobs:
         working-directory: apps/api
         run: npm ci
 
-      - name: API tests (coverage gate)
+      - name: API tests (with coverage)
         working-directory: apps/api
-        run: npm test
+        run: npm run test:coverage
         env:
           CI: true
 
@@ -38,9 +37,9 @@ jobs:
         working-directory: apps/web
         run: npm ci
 
-      - name: Web tests
+      - name: Web tests (non-watch)
         working-directory: apps/web
-        run: npm test
+        run: npm run test -- --run
         env:
           CI: true
 
@@ -51,11 +50,3 @@ jobs:
         with:
           name: coverage-api-html
           path: apps/api/coverage
-
-      # Only include this if your web tests actually generate coverage in CI
-      - name: Upload Web coverage artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-web
-          path: apps/web/coverage
