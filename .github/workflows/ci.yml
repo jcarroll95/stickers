@@ -48,9 +48,9 @@ jobs:
         run: npm ci
 
       - name: API tests (with coverage)
-        working-directory: apps/api
-        run: npm run test:coverage
+        run: npm -w apps/api run test:coverage
         env:
+          NODE_ENV: test
           CI: true
 
       - name: Web tests (non-watch)
