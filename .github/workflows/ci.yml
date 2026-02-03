@@ -2,8 +2,6 @@ name: CI
 on:
   push:
     branches: ["**"]
-  pull_request:
-    branches: ["**"]
 
 jobs:
   test:
@@ -32,7 +30,7 @@ jobs:
         run: |
           test -d apps/api || (echo "ERROR: apps/api not found in checked-out ref" && exit 1)
           test -d apps/web || (echo "ERROR: apps/web not found in checked-out ref" && exit 1)
-          
+
       - name: Debug lockfiles present in checkout
         run: |
           echo "== root =="
@@ -46,8 +44,7 @@ jobs:
           test -f apps/web/package-lock.json && echo "OK: apps/web/package-lock.json exists" || (echo "MISSING: apps/web/package-lock.json" && exit 1)
 
       # --- API ---
-      - name: Install API deps (clean)
-        working-directory: apps/api
+      - name: Install dependencies (workspace-aware)
         run: npm ci
 
       - name: API tests (with coverage)
@@ -55,11 +52,6 @@ jobs:
         run: npm run test:coverage
         env:
           CI: true
-
-      # --- Web ---
-      - name: Install Web deps (clean)
-        working-directory: apps/web
-        run: npm ci
 
       - name: Web tests (non-watch)
         working-directory: apps/web
