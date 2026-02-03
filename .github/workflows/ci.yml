@@ -12,34 +12,26 @@ jobs:
       - name: Checkout (PR head or push SHA)
         uses: actions/checkout@v4
         with:
-          # For pull_request events, this checks out the PR's head commit (not main).
-          # For push events, it checks out the pushed commit.
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
-
-      - name: Debug: show repo root and apps/
-        run: |
-          pwd
-          ls -la
-          echo "---- apps/ ----"
-          ls -la apps || true
-          echo "---- apps/api ----"
-          ls -la apps/api || true
-          echo "---- apps/web ----"
-          ls -la apps/web || true
-
-      - name: Assert monorepo directories exist
-        run: |
-          test -d apps/api || (echo "ERROR: apps/api not found in checked-out ref" && exit 1)
-          test -d apps/web || (echo "ERROR: apps/web not found in checked-out ref" && exit 1)
 
       - name: Use Node 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: |
-            **/package-lock.json
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node20-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node20-npm-
+
+      - name: Assert monorepo directories exist
+        run: |
+          test -d apps/api || (echo "ERROR: apps/api not found in checked-out ref" && exit 1)
+          test -d apps/web || (echo "ERROR: apps/web not found in checked-out ref" && exit 1)
 
       # --- API ---
       - name: Install API deps (clean)
