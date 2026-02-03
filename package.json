@@ -16,8 +16,10 @@
     "start:api": "npm -w apps/api run start",
 
     "test:web": "npm -w apps/web run test -- --run",
-    "test:coverage:api": "npm -w apps/api run test:coverage",
-    "test:coverage": "npm run test:coverage:api"
+
+    "test:coverage:api": "npm --workspace apps/api run test:coverage",
+    "coverage:api": "npm --workspace apps/api run test:coverage"
+
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
