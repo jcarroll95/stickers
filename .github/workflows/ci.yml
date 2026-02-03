@@ -6,9 +6,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
-  build:
-    runs-on: ubuntu-latest
     env:
       NPM_CONFIG_WORKSPACES: "false"
     steps:
