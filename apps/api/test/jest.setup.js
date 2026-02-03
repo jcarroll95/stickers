@@ -18,24 +18,28 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  // Safety check: ensure we are NOT connected to a production/Atlas database before wiping
-  const host = mongoose.connection.host;
-  const isLocal = host && (host === '127.0.0.1' || host === 'localhost' || host.includes('mem'));
-  const isAtlas = host && host.includes('mongodb.net');
+  // Only wipe DB when running tests against mongodb-memory-server.
+  if (process.env.NODE_ENV !== 'test' || !mongo) {
+    console.warn('[SAFETY] Skipping DB cleanup (not in test env or mongo not initialized).');
+    return;
+  }
 
-  if (isLocal && !isAtlas) {
-    const collections = await mongoose.connection.db.collections();
-    for (const c of collections) {
-      await c.deleteMany({});
-    }
-  } else {
-    console.warn(`[SAFETY] Prevented accidental deletion on non-local host: ${host}`);
+  const collections = await mongoose.connection.db.collections();
+  for (const c of collections) {
+    await c.deleteMany({});
   }
 });
 
 afterAll(async () => {
-  await mongoose.disconnect();
-  if (mongo) await mongo.stop();
+  try {
+    // Force-close sockets; more reliable than disconnect() under replSet.
+    await mongoose.connection.close(true);
+  } finally {
+    if (mongo) {
+      await mongo.stop();
+      mongo = null;
+    }
+  }
 });
 
 // Mock nodemailer so sendEmail() doesn't really send
