@@ -8,6 +8,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+      build:
+    runs-on: ubuntu-latest
+    env:
+      NPM_CONFIG_WORKSPACES: "false"
     steps:
       - name: Checkout (PR head or push SHA)
         uses: actions/checkout@v4
