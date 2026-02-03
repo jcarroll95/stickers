@@ -35,11 +35,22 @@ jobs:
       # --- Install deps ---
       - name: Install API deps (clean)
         working-directory: apps/api
-        run: npm ci
+        run: npm ci --include=dev
+
+      - name: Verify API toolchain
+        working-directory: apps/api
+        run: |
+          node -v
+          npm -v
+          ls -la node_modules/.bin | head
+          test -f node_modules/.bin/jest && echo "OK: jest exists" || (echo "MISSING: jest binary" && exit 1)
 
       - name: Install Web deps (clean)
         working-directory: apps/web
-        run: npm ci
+        run: npm ci --include=dev
+
+      - name: Debug cwd
+        run: pwd && ls -la
 
       # --- Tests ---
       - name: API tests (coverage)
