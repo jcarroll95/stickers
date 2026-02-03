@@ -52,7 +52,14 @@ jobs:
       - name: Debug cwd
         run: pwd && ls -la
 
-      # --- Tests ---
+      - name: Debug API PATH and jest resolution
+        working-directory: apps/api
+        run: |
+          echo "$PATH"
+          which jest || true
+          ls -la node_modules/.bin/jest
+
+# --- Tests ---
       - name: API tests (coverage)
         working-directory: apps/api
         run: npm run test:coverage
