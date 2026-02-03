@@ -31,6 +31,18 @@ jobs:
           test -d apps/api || (echo "ERROR: apps/api not found in checked-out ref" && exit 1)
           test -d apps/web || (echo "ERROR: apps/web not found in checked-out ref" && exit 1)
 
+      - name: Debug lockfiles present in checkout
+        run: |
+          echo "== root =="
+          ls -la
+          echo "== apps/api =="
+          ls -la apps/api || true
+          echo "== apps/web =="
+          ls -la apps/web || true
+          echo "== lockfile checks =="
+          test -f apps/api/package-lock.json && echo "OK: apps/api/package-lock.json exists" || (echo "MISSING: apps/api/package-lock.json" && exit 1)
+          test -f apps/web/package-lock.json && echo "OK: apps/web/package-lock.json exists" || (echo "MISSING: apps/web/package-lock.json" && exit 1)
+
       # --- API ---
       - name: Install API deps (clean)
         working-directory: apps/api
