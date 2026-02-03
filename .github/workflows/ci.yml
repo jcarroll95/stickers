@@ -6,56 +6,50 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout (PR head or push SHA)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
       - name: Use Node 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-
-      - name: Cache npm
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node20-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node20-npm-
+          cache: "npm"
+          cache-dependency-path: |
+            apps/api/package-lock.json
+            apps/web/package-lock.json
 
       - name: Assert monorepo directories exist
         run: |
-          test -d apps/api || (echo "ERROR: apps/api not found in checked-out ref" && exit 1)
-          test -d apps/web || (echo "ERROR: apps/web not found in checked-out ref" && exit 1)
+          test -d apps/api || (echo "ERROR: apps/api not found" && exit 1)
+          test -d apps/web || (echo "ERROR: apps/web not found" && exit 1)
 
-      - name: Debug lockfiles present in checkout
+      - name: Assert lockfiles exist
         run: |
-          echo "== root =="
-          ls -la
-          echo "== apps/api =="
-          ls -la apps/api || true
-          echo "== apps/web =="
-          ls -la apps/web || true
-          echo "== lockfile checks =="
-          test -f apps/api/package-lock.json && echo "OK: apps/api/package-lock.json exists" || (echo "MISSING: apps/api/package-lock.json" && exit 1)
-          test -f apps/web/package-lock.json && echo "OK: apps/web/package-lock.json exists" || (echo "MISSING: apps/web/package-lock.json" && exit 1)
+          test -f apps/api/package-lock.json || (echo "MISSING: apps/api/package-lock.json" && exit 1)
+          test -f apps/web/package-lock.json || (echo "MISSING: apps/web/package-lock.json" && exit 1)
 
-      # --- API ---
-      - name: Install dependencies (workspace-aware)
+      # --- Install deps ---
+      - name: Install API deps (clean)
+        working-directory: apps/api
         run: npm ci
 
-      - name: API tests (with coverage)
-        run: npm -w apps/api run test:coverage
+      - name: Install Web deps (clean)
+        working-directory: apps/web
+        run: npm ci
+
+      # --- Tests ---
+      - name: API tests (coverage)
+        run: npm run test:coverage:api
         env:
           NODE_ENV: test
           CI: true
 
       - name: Web tests (non-watch)
-        working-directory: apps/web
-        run: npm run test -- --run
+        run: npm run test:web
         env:
           CI: true
 
