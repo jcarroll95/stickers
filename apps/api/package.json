@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --config ./jest.config.js --coverage --runInBand",
+    "test:coverage": "npx jest --config ./jest.config.js --coverage --runInBand",
     "start": "NODE_ENV=production node server.js",
     "dev": "nodemon server.js"
   },
