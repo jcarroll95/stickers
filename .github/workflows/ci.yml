@@ -1,75 +1,49 @@
 name: CI
+
 on:
-  push:
-    branches: ["**"]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+# Cancels older runs when you push new commits to the same PR
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  test-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
-      - name: Use Node 20
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
           cache-dependency-path: |
-            apps/api/package-lock.json
-            apps/web/package-lock.json
+            package-lock.json
 
-      - name: Assert monorepo directories exist
-        run: |
-          test -d apps/api || (echo "ERROR: apps/api not found" && exit 1)
-          test -d apps/web || (echo "ERROR: apps/web not found" && exit 1)
-
-      - name: Assert lockfiles exist
-        run: |
-          test -f apps/api/package-lock.json || (echo "MISSING: apps/api/package-lock.json" && exit 1)
-          test -f apps/web/package-lock.json || (echo "MISSING: apps/web/package-lock.json" && exit 1)
-
-      # --- Install deps ---
-      - name: Install API deps (clean)
-        working-directory: apps/api
-        run: npm ci --include=dev
-
-      - name: Verify API toolchain
-        working-directory: apps/api
+      - name: Show tool versions
         run: |
           node -v
           npm -v
-          ls -la node_modules/.bin | head
-          test -f node_modules/.bin/jest && echo "OK: jest exists" || (echo "MISSING: jest binary" && exit 1)
 
-      - name: Install Web deps (clean)
-        working-directory: apps/web
-        run: npm ci --include=dev
+      # Install once at repo root (workspaces)
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Debug cwd
-        run: pwd && ls -la
+      # API unit/integration tests (jest)
+      - name: Test API
+        run: npm -w stickerboards-api run test
 
-      # --- Tests ---
-      - name: API tests (coverage)
-        working-directory: apps/api
-        run: npm run test:coverage
-        env:
-          NODE_ENV: test
-          CI: true
-      
-      - name: Web tests (non-watch)
-        working-directory: apps/web
-        run: npm run test -- --run
-        env:
-          CI: true
+      # Web unit tests (vitest)
+      - name: Test Web
+        run: npm -w stickerboards-web run test -- --run
 
-      # --- Coverage artifacts ---
-      - name: Upload API coverage artifact (HTML report)
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-api-html
-          path: apps/api/coverage
+      # Web build (vite)
+      - name: Build Web
+        run: npm -w stickerboards-web run build

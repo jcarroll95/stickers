@@ -4,13 +4,13 @@
   "version": "1.0.1",
   "type": "module",
   "scripts": {
-    "dev": "node_modules/.bin/vite",
-    "build": "node_modules/.bin/vite build",
-    "lint": "node_modules/.bin/eslint .",
-    "preview": "node_modules/.bin/vite preview",
-    "test": "node_modules/.bin/vitest",
-    "test:coverage": "node_modules/.bin/vitest run --coverage",
-    "prepare": "node_modules/.bin/husky",
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "prepare": "husky",
     "optimize-images": "node optimize-images.js"
   },
   "lint-staged": {

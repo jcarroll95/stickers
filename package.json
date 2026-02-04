@@ -8,23 +8,25 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev:all",
-    "dev:all": "concurrently --kill-others-on-fail -n api,web -c auto \"npm -w apps/api run dev\" \"npm -w apps/web run dev\"",
-    "dev:api": "npm -w apps/api run dev",
-    "dev:web": "npm -w apps/web run dev",
+    "dev": "concurrently \"npm -w stickerboards-api run dev\" \"npm -w stickerboards-web run dev\"",
+    "dev:api": "npm -w stickerboards-api run dev",
+    "dev:web": "npm -w stickerboards-web run dev",
 
-    "start:api": "npm -w apps/api run start",
+    "start:api": "npm -w stickerboards-api run start",
 
-    "test:web": "npm -w apps/web run test -- --run",
+    "build:web": "npm -w stickerboards-web run build",
+    "build:api": "npm -w stickerboards-api run build --if-present",
+    "build": "npm run build:api && npm run build:web",
 
-    "test:coverage:api": "npm --workspace apps/api run test:coverage",
-    "coverage:api": "npm --workspace apps/api run test:coverage"
-
+    "test:api": "npm -w stickerboards-api run test",
+    "test:web": "npm -w stickerboards-web run test -- --run",
+    "test": "npm run test:api && npm run test:web"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=9"
   }
 }
