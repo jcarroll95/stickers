@@ -1,12 +1,13 @@
 [![CI](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml)
 [![Deploy (PM2)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml/badge.svg)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml)
+(Repo reorg in progress, prod unaffected)
 
 # Stickerboards
 
 A lightweight social “stickerboard” that helps GLP-1 users stay consistent with dosing logs, track trends, and keep motivation through a playful reward loop.
 
-**Live:** https://www.stickerboards.app  
-**MVP spec:** [`/docs/mvpspec.md`](./docs/mvpspec.md)  
+**Live:** https://www.stickerboards.app
+**MVP spec:** [`/docs/mvpspec.md`](./docs/mvpspec.md)
 **Postman collection:** [`/postman`](./postman)
 
 ---
@@ -25,7 +26,7 @@ A lightweight social “stickerboard” that helps GLP-1 users stay consistent w
 - [Local development](#local-development)
 - [License](#license)
 
---- 
+---
 
 ## Problem
 
@@ -57,16 +58,16 @@ At runtime, the system is split intentionally:
 
 ### Key design decisions
 
-**1) “Cheers” stickers are a consumable resource**  
+**1) “Cheers” stickers are a consumable resource**
 Non-owners can cheer another user’s board by placing a special sticker. Those stickers are stored as an inventory array on the user. The update logic is designed to prevent double-spend under concurrency by using a consume-first conditional update (and transactions when available).
 
-**2) Sticker placements are embedded on the Stickerboard document**  
+**2) Sticker placements are embedded on the Stickerboard document**
 Sticker placements are stored as an embedded array for fast board reads and simple rendering (fetch one document → render). The tradeoff is document growth; if sticker volume becomes large, placements can be extracted to a dedicated collection.
 
-**3) Integrity rules are enforced at the database layer where possible**  
+**3) Integrity rules are enforced at the database layer where possible**
 Assorted invariants are enforced with indexes (e.g., one comment per user per board, and stickerboard name uniqueness per user).
 
-**4) Tests prioritize incident prevention, not just coverage**  
+**4) Tests prioritize incident prevention, not just coverage**
 The test harness uses mongodb-memory-server with safety checks to avoid accidental non-local data deletion, mocks email sending, and focuses on authorization and invariants.
 
 ---
