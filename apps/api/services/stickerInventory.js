@@ -1,5 +1,6 @@
 const StickerInventory = require('../models/StickerInventory');
 const StickerDefinition = require('../models/StickerDefinition');
+const StickerPack = require('../models/StickerPack');
 const User = require('../models/User');
 
 /**
@@ -169,6 +170,53 @@ async function mapStickerDefinitionToLegacyId(stickerId) {
     return null;
 }
 
+/**
+ * Assign a random starter pack to a new user
+ * @param {ObjectId} userId
+ * @returns {Promise<Number|null>}
+ */
+async function assignStarterPackToUser(userId) {
+    try {
+        // Find all starter packs
+        const starterPacks = await StickerPack.find({ theme: 'Starter' })
+            .populate('stickers', '_id') // Only populate sticker IDs, not full objects
+            .sort({ createdAt: 1 }); // Sort by creation date for consistent ordering
+
+        // If no starter packs exist, return null
+        if (!starterPacks || starterPacks.length === 0) {
+            console.warn('No starter packs found for user:', userId);
+            return null;
+        }
+
+        // Randomly select one starter pack
+        const randomIndex = Math.floor(Math.random() * starterPacks.length);
+        const selectedPack = starterPacks[randomIndex];
+
+        // Get all sticker IDs from the selected pack
+        const stickerIds = selectedPack.stickers.map(sticker => sticker._id);
+
+        // Grant each sticker from the pack to the user
+        const grantPromises = stickerIds.map(stickerId =>
+            grantSticker(userId, stickerId, 1)
+        );
+
+        // Wait for all grants to complete
+        await Promise.all(grantPromises);
+
+        // Return information about the assigned pack
+        return {
+            packId: selectedPack._id,
+            packName: selectedPack.name,
+            stickerCount: stickerIds.length,
+            assignedAt: new Date()
+        };
+
+    } catch (error) {
+        console.error('Error assigning starter pack to user:', userId, error);
+        throw new Error(`Failed to assign starter pack: ${error.message}`);
+    }
+}
+
 module.exports = {
     getUserInventory,
     getAllUserInventory,
@@ -176,5 +224,6 @@ module.exports = {
     consumeSticker,
     grantSticker,
     getUserPackInventory,
-    mapStickerDefinitionToLegacyId
+    mapStickerDefinitionToLegacyId,
+    assignStarterPackToUser
 };

@@ -6,9 +6,10 @@ import apiClient from '../services/apiClient.jsx';
  * Server handles rate limiting (per user per board, 60s window)
  * @param {string} boardId - The stickerboard ID
  * @param {Object} stageRef - React ref to the Konva Stage
+ * @param {boolean} isManual - Whether this is a manual regeneration request
  * @returns {Promise<void>}
  */
-export async function uploadThumbnail(boardId, stageRef) {
+export async function uploadThumbnail(boardId, stageRef, isManual = false) {
 
   try {
     // Step 1: Generate thumbnail from stage
@@ -27,6 +28,7 @@ export async function uploadThumbnail(boardId, stageRef) {
       imageData: base64,
       width,
       height,
+      isManual,
     });
 
     console.log('Thumbnail uploaded successfully');

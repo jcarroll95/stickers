@@ -462,8 +462,10 @@ exports.postThumbnail = asyncHandler(async (req, res, next) => {
         );
     }
 
-    // Check rate limit (per user per board)
-    if (isRateLimited(req.user.id, req.params.id)) {
+    // Check rate limit (per user per board) - skip for admins or if it's an explicit manual request
+    const isAdmin = req.user.role === 'admin';
+    const isManual = req.body.isManual === true;
+    if (!isAdmin && !isManual && isRateLimited(req.user.id, req.params.id)) {
         const remaining = Math.ceil(getTimeRemaining(req.user.id, req.params.id) / 1000);
         return next(
             new ErrorResponse(`Rate limit exceeded. Please wait ${remaining} seconds before uploading another thumbnail for this board.`, 429)

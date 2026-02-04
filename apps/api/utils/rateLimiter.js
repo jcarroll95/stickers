@@ -25,7 +25,7 @@ setInterval(() => {
  * @param {number} windowMs - Rate limit window in milliseconds (default: 60000 = 60 seconds)
  * @returns {boolean} True if rate limited
  */
-function isRateLimited(userId, boardId, windowMs = 60000) {
+function isRateLimited(userId, boardId, windowMs = 30000) {
     const key = `${userId}:${boardId}`;
     const lastUpload = uploadTimestamps.get(key);
 
@@ -54,7 +54,7 @@ function updateRateLimit(userId, boardId) {
  * @param {number} windowMs - Rate limit window in milliseconds (default: 60000)
  * @returns {number} Milliseconds until next allowed upload, or 0 if can upload now
  */
-function getTimeRemaining(userId, boardId, windowMs = 60000) {
+function getTimeRemaining(userId, boardId, windowMs = 30000) {
     const key = `${userId}:${boardId}`;
     const lastUpload = uploadTimestamps.get(key);
 
