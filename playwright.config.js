@@ -24,7 +24,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: 'cd client && npm run dev',
+      command: 'cd web && npm run dev',
       url: 'http://localhost:5173',
       reuseExistingServer: !process.env.CI,
     }

@@ -1,7 +1,7 @@
 # Production Deployment Checklist
 Node.js API + React/Vite SPA + Nginx
 
-This checklist was LLM generated after fighting through my first production deployment of both the front and backend. 
+This checklist was LLM generated after fighting through my first production deployment of both the front and backend.
 
 ---
 
@@ -46,7 +46,7 @@ npm run build
   - `/var/www/<site>` or `/apps/<site>`
 - [ ] Build artifacts synced on each deploy
 ```bash
-rsync -a --delete client/dist/ /var/www/<site>/
+rsync -a --delete web/dist/ /var/www/<site>/
 ```
 - [ ] Permissions allow Nginx access
 ```bash
@@ -139,7 +139,7 @@ curl -I https://<domain>/api/v1/health
 
 ## Rule of Thumb
 
-> **Static frontend = filesystem + Nginx**  
+> **Static frontend = filesystem + Nginx**
 > **API backend = process + proxy**
 
 If those stay separate, deployments stay boring.

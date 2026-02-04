@@ -1,62 +1,48 @@
 name: CI
-on:
-  push:
-    branches: ["**"]
 
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+# Cancels older runs when you push new commits to the same PR
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Tests
 jobs:
-  test:
+  test-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
-      - name: Use Node 20
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
-          cache-dependency-path: |
-            apps/api/package-lock.json
-            apps/web/package-lock.json
 
-      - name: Assert monorepo directories exist
+      - name: Show tool versions
         run: |
-          test -d apps/api || (echo "ERROR: apps/api not found" && exit 1)
-          test -d apps/web || (echo "ERROR: apps/web not found" && exit 1)
+          node -v
+          npm -v
 
-      - name: Assert lockfiles exist
-        run: |
-          test -f apps/api/package-lock.json || (echo "MISSING: apps/api/package-lock.json" && exit 1)
-          test -f apps/web/package-lock.json || (echo "MISSING: apps/web/package-lock.json" && exit 1)
-
-      # --- Install deps ---
-      - name: Install API deps (clean)
-        working-directory: apps/api
+      # Install once at repo root (workspaces)
+      - name: Install dependencies
         run: npm ci
 
-      - name: Install Web deps (clean)
-        working-directory: apps/web
-        run: npm ci
+      # API unit/integration tests (jest)
+      - name: Test API
+        run: npm -w stickerboards-api run test
 
-      # --- Tests ---
-      - name: API tests (coverage)
-        run: npm run test:coverage:api
-        env:
-          NODE_ENV: test
-          CI: true
+      # Web unit tests (vitest)
+      - name: Test Web
+        run: npm -w stickerboards-web run test -- --run
 
-      - name: Web tests (non-watch)
-        run: npm run test:web
-        env:
-          CI: true
-
-      # --- Coverage artifacts ---
-      - name: Upload API coverage artifact (HTML report)
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-api-html
-          path: apps/api/coverage
+      # Web build (vite)
+      - name: Build Web
+        run: npm -w stickerboards-web run build
