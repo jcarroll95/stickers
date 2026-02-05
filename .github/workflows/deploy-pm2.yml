@@ -1,16 +1,57 @@
-name: Deploy (PM2)
+name: Deploy (Artifact)
+
 on:
   push:
     branches: ["main"]
   workflow_dispatch: {}
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps (workspaces)
+        run: npm ci
+
+      - name: Test API
+        run: npm -w stickerboards-api run test
+
+      - name: Test Web
+        run: npm -w stickerboards-web run test -- --run
+
+      - name: Build Web
+        run: npm -w stickerboards-web run build
+
+      - name: Create artifact tarball
+        run: |
+          SHA="${GITHUB_SHA}"
+          tar \
+            --exclude=".git" \
+            --exclude="**/node_modules" \
+            -czf "stickerboards-${SHA}.tar.gz" \
+            .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stickerboards-${{ github.sha }}
+          path: stickerboards-${{ github.sha }}.tar.gz
+
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: stickerboards-${{ github.sha }}
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -21,29 +62,13 @@ jobs:
         run: |
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy via SSH
+      - name: Copy artifact to server
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          set -e
-          cd ${{ secrets.SERVER_PATH }}  # e.g., /var/www/stickers
-          git fetch --all
-          git checkout main
-          git pull --ff-only origin main
-          git reset --hard origin/main
-          git clean -fd
-          # Create config.env from GitHub Secret
-          mkdir -p config
-          echo "${{ secrets.ENV_FILE_CONTENT }}" > config/config.env
-          export NODE_ENV=production
-          npm ci --omit=dev
-          # now we'll build the vite files on the server, must include=dev since vite is dev dep
-          cd client
-          npm ci --include=dev
-          npm run build
-          # now we'll copy the client/dist vite files to our public /var/www/stickerboards that nginx serves
-          rsync -a --delete /root/apps/stickers/client/dist/ /var/www/stickerboards/
-          cd ..
-          sudo nginx -t && sudo systemctl reload nginx
-          pm2 reload stickers || pm2 start server.js --name stickers
-          pm2 save
-          EOF
+          scp -P ${{ secrets.SSH_PORT }} \
+            "stickerboards-${{ github.sha }}.tar.gz" \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/stickerboards/releases/${{ github.sha }}.tar.gz
+
+      - name: Deploy on server (atomic + rollback)
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "bash /var/www/stickerboards/shared/deploy.sh ${{ github.sha }}"
