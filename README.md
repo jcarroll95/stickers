@@ -1,6 +1,5 @@
 [![CI](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jcarroll95/stickers/actions/workflows/ci.yml)
 [![Deploy (PM2)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml/badge.svg)](https://github.com/jcarroll95/stickers/actions/workflows/deploy-pm2.yml)
-(Repo reorg in progress, prod unaffected)
 
 # Stickerboards
 
@@ -12,6 +11,9 @@ A lightweight social “stickerboard” that helps GLP-1 users stay consistent w
 
 ---
 
+2026-02-05: I have accomplished a major refactor of this directory structure into a more sensical monorepo form. This necessitated reforming the deployed environment, restructuring the CI/CD pipeline, and implementing npm workspaces to fundamentally reorganize packages and secrets. Some links in this README.md will be unavailable for a brief time as I finalize the reorg. More docs to follow.
+
+---
 ## Table of contents
 
 - [Problem](#problem)
@@ -73,8 +75,6 @@ The test harness uses mongodb-memory-server with safety checks to avoid accident
 ---
 
 ## Project structure
-
-A map of the most relevant directories/files:
 
 ```text
 .
