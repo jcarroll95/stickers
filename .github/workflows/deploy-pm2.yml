@@ -31,11 +31,15 @@ jobs:
       - name: Create artifact tarball
         run: |
           SHA="${GITHUB_SHA}"
+          OUT="/tmp/stickerboards-${SHA}.tar.gz"
+
           tar \
             --exclude=".git" \
             --exclude="**/node_modules" \
-            -czf "stickerboards-${SHA}.tar.gz" \
+            -czf "$OUT" \
             .
+
+          mv "$OUT" "stickerboards-${SHA}.tar.gz"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
