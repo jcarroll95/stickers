@@ -36,7 +36,7 @@ describe('Stick controller additional coverage', () => {
       description: 'desc'
     });
 
-    // seed a couple of sticks
+    // seed a couple of stix
     for (const mod of ['Left', 'Right']) {
       await request(app)
         .post(`/api/v1/stickerboards/${boardId}/stix`)

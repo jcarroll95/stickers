@@ -63,7 +63,7 @@ const StickSchema = new mongoose.Schema({
 StickSchema.statics.getAverageCost = async function(belongsToBoard) {
     //console.log('Calculating average cost for board: '.blue, belongsToBoard);
 
-    // Aggregate average cost for all sticks that belong to this board
+    // Aggregate average cost for all stix that belong to this board
     const aggObj = await this.aggregate([
         { $match: { belongsToBoard: belongsToBoard } },
         {
@@ -74,7 +74,7 @@ StickSchema.statics.getAverageCost = async function(belongsToBoard) {
         }
     ]);
 
-    // Update the Stickerboard with the new average (or 0 if no sticks remain)
+    // Update the Stickerboard with the new average (or 0 if no stix remain)
     try {
         const avg = aggObj.length > 0 ? aggObj[0].averageCost : 0;
         await this.model('Stickerboard').findByIdAndUpdate(

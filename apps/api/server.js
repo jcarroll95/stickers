@@ -2,8 +2,9 @@
 const path = require('path');
 const express = require('express');
 const dotenv = require('dotenv');
-// logger middleware has been deprecated for v1.0.0
-// const logger = require('./middleware/logger');
+const pinoHttp = require("pino-http");
+const logger = require("./utils/logger");
+const crypto = require("crypto");
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const fileupload = require('express-fileupload');
@@ -63,6 +64,24 @@ app.use(performanceMiddleware);
 // Body parser middleware which lets our methods access json seed-data in req.body
 // original body parser no longer needed
 app.use(express.json());
+
+// each request produces a JSON log line that includes method, url, status, responseTime, requestId, etc.
+app.use((req, res, next) => {
+  req.id = req.headers["x-request-id"] || crypto.randomUUID();
+  res.setHeader("x-request-id", req.id);
+  next();
+});
+
+app.use(
+  pinoHttp({
+    logger,
+    genReqId: (req) => req.id,
+    customProps: (req, res) => ({
+      requestId: req.id,
+      userId: req.user?.id, // if you attach user on auth middleware
+    }),
+  })
+);
 
 // setup morgan to skip noisy endpoints
 const morganSkip = (req, res) => {

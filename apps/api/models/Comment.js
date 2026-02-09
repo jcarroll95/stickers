@@ -39,7 +39,7 @@ CommentSchema.statics.getAverageRating = async function(belongsToBoard) {
         }
     ]);
 
-    // Update the Stickerboard with the new average (or 0 if no sticks remain)
+    // Update the Stickerboard with the new average (or 0 if no stix remain)
     try {
         const avg = aggObj.length > 0 ? aggObj[0].averageRating : 0;
         await this.model('Stickerboard').findByIdAndUpdate(

@@ -1,86 +1,75 @@
-const ErrorResponse = require('../utils/errorResponse');
+// apps/api/controllers/users.js
+
 const asyncHandler = require('../middleware/async');
-const User = require('../models/User');
-const { assignStarterPackToUser } = require('../services/stickerInventory');
+
+const {
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+} = require('../usecases/users/adminUserUsecases');
 
 /**
  * @desc    Get all users
  * @route   GET /api/v1/auth/users
  * @access  Private/Admin
-*/
-exports.getUsers = asyncHandler(async (req, res, next) => {
-    res.status(200).json(res.advancedResults);
-})
+ */
+exports.getUsers = asyncHandler(async (req, res) => {
+  res.status(200).json(res.advancedResults);
+});
 
 /**
  * @desc    Get one user
  * @route   GET /api/v1/auth/users/:id
  * @access  Private/Admin
-*/
-exports.getUser = asyncHandler(async (req, res, next) => {
-    const user = await User.findById(req.params.id);
+ */
+exports.getUser = asyncHandler(async (req, res) => {
+  const { user } = await getUserById({ userId: req.params.id });
 
-    res.status(200).json({
-        success: true,
-        data: user
-    });
-})
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});
 
 /**
  * @desc    Create user
  * @route   POST /api/v1/auth/users
  * @access  Private/Admin
-*/
-exports.createUser = asyncHandler(async (req, res, next) => {
-    // Field allowlist
-    const allowedFields = ['name', 'email', 'role', 'password', 'isVerified', 'cheersStickers'];
-    const userData = {};
-    allowedFields.forEach(field => {
-        if (req.body[field] !== undefined) userData[field] = req.body[field];
-    });
+ */
+exports.createUser = asyncHandler(async (req, res) => {
+  const { user } = await createUser({ body: req.body });
 
-    const user = await User.create(userData);
-    await assignStarterPackToUser(user._id);
-    res.status(201).json({
-        success: true,
-        data: user
-    });
-})
+  res.status(201).json({
+    success: true,
+    data: user,
+  });
+});
 
 /**
  * @desc    Update user
  * @route   PUT /api/v1/auth/users/:id
  * @access  Private/Admin
  */
-exports.updateUser = asyncHandler(async (req, res, next) => {
-    // Field allowlist
-    const allowedFields = ['name', 'email', 'role', 'isVerified', 'cheersStickers'];
-    const updateData = {};
-    allowedFields.forEach(field => {
-        if (req.body[field] !== undefined) updateData[field] = req.body[field];
-    });
+exports.updateUser = asyncHandler(async (req, res) => {
+  const { user } = await updateUser({ userId: req.params.id, body: req.body });
 
-    const user = await User.findByIdAndUpdate(req.params.id, updateData, {
-        new: true,
-        runValidators: true
-    });
-
-    res.status(200).json({
-        success: true,
-        data: user
-    });
-})
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});
 
 /**
  * @desc    Delete user
  * @route   DELETE /api/v1/auth/users/:id
  * @access  Private/Admin
-*/
-exports.deleteUser = asyncHandler(async (req, res, next) => {
-    const user = await User.findByIdAndDelete(req.params.id);
+ */
+exports.deleteUser = asyncHandler(async (req, res) => {
+  await deleteUser({ userId: req.params.id });
 
-    res.status(200).json({
-        success: true,
-        data: {}
-    });
-})
+  res.status(200).json({
+    success: true,
+    data: {},
+  });
+});
