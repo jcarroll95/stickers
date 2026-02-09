@@ -1,180 +1,81 @@
-const StickerInventory = require('../models/StickerInventory');
-const StickerDefinition = require('../models/StickerDefinition');
-const StickerPack = require('../models/StickerPack');
-const User = require('../models/User');
-const ErrorResponse = require('../utils/errorResponse');
+// apps/api/controllers/stickerInventory.js
+
 const asyncHandler = require('../middleware/async');
+
+const {
+  getUserInventoryAndCatalog,
+  addStickerToInventory,
+  removeStickerFromInventory,
+  addPackToInventory,
+  removePackFromInventory,
+} = require('../usecases/inventory/adminInventoryUsecases');
 
 // @desc    Get user inventory and full catalog
 // @route   GET /api/v1/admin/inventory/:identifier
 // @access  Private/Admin
-exports.getUserInventoryAndCatalog = asyncHandler(async (req, res, next) => {
-    const { identifier } = req.params;
+exports.getUserInventoryAndCatalog = asyncHandler(async (req, res) => {
+  const { identifier } = req.params;
 
-    // Find user by ID or Email
-    let user;
-    if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
-        user = await User.findById(identifier);
-    }
-    if (!user) {
-        user = await User.findOne({ email: identifier.toLowerCase() });
-    }
+  const data = await getUserInventoryAndCatalog({ identifier });
 
-    if (!user) {
-        return next(new ErrorResponse(`User not found with identifier of ${identifier}`, 404));
-    }
-
-    // Get user inventory
-    const inventory = await StickerInventory.find({ userId: user._id }).populate('stickerId');
-
-    // Get full catalog
-    const packs = await StickerPack.find().populate('stickers');
-    const stickers = await StickerDefinition.find();
-
-    res.status(200).json({
-        success: true,
-        data: {
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email
-            },
-            inventory,
-            catalog: {
-                packs,
-                stickers
-            }
-        }
-    });
+  res.status(200).json({
+    success: true,
+    data,
+  });
 });
 
 // @desc    Add sticker to user inventory
 // @route   POST /api/v1/admin/inventory/add-sticker
 // @access  Private/Admin
-exports.addStickerToInventory = asyncHandler(async (req, res, next) => {
-    const { userId, stickerId, quantity = 1 } = req.body;
+exports.addStickerToInventory = asyncHandler(async (req, res) => {
+  const { userId, stickerId, quantity = 1 } = req.body;
 
-    let inventoryEntry = await StickerInventory.findOne({ userId, stickerId });
+  const inventoryEntry = await addStickerToInventory({ userId, stickerId, quantity });
 
-    if (inventoryEntry) {
-        inventoryEntry.quantity += quantity;
-        // Ensure packId is set for existing entries
-        if (!inventoryEntry.packId) {
-            const stickerDef = await StickerDefinition.findById(stickerId);
-            if (stickerDef && stickerDef.packId) {
-                inventoryEntry.packId = stickerDef.packId;
-            }
-        }
-        inventoryEntry.updatedAt = Date.now();
-        await inventoryEntry.save();
-    } else {
-        // Fetch sticker definition to get packId
-        const stickerDef = await StickerDefinition.findById(stickerId);
-        
-        inventoryEntry = await StickerInventory.create({
-            userId,
-            stickerId,
-            packId: stickerDef ? stickerDef.packId : null,
-            quantity
-        });
-    }
-
-    res.status(200).json({
-        success: true,
-        data: inventoryEntry
-    });
+  res.status(200).json({
+    success: true,
+    data: inventoryEntry,
+  });
 });
 
 // @desc    Remove sticker from user inventory
 // @route   POST /api/v1/admin/inventory/remove-sticker
 // @access  Private/Admin
-exports.removeStickerFromInventory = asyncHandler(async (req, res, next) => {
-    const { userId, stickerId, quantity = 1 } = req.body;
+exports.removeStickerFromInventory = asyncHandler(async (req, res) => {
+  const { userId, stickerId, quantity = 1 } = req.body;
 
-    const inventoryEntry = await StickerInventory.findOne({ userId, stickerId });
+  await removeStickerFromInventory({ userId, stickerId, quantity });
 
-    if (!inventoryEntry) {
-        return next(new ErrorResponse(`Sticker not found in user inventory`, 404));
-    }
-
-    inventoryEntry.quantity -= quantity;
-    if (inventoryEntry.quantity <= 0) {
-        await inventoryEntry.deleteOne();
-    } else {
-        inventoryEntry.updatedAt = Date.now();
-        await inventoryEntry.save();
-    }
-
-    res.status(200).json({
-        success: true,
-        data: {}
-    });
+  res.status(200).json({
+    success: true,
+    data: {},
+  });
 });
 
 // @desc    Add entire pack to user inventory
 // @route   POST /api/v1/admin/inventory/add-pack
 // @access  Private/Admin
-exports.addPackToInventory = asyncHandler(async (req, res, next) => {
-    const { userId, packId } = req.body;
+exports.addPackToInventory = asyncHandler(async (req, res) => {
+  const { userId, packId } = req.body;
 
-    const pack = await StickerPack.findById(packId);
-    if (!pack) {
-        return next(new ErrorResponse(`Sticker pack not found`, 404));
-    }
+  await addPackToInventory({ userId, packId });
 
-    // Get all stickers in the pack to ensure we have their IDs
-    // The pack.stickers are already ObjectIds
-    const operations = pack.stickers.map(stickerId => ({
-        updateOne: {
-            filter: { userId, stickerId },
-            update: { 
-                $inc: { quantity: 1 },
-                $set: { 
-                    updatedAt: Date.now(),
-                    packId: packId // Ensure packId is set
-                },
-                $setOnInsert: { createdAt: Date.now() }
-            },
-            upsert: true
-        }
-    }));
-
-    await StickerInventory.bulkWrite(operations);
-
-    res.status(200).json({
-        success: true,
-        data: {}
-    });
+  res.status(200).json({
+    success: true,
+    data: {},
+  });
 });
 
 // @desc    Remove entire pack from user inventory
 // @route   POST /api/v1/admin/inventory/remove-pack
 // @access  Private/Admin
-exports.removePackFromInventory = asyncHandler(async (req, res, next) => {
-    const { userId, packId } = req.body;
+exports.removePackFromInventory = asyncHandler(async (req, res) => {
+  const { userId, packId } = req.body;
 
-    const pack = await StickerPack.findById(packId);
-    if (!pack) {
-        return next(new ErrorResponse(`Sticker pack not found`, 404));
-    }
+  await removePackFromInventory({ userId, packId });
 
-    const operations = pack.stickers.map(stickerId => ({
-        updateOne: {
-            filter: { userId, stickerId, quantity: { $gt: 0 } },
-            update: { 
-                $inc: { quantity: -1 },
-                $set: { updatedAt: Date.now() }
-            }
-        }
-    }));
-
-    await StickerInventory.bulkWrite(operations);
-
-    // Clean up zero quantities
-    await StickerInventory.deleteMany({ userId, quantity: { $lte: 0 } });
-
-    res.status(200).json({
-        success: true,
-        data: {}
-    });
+  res.status(200).json({
+    success: true,
+    data: {},
+  });
 });
