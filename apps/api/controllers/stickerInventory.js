@@ -30,7 +30,7 @@ exports.getUserInventoryAndCatalog = asyncHandler(async (req, res) => {
 exports.addStickerToInventory = asyncHandler(async (req, res) => {
   const { userId, stickerId, quantity = 1 } = req.body;
 
-  const inventoryEntry = await addStickerToInventory({ userId, stickerId, quantity });
+  const inventoryEntry = await addStickerToInventory({ userId, stickerId, quantity, req });
 
   res.status(200).json({
     success: true,
@@ -44,7 +44,7 @@ exports.addStickerToInventory = asyncHandler(async (req, res) => {
 exports.removeStickerFromInventory = asyncHandler(async (req, res) => {
   const { userId, stickerId, quantity = 1 } = req.body;
 
-  await removeStickerFromInventory({ userId, stickerId, quantity });
+  await removeStickerFromInventory({ userId, stickerId, quantity, req });
 
   res.status(200).json({
     success: true,
@@ -58,7 +58,7 @@ exports.removeStickerFromInventory = asyncHandler(async (req, res) => {
 exports.addPackToInventory = asyncHandler(async (req, res) => {
   const { userId, packId } = req.body;
 
-  await addPackToInventory({ userId, packId });
+  await addPackToInventory({ userId, packId, req });
 
   res.status(200).json({
     success: true,
@@ -72,7 +72,7 @@ exports.addPackToInventory = asyncHandler(async (req, res) => {
 exports.removePackFromInventory = asyncHandler(async (req, res) => {
   const { userId, packId } = req.body;
 
-  await removePackFromInventory({ userId, packId });
+  await removePackFromInventory({ userId, packId, req });
 
   res.status(200).json({
     success: true,

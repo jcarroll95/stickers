@@ -1,3 +1,6 @@
+jest.mock('../../models/StickerDefinition', () => ({}), { virtual: true });
+jest.mock('../../models/MediaVariant', () => ({}), { virtual: true });
+jest.mock('../../models/StickerPack', () => ({}), { virtual: true });
 const {
   getUserInventoryAndCatalog: getUserInventoryAndCatalogController,
   addStickerToInventory: addStickerToInventoryController,
@@ -47,7 +50,7 @@ describe('stickerInventory Controller (Admin)', () => {
 
     await addStickerToInventoryController(req, res);
 
-    expect(addStickerToInventory).toHaveBeenCalledWith({ userId: 'u1', stickerId: 's1', quantity: 5 });
+    expect(addStickerToInventory).toHaveBeenCalledWith({ userId: 'u1', stickerId: 's1', quantity: 5, req });
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ success: true, data: mockEntry });
   });
@@ -58,7 +61,7 @@ describe('stickerInventory Controller (Admin)', () => {
 
     await removeStickerFromInventoryController(req, res);
 
-    expect(removeStickerFromInventory).toHaveBeenCalledWith({ userId: 'u1', stickerId: 's1', quantity: 1 });
+    expect(removeStickerFromInventory).toHaveBeenCalledWith({ userId: 'u1', stickerId: 's1', quantity: 1, req });
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ success: true, data: {} });
   });
@@ -69,7 +72,7 @@ describe('stickerInventory Controller (Admin)', () => {
 
     await addPackToInventoryController(req, res);
 
-    expect(addPackToInventory).toHaveBeenCalledWith({ userId: 'u1', packId: 'p1' });
+    expect(addPackToInventory).toHaveBeenCalledWith({ userId: 'u1', packId: 'p1', req });
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ success: true, data: {} });
   });
@@ -80,7 +83,7 @@ describe('stickerInventory Controller (Admin)', () => {
 
     await removePackFromInventoryController(req, res);
 
-    expect(removePackFromInventory).toHaveBeenCalledWith({ userId: 'u1', packId: 'p1' });
+    expect(removePackFromInventory).toHaveBeenCalledWith({ userId: 'u1', packId: 'p1', req });
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ success: true, data: {} });
   });

@@ -1,6 +1,7 @@
 // apps/api/usecases/inventory/adminInventoryUsecases.js
 
 const ErrorResponse = require('../../utils/errorResponse');
+const { emitAuditEvent } = require('../../utils/audit');
 
 const StickerInventory = require('../../models/StickerInventory');
 const StickerDefinition = require('../../models/StickerDefinition');
@@ -44,10 +45,10 @@ async function getUserInventoryAndCatalog({ identifier }) {
 }
 
 /**
- * @param {{ userId: string, stickerId: string, quantity?: number }} args
+ * @param {{ userId: string, stickerId: string, quantity?: number, req?: any }} args
  * @returns {Promise<any>} updated inventory entry
  */
-async function addStickerToInventory({ userId, stickerId, quantity = 1 }) {
+async function addStickerToInventory({ userId, stickerId, quantity = 1, req }) {
   if (!userId || !stickerId) throw new ErrorResponse('userId and stickerId are required', 400);
 
   const qty = Number(quantity);
@@ -66,6 +67,14 @@ async function addStickerToInventory({ userId, stickerId, quantity = 1 }) {
 
     inventoryEntry.updatedAt = Date.now();
     await inventoryEntry.save();
+
+    await emitAuditEvent(req, {
+      entityType: 'StickerDefinition',
+      entityId: stickerId,
+      action: 'sticker.admin_add',
+      meta: { userId, quantity: qty, method: 'increment' },
+    });
+
     return inventoryEntry;
   }
 
@@ -78,14 +87,21 @@ async function addStickerToInventory({ userId, stickerId, quantity = 1 }) {
     quantity: qty,
   });
 
+  await emitAuditEvent(req, {
+    entityType: 'StickerDefinition',
+    entityId: stickerId,
+    action: 'sticker.admin_add',
+    meta: { userId, quantity: qty, method: 'create' },
+  });
+
   return inventoryEntry;
 }
 
 /**
- * @param {{ userId: string, stickerId: string, quantity?: number }} args
+ * @param {{ userId: string, stickerId: string, quantity?: number, req?: any }} args
  * @returns {Promise<{ deleted: boolean }>}
  */
-async function removeStickerFromInventory({ userId, stickerId, quantity = 1 }) {
+async function removeStickerFromInventory({ userId, stickerId, quantity = 1, req }) {
   if (!userId || !stickerId) throw new ErrorResponse('userId and stickerId are required', 400);
 
   const qty = Number(quantity);
@@ -100,19 +116,35 @@ async function removeStickerFromInventory({ userId, stickerId, quantity = 1 }) {
   inventoryEntry.quantity -= qty;
   if (inventoryEntry.quantity <= 0) {
     await inventoryEntry.deleteOne();
+
+    await emitAuditEvent(req, {
+      entityType: 'StickerDefinition',
+      entityId: stickerId,
+      action: 'sticker.admin_remove',
+      meta: { userId, quantity: qty, deleted: true },
+    });
+
     return { deleted: true };
   }
 
   inventoryEntry.updatedAt = Date.now();
   await inventoryEntry.save();
+
+  await emitAuditEvent(req, {
+    entityType: 'StickerDefinition',
+    entityId: stickerId,
+    action: 'sticker.admin_remove',
+    meta: { userId, quantity: qty, deleted: false },
+  });
+
   return { deleted: false };
 }
 
 /**
- * @param {{ userId: string, packId: string }} args
+ * @param {{ userId: string, packId: string, req?: any }} args
  * @returns {Promise<void>}
  */
-async function addPackToInventory({ userId, packId }) {
+async function addPackToInventory({ userId, packId, req }) {
   if (!userId || !packId) throw new ErrorResponse('userId and packId are required', 400);
 
   const pack = await StickerPack.findById(packId);
@@ -136,13 +168,20 @@ async function addPackToInventory({ userId, packId }) {
   }));
 
   await StickerInventory.bulkWrite(operations);
+
+  await emitAuditEvent(req, {
+    entityType: 'StickerPack',
+    entityId: packId,
+    action: 'pack.admin_add',
+    meta: { userId, stickerCount: pack.stickers.length },
+  });
 }
 
 /**
- * @param {{ userId: string, packId: string }} args
+ * @param {{ userId: string, packId: string, req?: any }} args
  * @returns {Promise<void>}
  */
-async function removePackFromInventory({ userId, packId }) {
+async function removePackFromInventory({ userId, packId, req }) {
   if (!userId || !packId) throw new ErrorResponse('userId and packId are required', 400);
 
   const pack = await StickerPack.findById(packId);
@@ -163,6 +202,13 @@ async function removePackFromInventory({ userId, packId }) {
 
   // Clean up <= 0
   await StickerInventory.deleteMany({ userId, quantity: { $lte: 0 } });
+
+  await emitAuditEvent(req, {
+    entityType: 'StickerPack',
+    entityId: packId,
+    action: 'pack.admin_remove',
+    meta: { userId },
+  });
 }
 
 module.exports = {

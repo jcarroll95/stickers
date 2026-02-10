@@ -172,8 +172,6 @@ app.use('/api/v1/comments', comments)
 app.use('/api/v1/admin', admin);
 app.use('/api/v1/stickers', stickers);
 
-
-
 // sanitize seed-data (Express 5 has a getter-only req.query; use manual sanitizer to avoid reassigning req.query)
 app.use((req, res, next) => {
     const opts = { allowDots: true };
@@ -198,6 +196,10 @@ if (process.env.NODE_ENV === 'production') {
         immutable: true
     }));
 }
+
+// Bring in idempotency error handling
+const { idempotencyErrorHandler } = require('./middleware/idempotency');
+app.use(idempotencyErrorHandler); // must be before your main error handler
 
 // Bring in the error wrapper
 const errorHandler = require('./middleware/error');

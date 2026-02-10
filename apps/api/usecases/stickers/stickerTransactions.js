@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose');
 const ErrorResponse = require('../../utils/errorResponse');
+const { emitAuditEvent } = require('../../utils/audit');
 
 const StickerInventory = require('../../models/StickerInventory');
 const StickerDefinition = require('../../models/StickerDefinition');
@@ -14,10 +15,10 @@ const StickerDefinition = require('../../models/StickerDefinition');
  * - Else if entry exists with (userId, stickerId) => increment quantity, set opId, set packId if missing
  * - Else create new entry with quantity 1 and packId from StickerDefinition
  *
- * @param {{ userId: string, stickerId: string, opId: string }} args
+ * @param {{ userId: string, stickerId: string, opId: string, req?: any }} args
  * @returns {Promise<{ result: any, message: string }>}
  */
-async function awardSticker({ userId, stickerId, opId }) {
+async function awardSticker({ userId, stickerId, opId, req }) {
   if (!userId || !stickerId || !opId) {
     throw new ErrorResponse('userId, stickerId, and opId are required', 400);
   }
@@ -49,6 +50,13 @@ async function awardSticker({ userId, stickerId, opId }) {
 
       await existingSticker.save({ session });
 
+      await emitAuditEvent(req, {
+        entityType: 'StickerDefinition',
+        entityId: stickerId,
+        action: 'sticker.award',
+        meta: { userId, opId, quantity: 1, method: 'increment' },
+      });
+
       await session.commitTransaction();
       return { result: existingSticker, message: 'Sticker quantity incremented' };
     }
@@ -66,6 +74,13 @@ async function awardSticker({ userId, stickerId, opId }) {
     });
 
     await newStickerEntry.save({ session });
+
+    await emitAuditEvent(req, {
+      entityType: 'StickerDefinition',
+      entityId: stickerId,
+      action: 'sticker.award',
+      meta: { userId, opId, quantity: 1, method: 'create' },
+    });
 
     await session.commitTransaction();
     return { result: newStickerEntry, message: 'Sticker awarded successfully' };
@@ -85,10 +100,10 @@ async function awardSticker({ userId, stickerId, opId }) {
  * - Else find (userId, stickerId) and decrement quantity
  * - If none or quantity <= 0 => 404 "Sticker not available in user inventory"
  *
- * @param {{ userId: string, stickerId: string, opId: string }} args
+ * @param {{ userId: string, stickerId: string, opId: string, req?: any }} args
  * @returns {Promise<{ result: any, message: string }>}
  */
-async function revokeSticker({ userId, stickerId, opId }) {
+async function revokeSticker({ userId, stickerId, opId, req }) {
   if (!userId || !stickerId || !opId) {
     throw new ErrorResponse('userId, stickerId, and opId are required', 400);
   }
@@ -115,6 +130,13 @@ async function revokeSticker({ userId, stickerId, opId }) {
     stickerEntry.opId = opId;
     stickerEntry.updatedAt = new Date();
     await stickerEntry.save({ session });
+
+    await emitAuditEvent(req, {
+      entityType: 'StickerDefinition',
+      entityId: stickerId,
+      action: 'sticker.revoke',
+      meta: { userId, opId, quantity: 1 },
+    });
 
     await session.commitTransaction();
     return { result: stickerEntry, message: 'Sticker consumed successfully' };

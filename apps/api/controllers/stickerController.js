@@ -14,7 +14,7 @@ exports.createStickerTransaction = asyncHandler(async (req, res) => {
   const userId = req.params.userId || req.body.userId;
   const { stickerId, opId } = req.body;
 
-  const { result, message } = await awardSticker({ userId, stickerId, opId });
+  const { result, message } = await awardSticker({ userId, stickerId, opId, req });
 
   res.json({
     success: true,
@@ -32,7 +32,7 @@ exports.revokeStickerTransaction = asyncHandler(async (req, res) => {
   const userId = req.params.userId || req.body.userId;
   const { stickerId, opId } = req.body;
 
-  const { result, message } = await revokeSticker({ userId, stickerId, opId });
+  const { result, message } = await revokeSticker({ userId, stickerId, opId, req });
 
   res.json({
     success: true,

@@ -29,7 +29,8 @@ describe('stickerController', () => {
       expect(awardSticker).toHaveBeenCalledWith({
         userId: 'user123',
         stickerId: 'stick1',
-        opId: 'op1'
+        opId: 'op1',
+        req
       });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -60,7 +61,8 @@ describe('stickerController', () => {
       expect(revokeSticker).toHaveBeenCalledWith({
         userId: 'user123',
         stickerId: 'stick1',
-        opId: 'op1'
+        opId: 'op1',
+        req
       });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
