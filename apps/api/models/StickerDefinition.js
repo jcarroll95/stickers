@@ -34,8 +34,8 @@ const StickerDefinitionSchema = new mongoose.Schema(
     media: {
       primaryKey: {
         type: String,
-        enum: ['thumb', 'standard', 'large', 'original'],
-        default: 'standard',
+        enum: ['thumb', 'small', 'medium', 'full'],
+        default: 'medium',
       },
       variants: {
         type: [MediaVariantSchema],
@@ -67,7 +67,7 @@ StickerDefinitionSchema.index({ stickerKey: 1, revision: 1 }, { unique: true });
 
 // Convenience virtuals (optional) so old code can keep using imageUrl-ish fields
 StickerDefinitionSchema.virtual('imageUrl').get(function () {
-  const primary = this.media?.primaryKey ?? 'standard';
+  const primary = this.media?.primaryKey ?? 'medium';
   const v = this.media?.variants?.find((x) => x.key === primary) || this.media?.variants?.[0];
   return v?.url;
 });

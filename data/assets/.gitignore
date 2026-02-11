@@ -1,0 +1,7 @@
+staged/
+processed/
+uploads/
+archive/
+tmp/
+!.gitignore
+!README.md

@@ -14,10 +14,11 @@ const {
   removePackFromInventory,
 } = require('../controllers/stickerInventory');
 
-// New thin admin controllers (status/packs/bulk)
+// thin admin controllers
 const { updateStickerStatus } = require('../controllers/adminStickers');
 const { updatePack } = require('../controllers/adminPacks');
 const { bulkUpdateStickerStatus } = require('../controllers/adminBulk');
+const { ingestBatch } = require('../controllers/adminIngest');
 
 // All routes here are for admins only
 router.use(protect);
@@ -49,5 +50,8 @@ router.put('/packs/:id', updatePack);
 // Bulk status update
 // Example: POST /api/v1/admin/stickers/bulk/status  { ids: [...], status: 'active' }
 router.post('/stickers/bulk/status', bulkUpdateStickerStatus);
+
+// Ingestion Pipeline
+router.post('/catalog/ingest-batch', ingestBatch);
 
 module.exports = router;

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const MediaVariantSchema = new mongoose.Schema({
   key: {
     type: String,
-    enum: ['thumb', 'standard', 'large', 'original'],
+    enum: ['thumb', 'small', 'medium', 'full'],
       required: true,
   },
   format: {

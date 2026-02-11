@@ -1,0 +1,31 @@
+// create this file in /manifests/packs/ for each pack you want to ingest
+// the inputRef should match the folder each processed sticker resides in (eg "test_pack/computer")
+// your completed pack_index.json can go into /manifests/packs/ and you can run
+// npm -w @stickerboards/image-pipeline run manifest -- --pack test_pack.source.json
+{
+  "schemaVersion": 1,
+  "pack": {
+    "packId": "pack_cats_v1",
+    "name": "Cats v1",
+    "description": "First cat set",
+    "isActive": true
+  },
+  "defaults": {
+    "profile": "stickers-v1",
+    "tags": ["cats"]
+  },
+  "stickers": [
+    {
+      "stickerId": "test-programmer",
+      "name": "Programmer",
+      "description": "A programmer sitting at computer.",
+      "inputRef": "test_pack",
+      "tags": ["hack"]
+    },
+    {
+      "stickerId": "sticker_angry_cat",
+      "name": "Angry Cat",
+      "inputRef": "cats/angry_cat"
+    }
+  ]
+}

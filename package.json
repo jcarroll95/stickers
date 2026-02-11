@@ -5,7 +5,8 @@
   "description": "Stickerboards monorepo (API + Web) with shared tooling and documentation",
   "license": "MIT",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "dev": "concurrently \"npm -w stickerboards-api run dev\" \"npm -w stickerboards-web run dev\"",
@@ -16,11 +17,14 @@
 
     "build:web": "npm -w stickerboards-web run build",
     "build:api": "npm -w stickerboards-api run build --if-present",
-    "build": "npm run build:api && npm run build:web",
+    "build:packages": "npm -ws --if-present run build",
+    "build": "npm run build:packages && npm run build:api && npm run build:web",
 
     "test:api": "npm -w stickerboards-api run test",
     "test:web": "npm -w stickerboards-web run test -- --run",
-    "test": "npm run test:api && npm run test:web"
+    "test": "npm run test:api && npm run test:web",
+
+    "optimize:assets": "npm -w @stickerboards/image-pipeline run build && npm -w @stickerboards/image-pipeline run optimize"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
