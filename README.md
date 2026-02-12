@@ -239,7 +239,7 @@ Tradeoff:
 ---
 
 # Project Structure
-
+```
 .
 ├── apps/
 │ ├── api/
@@ -257,7 +257,7 @@ Tradeoff:
 ├── docs/
 ├── scripts/
 └── package.json
-
+```
 
 ---
 
