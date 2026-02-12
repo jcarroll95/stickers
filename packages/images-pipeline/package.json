@@ -1,0 +1,25 @@
+{
+  "name": "@stickerboards/image-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "bin": {
+    "sb-image-optimize": "dist/cli/optimize.js",
+    "sb-image-manifest": "dist/cli/manifest.js"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json -w",
+    "optimize": "node dist/cli/optimize.js",
+    "manifest": "node dist/cli/manifest.js"
+  },
+  "dependencies": {
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
