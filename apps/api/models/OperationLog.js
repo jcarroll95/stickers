@@ -13,10 +13,22 @@ const OperationLogSchema = new mongoose.Schema({
         required: true
     },
     operationType: {
-        type: String,
-        enum: ['placeSticker', 'removeSticker', 'consumeSticker', 'transferSticker', 'updateStickerboard'],
-        required: true
+      type: String,
+      enum: [
+        'placeSticker',
+        'removeSticker',
+        'consumeSticker',
+        'transferSticker',
+        'updateStickerboard',
+        'catalogIngestion'
+      ],
+      required: true
     },
+    batchId: { type: String, index: true },
+    manifestDigest: { type: String },
+    phase: { type: String, enum: ['upload','apply_db','complete'] },
+    lockOwner: { type: String },
+    lockExpiresAt: { type: Date },
     status: {
         type: String,
         enum: ['pending', 'completed', 'failed'],
@@ -37,8 +49,19 @@ const OperationLogSchema = new mongoose.Schema({
     },
     errorMessage: {
         type: String
+    },
+    progress: {
+      uploadedObjects: Number,
+      totalObjects: Number,
+      appliedStickers: Number,
+      totalStickers: Number
     }
 });
+
+OperationLogSchema.index(
+  { operationType: 1, batchId: 1 },
+  { unique: true, partialFilterExpression: { batchId: { $type: "string" } } }
+);
 
 // Compound index for efficient user+opId lookups
 OperationLogSchema.index({ userId: 1, opId: 1 });

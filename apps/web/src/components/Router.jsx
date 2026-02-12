@@ -13,6 +13,7 @@ const CreateStickerboard = lazy(() => import('./board/CreateStickerboard.jsx'));
 const MetricsDashboard = lazy(() => import('./admin/MetricsDashboard.jsx'));
 const UserManager = lazy(() => import('./admin/UserManager.jsx'));
 const StickerPicker = lazy(() => import('./admin/StickerPicker.jsx'));
+const AssetIngestion = lazy(() => import('./admin/AssetIngestion.jsx'));
 const UserSettings = lazy(() => import('./user/UserSettings.jsx'));
 const LandingPage = lazy(() => import('./LandingPage.jsx'));
 
@@ -75,6 +76,7 @@ export default function Router() {
         if (second === 'metrics') return <MetricsDashboard />;
         if (second === 'users') return <UserManager />;
         if (second === 'stickers') return <StickerPicker />;
+        if (second === 'assets') return <AssetIngestion />;
         return <NotFound hash={hash} />;
 
       default:

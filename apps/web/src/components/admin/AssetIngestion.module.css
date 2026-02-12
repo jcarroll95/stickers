@@ -1,0 +1,292 @@
+/* apps/web/src/components/admin/AssetIngestion.module.css */
+
+.container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  margin: 0 0 8px 0;
+}
+
+.section {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 14px;
+  background: white;
+}
+
+.sectionTitle {
+  margin: 0 0 10px 0;
+}
+
+.sectionHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.sectionHeaderActions {
+  display: flex;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.input {
+  flex: 1;
+  min-width: 260px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.button {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: white;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.buttonPrimary {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.buttonPrimary:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.button:disabled,
+.buttonPrimary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.linkButton {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(0, 0, 200, 0.85);
+  cursor: pointer;
+}
+
+.linkButton:hover {
+  text-decoration: underline;
+}
+
+.checkboxLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 8px 0 10px 0;
+}
+
+.statusItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusLabel {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 12px;
+}
+
+.progressGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 820px) {
+  .progressGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.progressCard {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progressBarOuter {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.progressBarInner {
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+.badgeNeutral {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.badgeOk {
+  background: rgba(0, 140, 0, 0.12);
+}
+
+.badgeWarn {
+  background: rgba(200, 140, 0, 0.14);
+}
+
+.badgeErr {
+  background: rgba(200, 0, 0, 0.12);
+}
+
+.errorMessage {
+  background: rgba(200, 0, 0, 0.12);
+  border: 1px solid rgba(200, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.warnMessage {
+  background: rgba(200, 140, 0, 0.14);
+  border: 1px solid rgba(200, 140, 0, 0.2);
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.muted {
+  color: rgba(0, 0, 0, 0.62);
+}
+
+.mutedSmall {
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+}
+
+.tableWrap {
+  overflow: auto;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  vertical-align: top;
+}
+
+.table th {
+  background: rgba(0, 0, 0, 0.03);
+  font-weight: 600;
+}
+
+.failureBox {
+  margin-top: 12px;
+  border: 1px solid rgba(200, 0, 0, 0.22);
+  background: rgba(200, 0, 0, 0.08);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.failureHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.failureActions {
+  display: flex;
+  gap: 8px;
+}
+
+.failureBody {
+  white-space: pre-wrap;
+}
+
+.listBoxErr {
+  border: 1px solid rgba(200, 0, 0, 0.22);
+  background: rgba(200, 0, 0, 0.08);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.listBoxWarn {
+  border: 1px solid rgba(200, 140, 0, 0.22);
+  background: rgba(200, 140, 0, 0.10);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.packName {
+  font-weight: 600;
+}
+
+.actionsCell {
+  white-space: nowrap;
+}

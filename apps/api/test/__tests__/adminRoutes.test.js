@@ -24,6 +24,9 @@ jest.mock('../../controllers/adminStickers', () => ({
 
 jest.mock('../../controllers/adminPacks', () => ({
   updatePack: jest.fn((req, res) => res.status(200).json({ ok: true })),
+  publishPack: jest.fn((req, res) => res.status(200).json({ ok: true })),
+  unpublishPack: jest.fn((req, res) => res.status(200).json({ ok: true })),
+  listPacks: jest.fn((req, res) => res.status(200).json({ ok: true })),
 }));
 
 jest.mock('../../controllers/adminBulk', () => ({
@@ -40,7 +43,7 @@ const {
   removePackFromInventory,
 } = require('../../controllers/stickerInventory');
 const { updateStickerStatus } = require('../../controllers/adminStickers');
-const { updatePack } = require('../../controllers/adminPacks');
+const { updatePack, publishPack, unpublishPack, listPacks } = require('../../controllers/adminPacks');
 const { bulkUpdateStickerStatus } = require('../../controllers/adminBulk');
 
 const router = require('../../routes/admin');
@@ -110,6 +113,24 @@ describe('Admin Routes', () => {
     const res = await request(app).put('/api/v1/admin/packs/p1').send({ name: 'New Name' });
     expect(res.status).toBe(200);
     expect(updatePack).toHaveBeenCalled();
+  });
+
+  test('POST /packs/:id/publish should call publishPack', async () => {
+    const res = await request(app).post('/api/v1/admin/packs/p1/publish').send({});
+    expect(res.status).toBe(200);
+    expect(publishPack).toHaveBeenCalled();
+  });
+
+  test('POST /packs/:id/unpublish should call unpublishPack', async () => {
+    const res = await request(app).post('/api/v1/admin/packs/p1/unpublish').send({});
+    expect(res.status).toBe(200);
+    expect(unpublishPack).toHaveBeenCalled();
+  });
+
+  test('GET /packs should call listPacks', async () => {
+    const res = await request(app).get('/api/v1/admin/packs');
+    expect(res.status).toBe(200);
+    expect(listPacks).toHaveBeenCalled();
   });
 
   test('POST /stickers/bulk/status should call bulkUpdateStickerStatus', async () => {

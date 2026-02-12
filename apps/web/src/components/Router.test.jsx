@@ -11,6 +11,7 @@ vi.mock('./explore/Explore', () => ({ default: () => <div data-testid="explore" 
 vi.mock('./auth/RegisterVerify', () => ({ default: () => <div data-testid="register-verify" /> }));
 vi.mock('./board/CreateStickerboard', () => ({ default: () => <div data-testid="create-board" /> }));
 vi.mock('./user/UserSettings', () => ({ default: () => <div data-testid="user-settings" /> }));
+vi.mock('./admin/AssetIngestion', () => ({ default: () => <div data-testid="asset-ingestion" /> }));
 
 vi.mock('../store/authStore', () => ({
   default: vi.fn(),
@@ -63,7 +64,7 @@ describe('Router', () => {
     render(<Router />);
     await waitFor(() => expect(screen.getByTestId('board-view')).toBeInTheDocument());
   });
-  
+
   it('should render UserSettings for #/settings if authenticated', async () => {
     useAuthStore.mockReturnValue({ isAuthenticated: true });
     window.location.hash = '#/settings';
@@ -76,5 +77,12 @@ describe('Router', () => {
     window.location.hash = '#/settings';
     render(<Router />);
     await waitFor(() => expect(screen.getByText(/Your GLP-1 Journey/i)).toBeInTheDocument());
+  });
+
+  it('should render AssetIngestion for #/admin/assets if authenticated as admin', async () => {
+    useAuthStore.mockReturnValue({ isAuthenticated: true, user: { role: 'admin' } });
+    window.location.hash = '#/admin/assets';
+    render(<Router />);
+    await waitFor(() => expect(screen.getByTestId('asset-ingestion')).toBeInTheDocument());
   });
 });

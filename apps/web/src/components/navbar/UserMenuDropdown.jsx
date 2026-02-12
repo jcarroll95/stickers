@@ -1,12 +1,12 @@
 import React from 'react';
 import styles from '../Navbar.module.css';
 
-const UserMenuDropdown = ({ 
-    user, 
-    navigatingMyBoard, 
-    onGoToMyBoard, 
-    onLogout, 
-    onClose 
+const UserMenuDropdown = ({
+    user,
+    navigatingMyBoard,
+    onGoToMyBoard,
+    onLogout,
+    onClose
 }) => (
     <div id="user-dropdown" className={styles.dropdown}>
         <a
@@ -29,9 +29,10 @@ const UserMenuDropdown = ({
         </a>
         {user?.role === 'admin' && (
             <>
-                <a className={styles.dropdownItem} href="#/admin/metrics">Admin Metrics</a>
-                <a className={styles.dropdownItem} href="#/admin/users">User Manager</a>
-                <a className={styles.dropdownItem} href="#/admin/stickers">Sticker Picker</a>
+                <a className={styles.dropdownItem} href="#/admin/metrics" onClick={onClose}>Admin Metrics</a>
+                <a className={styles.dropdownItem} href="#/admin/users" onClick={onClose}>User Manager</a>
+                <a className={styles.dropdownItem} href="#/admin/stickers" onClick={onClose}>Sticker Picker</a>
+                <a className={styles.dropdownItem} href="#/admin/assets" onClick={onClose}>Asset Ingestion</a>
             </>
         )}
         <button className={styles.dropdownItemButton} onClick={onLogout}>Logout</button>
