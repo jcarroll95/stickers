@@ -5,6 +5,7 @@ const router = express.Router();
 
 const { protect, authorize } = require('../middleware/auth');
 const { getMetrics } = require('../controllers/admin');
+const { getBatchStatus, listBatches } = require('../controllers/adminIngestionStatus');
 
 const {
   getUserInventoryAndCatalog,
@@ -16,9 +17,9 @@ const {
 
 // thin admin controllers
 const { updateStickerStatus } = require('../controllers/adminStickers');
-const { updatePack } = require('../controllers/adminPacks');
+const { updatePack, publishPack, unpublishPack, listPacks } = require('../controllers/adminPacks');
 const { bulkUpdateStickerStatus } = require('../controllers/adminBulk');
-const { ingestBatch } = require('../controllers/adminIngest');
+const { ingestBatch, validateBatch } = require('../controllers/adminIngest');
 
 // All routes here are for admins only
 router.use(protect);
@@ -36,22 +37,28 @@ router.post('/inventory/remove-pack', removePackFromInventory);
 
 /**
  * Sticker catalog moderation / lifecycle
- * Adjust these paths if you already have established endpoints.
  */
 
 // Update a single sticker status
-// Example: PATCH /api/v1/admin/stickers/:id/status  { status: 'ready'|'active'|'retired'|'staged' }
 router.patch('/stickers/:id/status', updateStickerStatus);
 
 // Update pack metadata
-// Example: PUT /api/v1/admin/packs/:id  { name?, description? }
 router.put('/packs/:id', updatePack);
 
+// Pack publish lifecycle (pack+sticker gating)
+router.post('/packs/:id/publish', publishPack);
+router.post('/packs/:id/unpublish', unpublishPack);
+
 // Bulk status update
-// Example: POST /api/v1/admin/stickers/bulk/status  { ids: [...], status: 'active' }
 router.post('/stickers/bulk/status', bulkUpdateStickerStatus);
 
-// Ingestion Pipeline
+// Ingestion pipeline
+router.get('/catalog/ingest-batch', listBatches);
+router.get('/catalog/ingest-batch/:batchId', getBatchStatus);
+
 router.post('/catalog/ingest-batch', ingestBatch);
+router.post('/catalog/ingest-batch/validate', validateBatch);
+
+router.get('/packs', listPacks);
 
 module.exports = router;

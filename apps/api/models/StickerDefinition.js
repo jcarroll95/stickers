@@ -48,6 +48,9 @@ const StickerDefinitionSchema = new mongoose.Schema(
 
     createdAt: { type: Date, default: Date.now, immutable: true },
     updatedAt: { type: Date, default: Date.now },
+    contentDigest: String,
+    sourceBatchId: String,
+    ingestedAt: Date
   },
   { timestamps: true }
 );
