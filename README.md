@@ -3,7 +3,7 @@
 
 # Stickerboards
 
-A lightweight social “stickerboard” that helps GLP-1 users stay consistent with dosing logs, track trends, and keep motivation through a playful reward loop.
+A production-deployed social “stickerboard” designed for GLP-1 users to stay consistent with dosing logs, track trends, and maintain motivation through a playful reward loop.
 
 **Live:** https://www.stickerboards.app
 **MVP spec:** [`/docs/mvpspec.md`](./docs/mvpspec.md)
@@ -11,194 +11,274 @@ A lightweight social “stickerboard” that helps GLP-1 users stay consistent w
 
 ---
 
-2026-02-05: I have accomplished a major refactor of this directory structure into a more sensical monorepo form. This necessitated reforming the deployed environment, restructuring the CI/CD pipeline, and implementing npm workspaces to fundamentally reorganize packages and secrets. Some links in this README.md will be unavailable for a brief time as I finalize the reorg. More docs to follow.
+# System Overview
 
----
-## Table of contents
+Stickerboards is a full-stack monorepo application built to explore:
 
-- [Problem](#problem)
-- [Technical approach](#technical-approach)
-  - [Architecture overview](#architecture-overview)
-  - [Key design decisions](#key-design-decisions)
-- [Project structure](#project-structure)
-- [Security considerations](#security-considerations)
-- [MVP status](#mvp-status)
-- [Next version features](#next-version-features)
-- [Scaling plan](#scaling-plan)
-- [Local development](#local-development)
-- [License](#license)
+- Idempotent transactional reward systems
+- Secure JWT-based auth with RBAC
+- Image-heavy UI performance optimization
+- Auditability of administrative actions
+- Production deployment with observability and backups
+
+The system is intentionally designed beyond CRUD patterns, with strong emphasis on correctness, traceability, and operational discipline.
 
 ---
 
-## Problem
+# Architecture
 
-GLP-1 users take medicine in weekly doses which can make logging and tracking doses and side effects challenging. This project’s MVP focuses on:
+## Monorepo Structure
 
-1. **Fast logging** of doses and symptoms (“stix”)
-2. **Trend visibility** (what side effects show up, when, and what helped)
-3. **Engagement** through a pseudo-social stickerboard: users earn/place stickers and can send supportive comments or “cheers” stickers to others (anonymous)
+Organized as an **npm workspaces monorepo**:
+-apps/
+--api/ -> Node.js + Express REST API
+--web/ -> React + Vite SPA
 
-The full scope and acceptance criteria are captured in the MVP spec: [`/docs/mvpspec.md`](./docs/mvpspec.md).
 
----
-
-## Technical approach
-
-### Architecture overview
-
-- **Frontend:** React + Vite SPA, Konva for sticker board interface
-- **Backend:** Node.js + Express REST API
-- **Database:** MongoDB (Mongoose ODM)
-- **Auth:** JWT issued by the API; stored as an HttpOnly cookie (`sameSite=lax`, `secure` in production) with Bearer-token support for API clients/tests
-- **Infra:** GitHub Actions for CI (tests + coverage artifact) and CD (SSH deploy). Nginx serves the built client; PM2 runs the API process.
-
-At runtime, the system is split intentionally:
-- Nginx serves `client/dist` (static SPA build)
-- Express serves `/api/v1/*` and also exposes `/public` for uploaded assets
-
-[`docs/architecture.md`](./docs/architecture.md)
-
-### Key design decisions
-
-**1) “Cheers” stickers are a consumable resource**
-Non-owners can cheer another user’s board by placing a special sticker. Those stickers are stored as an inventory array on the user. The update logic is designed to prevent double-spend under concurrency by using a consume-first conditional update (and transactions when available).
-
-**2) Sticker placements are embedded on the Stickerboard document**
-Sticker placements are stored as an embedded array for fast board reads and simple rendering (fetch one document → render). The tradeoff is document growth; if sticker volume becomes large, placements can be extracted to a dedicated collection.
-
-**3) Integrity rules are enforced at the database layer where possible**
-Assorted invariants are enforced with indexes (e.g., one comment per user per board, and stickerboard name uniqueness per user).
-
-**4) Tests prioritize incident prevention, not just coverage**
-The test harness uses mongodb-memory-server with safety checks to avoid accidental non-local data deletion, mocks email sending, and focuses on authorization and invariants.
+This enables:
+- Shared CI/CD pipelines
+- Clear frontend/backend boundaries
+- Independent dependency scopes
+- Deterministic production installs
 
 ---
 
-## Project structure
+## Architectural Style
 
-```text
+Stickerboards currently follows a **Domain-Oriented Layered Architecture**.
+
+It has moved beyond MVC by isolating business logic in `usecases`, but it does not yet fully implement strict Hexagonal Architecture.
+
+### Current Structure
+
+- **Controllers** → HTTP transport layer
+- **Usecases** → Core business logic
+- **Models (Mongoose)** → Persistence layer
+- **Middleware** → Cross-cutting concerns
+
+### Tradeoff: Hexagonal vs Pragmatic Layering
+
+A strict Hexagonal implementation would:
+
+- Use Ports/Interfaces between usecases and persistence
+- Use plain domain entities decoupled from Mongoose
+- Eliminate infrastructure imports (e.g., `fs`, Mongoose models) from usecases
+
+Current tradeoff:
+
+- Usecases occasionally import Mongoose models directly
+- Some domain lifecycle logic lives in Mongoose hooks
+- This reduces abstraction overhead and improves iteration speed
+- At the cost of full infrastructure decoupling
+
+This decision was made to balance architectural rigor with solo-project velocity while still maintaining testable service boundaries.
+
+A future refactor could introduce repository ports without breaking existing controllers.
+
+---
+
+# Core Engineering Challenges Solved
+
+## 1. Idempotent Sticker Transactions
+
+Awarding and revoking stickers are:
+
+- Keyed by `opId`
+- Guarded against double-processing
+- Wrapped in MongoDB transactions where appropriate
+
+This ensures correctness under:
+- Network retries
+- Double-click submissions
+- Race conditions
+
+Tradeoff:
+- Relies on MongoDB transactional semantics rather than an event-sourced ledger.
+- Chosen for implementation simplicity and operational clarity.
+
+---
+
+## 2. Transactional Asset Ingestion
+
+Sticker pack ingestion:
+
+- Validates uniqueness constraints
+- Ensures atomic writes
+- Prevents duplicate ingestion via transaction boundaries
+
+Tradeoff:
+- Uses Mongo transactions instead of asynchronous job queues.
+- Simpler operational model for current scale.
+
+---
+
+## 3. Audit Logging
+
+All sensitive operations emit structured audit events:
+
+- Admin inventory changes
+- Sticker awards/revocations
+- Pack mutations
+
+Audit events provide:
+- Traceability
+- Operational forensics
+- Administrative transparency
+
+Tradeoff:
+- Centralized event logging rather than external event stream.
+- Simpler infrastructure footprint.
+
+---
+
+## 4. RBAC via JWT Payload
+
+Authentication uses:
+
+- JWTs stored in HttpOnly cookies
+- Role-based claims embedded in JWT payload
+- Middleware-based authorization checks
+
+Frontend listens for `auth:unauthorized` broadcast events to gracefully handle session expiry.
+
+Tradeoff:
+- JWT-based RBAC over server-side sessions.
+- Chosen for statelessness and deployment simplicity.
+
+---
+
+## 5. Image Optimization Pipeline
+
+The frontend includes a dedicated ingestion pipeline:
+
+- `sharp` for image processing
+- Multi-width generation (400w, 800w, 1200w)
+- Multi-format output (WebP + PNG)
+- `vite-plugin-image-optimizer` for build-time compression
+
+Tradeoff:
+- Build-time optimization instead of dynamic CDN transformation.
+- Reduces infrastructure complexity at current scale.
+
+---
+
+# Security & Hardening
+
+- Global rate limiting
+- Registration cooldowns
+- Account lockout mechanisms
+- XSS sanitization middleware
+- Mongo query sanitization
+- HttpOnly secure cookies
+- No root deployment user
+- Environment variable isolation per release
+
+Tradeoff:
+- Security hardening applied at application level rather than WAF layer.
+- Appropriate for VPS-hosted solo deployment.
+
+---
+
+# Observability & Operations
+
+## Monitoring
+
+- **Grafana + Loki** for log aggregation
+- Alert rules (e.g., 5 errors in 5 minutes)
+- Structured logs for operational clarity
+- Rolling file logs accessible via admin dashboard
+
+## Error Tracking
+
+- **Sentry integration (in progress)** for exception aggregation and stack trace analysis.
+
+## Backups
+
+- Weekly full server backups
+- Daily MongoDB backups to DigitalOcean Spaces (object storage)
+
+## Deployment
+
+- Artifact-based CI/CD via GitHub Actions
+- Immutable release directories
+- Atomic symlink cutover
+- PM2 process management
+- Non-root application user
+
+Tradeoff:
+- VPS-based deployment instead of managed PaaS.
+- Chosen for deeper infrastructure exposure and learning value.
+
+---
+
+# Testing Strategy
+
+## Unit Tests
+
+- Business logic in `usecases`
+- Transactional correctness validation
+- Audit event emission verification
+
+## Integration Tests
+
+- API route testing against test database
+- Auth flow validation
+- Idempotency enforcement
+
+## End-to-End Tests
+
+- Playwright-based browser tests
+- Auth flows
+- Core sticker interactions
+- Regression prevention
+
+Tradeoff:
+- Focused coverage on high-risk transaction paths
+- Not 100% coverage, but strategic coverage on invariants
+
+---
+
+# Project Structure
+
 .
-├── server.js                   # Express app setup, security middleware, route mounting
-├── config/
-│   ├── db.js                   # DB connect (skipped during tests)
-│   └── config.env.env          # Example env var names (sanitized)
-├── controllers/
-│   ├── auth.js                 # login + verification flow, JWT cookie issuance
-│   ├── stickerboard.js         # board CRUD + cheers update invariants
-│   ├── stick.js                # stix CRUD + derived sticker addition
-│   ├── comments.js             # comments CRUD + per-user uniqueness
-│   └── users.js                # user management logic
-├── docs/                       # MVP Spec, architecture document, etc
-├── middleware/
-│   ├── async.js                # async wrapper
-│   ├── auth.js                 # protect + authorize routes with JWT
-│   ├── advancedResults.js      # pagination/filter/sort middleware
-│   ├── performance.js          # first draft API performance metrics
-│   └── error.js                # centralized error shaping
-├── models/                     # MongoDB Schemas
-├── routes/                     # Express routes
-├── test/
-│   ├── jest.setup.js           # mongodb-memory-server + global mocks
-│   └── setupEnv.js             # test env setup (if present)
-├── __tests__/                  # Jest tests (Supertest integration/invariants)
-├── utils/
-│   ├── errorResponse.js        # error handler wrapper
-│   └── sendEmail.js            # verification email sending utility
-├── e2e/                        # Playwright tests
-├── client/                     # React/Vite frontend
-└── .github/workflows/          # CI and deployment workflows
+├── apps/
+│ ├── api/
+│ │ ├── controllers/
+│ │ ├── middleware/
+│ │ ├── models/
+│ │ ├── usecases/
+│ │ └── server.js
+│ └── web/
+│ ├── src/
+│ │ ├── components/
+│ │ ├── store/
+│ │ └── services/
+│ └── optimize-images.js
+├── docs/
+├── scripts/
+└── package.json
+
+
+---
+
+# Local Development
+
+## Prerequisites
+
+- Node.js >= 18
+- MongoDB
+
+## Setup
+
+```bash
+npm install
+npm run dev
+npm test
 ```
 
-### Security considerations
+## Manual image optimization
+```bash
+npm run optimize-images -w stickerboards-web
+```
 
-- JWT in HttpOnly cookie to reduce token theft via XSS (with secure in production and sameSite=lax)
-- Route protection and role checks via middleware (protect, authorize)
-- Registration hardening:
-  - verification flow with resend cooldown
-  - lockout after repeated invalid verification attempts
-  - per-route rate limiting on registration endpoints
-- Input hardening:
-  - XSS sanitizer
-  - mongo query sanitization
-- HPP protection
-- Helmet
-
-Known security gaps / next hardening steps:
-- CSRF strategy beyond sameSite if cookie auth is used for all mutating requests in more complex deployment topologies
-- structured logging + sensitive-data redaction for production
-- stronger file validation (signature checks, object storage, malware scanning in higher-risk settings)
-
-### Performance considerations
-
-We want to optimize the application for performance and user experience. The initial approach will include:
-- Implementing code splitting and lazy loading for improved initial load time
-- Minifying and bundling assets for reduced file size
-- Examine the value of implementing a CDN for static assets
-- Optimizing image asset packs for size
-
-Check out [`performance-testing/performance.md`](performance-testing/performance.md) for performance metrics and before/after measurements
-
-In subsequent versions we'll revisit:
-- Optimizing database queries for faster response times
-- Sub-scale parallel image asset packs for faster sticker loading
-
-## MVP status:
-
-Backend: v1.0.0 API is implemented, tested, documented, and deployed.
-Frontend: deployed and functional against the API.
-
-There are some minor changes necessary to achieve full MVP - expand stick description into side effects, add strength factor. We need a method to aggregate and visualize trends though this is out of scope at v1. Some routes have slightly changed since the MVP doc was drafted.
-
-### MVP flow coverage includes:
-
-Register → verify email → login
-Create a board
-Log sticks (“stix”) with dose + notes
-Place stickers on your board
-Comment on other boards
-Send “cheers” stickers to other boards (consumable inventory model)
-
-## GitHub Actions for CI/CD
-
-### CI runs on every push/PR and publishes a coverage artifact:
-CI workflow
-
-### Deployment is automated on main:
-Deploy workflow
-
-## Next version features
-
-### Short list of the next meaningful additions (beyond MVP):
-- Analytics/trends view for side effects (time-to-onset, duration, mitigations)
-- Progress photos / measurements (opt-in, privacy controls)
-- Improved board discovery (filters, search, pagination caps)
-
-### VIP insights:
-- Integrate LLM-backed summarization of a user’s stix logs
-- trend highlights with clear limitations and safety disclaimers
-- RAG over user-owned logs (no cross-user leakage)
-
-## Scaling plan
-
-If this product grew beyond a single-node deployment, the next steps would be:
-
-1) Data and query scaling
-   Cap pagination limits and parameterize search fields in generic query middleware
-   Add/verify indexes on common access paths (board lookups, comments by board, stix by board)
-   Consider extracting sticker placements to a separate collection if boards grow large
-   Introduce caching for hot board reads (or precomputed snapshots)
-
-2) Reliability and operations
-   Move from console logs to structured logs with correlation IDs
-   Add health checks and basic metrics dashboards (latency, error rate, DB ops)
-   Artifact-based deploys (build in CI, deploy artifacts) for safer rollback and less server drift
-
-3) Security hardening
-   Add explicit CSRF protection if cookie auth is the dominant mechanism
-   Tighten upload handling (signature checks, object storage, scanning where appropriate)
-   Token rotation / refresh strategy if session security requirements increase
-
-
-### License
-[MIT](LICENSE)
-
+## License: MIT
