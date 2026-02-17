@@ -1,38 +1,48 @@
 // apps/api/usecases/audit/adminAudit.js
-//
-// Thin adapter so all admin usecases call the same function name.
-// Update this file to match your actual audit utility exports.
 
-let auditFn = null;
+// Thin adapter: admin usecases pass a rich payload.
+// This adapter forwards to utils/audit.emitAuditEvent(req, event),
+// which performs the actual Mongoose write.
+
+let emitAuditEventFn = null;
 
 try {
-  // OPTION 1: if you have a file like apps/api/usecases/audit/auditUtils.js exporting auditAdminEvent
-  // const mod = require('./auditUtils');
-  // auditFn = mod.auditAdminEvent;
-
-  // OPTION 2: if you have a util under utils/
-  // const mod = require('../../utils/auditLogger');
-  // auditFn = mod.auditAdminEvent || mod.auditEvent || mod.logAuditEvent;
-
-  // ---- DEFAULT: do nothing until you wire it correctly ----
-  const mod = require('./auditUtils'); // <-- change to your real path
-  auditFn = mod.auditAdminEvent || mod.auditEvent || mod.logAuditEvent || mod.recordAuditEvent;
+  const mod = require('../../utils/audit');
+  emitAuditEventFn = mod.emitAuditEvent;
 } catch (e) {
-  auditFn = null;
+  emitAuditEventFn = null;
 }
 
+/**
+ * payload shape:
+ * {
+ *   req,                 // Express req (optional but recommended)
+ *   action,
+ *   entityType,
+ *   entityId,
+ *   actor,               // optional additional actor metadata
+ *   before, after, meta  // optional
+ *   ...any other fields you want stored on AuditEvent
+ * }
+ */
 async function auditAdminEventSafe(payload) {
-  if (typeof auditFn !== 'function') {
-    // Do NOT break admin operations because audit wiring moved.
-    // Still surfaces in server logs so you notice.
-    console.warn('[audit] audit function not wired; skipping audit event', {
+  if (typeof emitAuditEventFn !== 'function') {
+    console.warn('[audit] emitAuditEvent not wired; skipping audit event', {
       action: payload?.action,
       entityType: payload?.entityType,
       entityId: payload?.entityId,
     });
     return;
   }
-  return auditFn(payload);
+
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('auditAdminEventSafe requires a payload object');
+  }
+
+  const { req, ...event } = payload;
+
+  // You *keep* the rich fields. We only separate req vs event for the util signature.
+  return emitAuditEventFn(req, event);
 }
 
 module.exports = { auditAdminEventSafe };

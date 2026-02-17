@@ -1,6 +1,7 @@
 // apps/api/test/__tests__/auditTransactions.test.js
 
 const mongoose = require('mongoose');
+const OperationLog = require('../../models/OperationLog');
 
 // Mock dependencies FIRST
 jest.mock('../../utils/audit', () => ({
@@ -17,6 +18,7 @@ jest.mock('../../models/StickerInventory', () => {
 
   // static methods used by usecases
   MockStickerInventory.findOne = jest.fn();
+  MockStickerInventory.findOneAndUpdate = jest.fn();
   MockStickerInventory.create = jest.fn();
   MockStickerInventory.bulkWrite = jest.fn();
   MockStickerInventory.deleteMany = jest.fn();
@@ -31,6 +33,8 @@ jest.mock('../../models/StickerDefinition', () => ({
 jest.mock('../../models/StickerPack', () => ({
   findById: jest.fn(),
 }));
+
+jest.mock('../../models/OperationLog');
 
 jest.mock('../../models/MediaVariant', () => ({}));
 
@@ -66,9 +70,14 @@ describe('Audit Logging for Transactions', () => {
       commitTransaction: jest.fn(),
       abortTransaction: jest.fn(),
       endSession: jest.fn(),
+      inTransaction: jest.fn().mockReturnValue(true),
     };
 
     jest.spyOn(mongoose, 'startSession').mockResolvedValue(mSession);
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   describe('stickerTransactions usecases', () => {
@@ -78,13 +87,17 @@ describe('Audit Logging for Transactions', () => {
 
     describe('awardSticker', () => {
       it('should emit audit event when awarding a new sticker', async () => {
-        // Many flows do:
-        // 1) idempotency check (findOne) -> null
-        // 2) existing inventory check (findOne) -> null
-        StickerInventory.findOne
-          .mockReturnValueOnce({ session: jest.fn().mockResolvedValue(null) })
-          .mockReturnValueOnce({ session: jest.fn().mockResolvedValue(null) });
+        OperationLog.findOne.mockReturnValue({ session: jest.fn().mockResolvedValue(null) });
+        OperationLog.findOneAndUpdate.mockResolvedValue({ _id: 'oplog1' });
 
+        const mockEntry = {
+          _id: 'inv1',
+          quantity: 1,
+          packId,
+          save: jest.fn().mockResolvedValue(true)
+        };
+        StickerInventory.findOneAndUpdate.mockResolvedValue(mockEntry);
+        OperationLog.findByIdAndUpdate.mockResolvedValue({});
         StickerDefinition.findById.mockReturnValue({
           session: jest.fn().mockResolvedValue({ packId }),
         });
@@ -97,39 +110,28 @@ describe('Audit Logging for Transactions', () => {
             entityType: 'StickerDefinition',
             entityId: stickerId,
             action: 'sticker.award',
-            meta: expect.objectContaining({ userId, opId: 'op1', method: 'create' }),
-          })
-        );
-
-        // Constructed + saved new inventory entry
-        expect(StickerInventory).toHaveBeenCalledTimes(1);
-        const constructed = StickerInventory.mock.calls[0][0];
-        expect(constructed).toEqual(
-          expect.objectContaining({
-            userId,
-            stickerId,
-            packId,
+            meta: expect.objectContaining({ userId, opId: 'op1', quantity: 1 }),
           })
         );
       });
 
       it('should emit audit event when incrementing existing sticker', async () => {
-        const existingDoc = {
-          quantity: 1,
-          save: jest.fn().mockResolvedValue({}),
-          deleteOne: jest.fn().mockResolvedValue({}),
-          updatedAt: null,
+        OperationLog.findOne.mockReturnValue({ session: jest.fn().mockResolvedValue(null) });
+        OperationLog.findOneAndUpdate.mockResolvedValue({ _id: 'oplog2' });
+
+        const mockEntry = {
+          _id: 'inv1',
+          quantity: 2,
+          packId,
+          save: jest.fn().mockResolvedValue(true)
         };
+        StickerInventory.findOneAndUpdate.mockResolvedValue(mockEntry);
+        OperationLog.findByIdAndUpdate.mockResolvedValue({});
+        StickerDefinition.findById.mockReturnValue({
+          session: jest.fn().mockResolvedValue({ packId }),
+        });
 
-        // 1) idempotency check -> null
-        // 2) existing inventory check -> existingDoc
-        StickerInventory.findOne
-          .mockReturnValueOnce({ session: jest.fn().mockResolvedValue(null) })
-          .mockReturnValueOnce({ session: jest.fn().mockResolvedValue(existingDoc) });
-
-        await awardSticker({ userId, stickerId, opId: 'op1', req: mockReq });
-
-        expect(existingDoc.save).toHaveBeenCalled();
+        await awardSticker({ userId, stickerId, opId: 'op2', req: mockReq });
 
         expect(emitAuditEvent).toHaveBeenCalledWith(
           mockReq,
@@ -138,9 +140,9 @@ describe('Audit Logging for Transactions', () => {
             entityType: 'StickerDefinition',
             entityId: stickerId,
             meta: expect.objectContaining({
-              method: 'increment',
               userId,
-              opId: 'op1',
+              opId: 'op2',
+              quantity: 1
             }),
           })
         );
@@ -149,23 +151,20 @@ describe('Audit Logging for Transactions', () => {
 
     describe('revokeSticker', () => {
       it('should emit audit event when revoking a sticker', async () => {
-        const existingDoc = {
-          quantity: 2,
-          save: jest.fn().mockResolvedValue({}),
-          deleteOne: jest.fn().mockResolvedValue({}),
-          updatedAt: null,
+        OperationLog.findOne.mockReturnValue({ session: jest.fn().mockResolvedValue(null) });
+        OperationLog.findOneAndUpdate.mockResolvedValue({ _id: 'oplog3' });
+
+        const mockEntry = {
+          _id: 'inv1',
+          quantity: 1,
+          save: jest.fn().mockResolvedValue(true)
         };
+        StickerInventory.findOne.mockReturnValue({ session: jest.fn().mockResolvedValue(mockEntry) });
+        OperationLog.findByIdAndUpdate.mockResolvedValue({});
 
-        // 1) idempotency check -> null
-        // 2) existing inventory check -> existingDoc
-        StickerInventory.findOne
-          .mockReturnValueOnce({ session: jest.fn().mockResolvedValue(null) })
-          .mockReturnValueOnce({ session: jest.fn().mockResolvedValue(existingDoc) });
+        await revokeSticker({ userId, stickerId, opId: 'op4', req: mockReq });
 
-        await revokeSticker({ userId, stickerId, opId: 'op1', req: mockReq });
-
-        // depending on logic, may save or deleteOne; at least one should occur
-        expect(existingDoc.save.mock.calls.length + existingDoc.deleteOne.mock.calls.length).toBeGreaterThan(0);
+        expect(mockEntry.save).toHaveBeenCalled();
 
         expect(emitAuditEvent).toHaveBeenCalledWith(
           mockReq,
@@ -173,7 +172,7 @@ describe('Audit Logging for Transactions', () => {
             entityType: 'StickerDefinition',
             entityId: stickerId,
             action: 'sticker.revoke',
-            meta: expect.objectContaining({ userId, opId: 'op1' }),
+            meta: expect.objectContaining({ userId, opId: 'op4', quantity: 1 }),
           })
         );
       });

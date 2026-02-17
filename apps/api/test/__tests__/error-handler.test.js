@@ -32,7 +32,7 @@ describe('Global error handler branches', () => {
   });
 
   test('Duplicate key error → 400 when creating two boards with same name', async () => {
-    const token = await registerAndLogin({ email: 'dup@example.com' });
+    const token = await registerAndLogin({ email: 'dup@example.com', role: 'vipuser' });
     const name = `Dup-${Date.now()}`;
     await createBoard(token, { name, description: 'one' });
     const res = await request(app)
@@ -41,7 +41,7 @@ describe('Global error handler branches', () => {
       .send({ name, description: 'duplicate' })
       .expect(400);
     expect(res.body.success).toBe(false);
-    expect(String(res.body.error || '')).toMatch(/duplicate field value/i);
+    expect(String(res.body.error || '')).toMatch(/Duplicate field value entered/i);
   });
 
   /*
