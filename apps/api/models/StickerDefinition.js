@@ -52,7 +52,7 @@ const StickerDefinitionSchema = new mongoose.Schema(
     sourceBatchId: String,
     ingestedAt: Date
   },
-  { timestamps: true }
+ { timestamps: true }
 );
 
 // Keep slug stable unless explicitly unset/changed

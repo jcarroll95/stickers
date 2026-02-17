@@ -75,19 +75,17 @@ async function consumeSticker(userId, stickerId, opId) {
     );
 
     if (!updated) {
-        // Try legacy system as fallback
-        const legacyStickerId = await mapStickerDefinitionToLegacyId(stickerId);
-        if (legacyStickerId !== null) {
-            const user = await User.findById(userId).select('cheersStickers');
-            if (user && user.cheersStickers) {
-                const idx = user.cheersStickers.indexOf(legacyStickerId);
-                if (idx !== -1) {
-                    user.cheersStickers.splice(idx, 1);
-                    await user.save();
-                    return { legacy: true, stickerId: legacyStickerId };
-                }
-            }
-        }
+    // Replace the entire legacy fallback with atomic $pull:
+      const user = await User.findOneAndUpdate(
+        { _id: userId, cheersStickers: legacyStickerId },
+        { $pull: { cheersStickers: legacyStickerId } },
+        { new: true }
+      );
+
+      if (!user) {
+        return null; // sticker not found or already consumed
+      }
+      return { legacy: true, stickerId: legacyStickerId };
     }
 
     return updated;

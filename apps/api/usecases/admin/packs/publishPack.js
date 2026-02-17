@@ -2,51 +2,7 @@
 
 const StickerPack = require('../../../models/StickerPack');
 const StickerDefinition = require('../../../models/StickerDefinition');
-
-/**
- * Try to resolve your audit function without making publish/unpublish brittle.
- * Update the candidates list to your actual audit module later (one place).
- */
-function resolveAuditFn() {
-  const candidates = [
-    // Add your real audit module path(s) here if you know them:
-    // '../../audit/auditUtils',
-    // '../../audit/auditLogging',
-    // '../../../utils/auditLogger',
-  ];
-
-  for (const modPath of candidates) {
-    try {
-      const mod = require(modPath);
-      const fn =
-        mod.auditAdminEvent ||
-        mod.auditEvent ||
-        mod.logAuditEvent ||
-        mod.recordAuditEvent ||
-        mod.recordAdminAudit;
-
-      if (typeof fn === 'function') return fn;
-    } catch {
-      // ignore missing modules
-    }
-  }
-  return null;
-}
-
-const auditFn = resolveAuditFn();
-
-async function auditSafe(payload) {
-  if (typeof auditFn !== 'function') {
-    // Never break admin ops because audit is miswired.
-    console.warn('[audit] audit function not wired; skipping', {
-      action: payload?.action,
-      entityType: payload?.entityType,
-      entityId: payload?.entityId,
-    });
-    return;
-  }
-  await auditFn(payload);
-}
+const { auditAdminEventSafe } = require('../../audit/adminAudit');
 
 async function publishPack({ actor, packId, reqForAudit }) {
   if (!actor?.id) throw new Error('actor.id is required');
@@ -57,13 +13,13 @@ async function publishPack({ actor, packId, reqForAudit }) {
 
   const wasActive = !!pack.isActive;
 
-  // Idempotent publish
+  // Idempotent publish: keep safe to retry.
   if (!pack.isActive) {
     pack.isActive = true;
     await pack.save();
   }
 
-  // Pack+sticker gating: flip stickers to active
+  // Pack+sticker gating: activate all stickers belonging to the pack.
   const res = await StickerDefinition.updateMany(
     { packId: pack._id },
     { $set: { status: 'active' } }
@@ -71,7 +27,8 @@ async function publishPack({ actor, packId, reqForAudit }) {
 
   const stickersActivated = res?.modifiedCount ?? res?.nModified ?? 0;
 
-  await auditSafe({
+  await auditAdminEventSafe({
+    req: reqForAudit,
     actor,
     action: 'pack.publish',
     entityType: 'StickerPack',
@@ -79,7 +36,6 @@ async function publishPack({ actor, packId, reqForAudit }) {
     before: { isActive: wasActive },
     after: { isActive: true },
     meta: { stickersActivated },
-    req: reqForAudit,
   });
 
   return { pack, stickersActivated };

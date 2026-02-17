@@ -13,7 +13,7 @@ const CommentSchema = new mongoose.Schema({
     },
     commentRating: {
         type: Number,
-        Enum: [1,2,3,4,5]
+        enum: [1,2,3,4,5]
     },
     comment: {
         type: String,

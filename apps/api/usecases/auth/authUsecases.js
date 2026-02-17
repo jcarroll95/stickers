@@ -15,7 +15,7 @@ async function register({ name, email, password, role, nodeEnv }) {
     name,
     email,
     password,
-    role: nodeEnv === 'test' && role ? role : 'user',
+    role: nodeEnv === 'test' ? role : (role || 'user'),
   });
 
   const token = user.getSignedJwtToken();
@@ -55,7 +55,7 @@ async function getMe({ userId }) {
 
 async function forgotPassword({ email, protocol, host }) {
   const user = await User.findOne({ email });
-  if (!user) throw new ErrorResponse('Email not recognized', 404);
+  if (!user) throw new ErrorResponse('Invalid Credentials', 404);
 
   const resetToken = user.getResetPasswordToken();
   await user.save({ validateBeforeSave: false });
@@ -63,7 +63,7 @@ async function forgotPassword({ email, protocol, host }) {
   const resetUrl = `${protocol}://${host}/api/v1/auth/resetpassword/${resetToken}`;
   const message =
     `You are receiving this email because you (or someone else) have requested the reset of a password.\n\n` +
-    `Please make a PUT request to:\n\n${resetUrl}`;
+    `Please click the link below to reset your password. This link will expire in 10 minutes:\n\n${resetUrl}`;
 
   try {
     await sendEmail({

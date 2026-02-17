@@ -44,8 +44,8 @@ const StickSchema = new mongoose.Schema({
     },
     weight: {
         type: Number,
-        minimum: 0,
-        maximum: 999
+        min: 0,
+        max: 999
     },
     createdAt: {
         type: Date,
@@ -53,8 +53,8 @@ const StickSchema = new mongoose.Schema({
     },
     cost: {
         type: Number,
-        minimum: 0,
-        maximum: 9999,
+        min: 0,
+        max: 9999,
         default: 0
     }
 });
@@ -88,13 +88,25 @@ StickSchema.statics.getAverageCost = async function(belongsToBoard) {
 }
 
 // Call getAverageCost after save
-StickSchema.post('save', function() {
-    this.constructor.getAverageCost(this.belongsToBoard);
+StickSchema.post('save', async function() {
+  try {
+    await this.constructor.getAverageCost(this.belongsToBoard);
+  } catch (err) {
+    console.error('[CRITICAL] Failed to update averageCost:', err);
+    // Don't throw - don't fail the save because aggregate failed
+    // But log loudly so it's visible
+  }
 });
 
-// Recalculate on deletion of a Stick document
-StickSchema.post('deleteOne', { document: true, query: false }, function() {
-    this.constructor.getAverageCost(this.belongsToBoard);
+
+StickSchema.post('deleteOne', { document: true, query: false }, async function() {
+  try {
+    await this.constructor.getAverageCost(this.belongsToBoard);
+  } catch (err) {
+    console.error('[CRITICAL] Failed to update averageCost:', err);
+    // Don't throw - don't fail the save because aggregate failed
+    // But log loudly so it's visible
+  }
 });
 
 module.exports = mongoose.model('Stick', StickSchema);

@@ -201,7 +201,11 @@ async function removePackFromInventory({ userId, packId, req }) {
   await StickerInventory.bulkWrite(operations);
 
   // Clean up <= 0
-  await StickerInventory.deleteMany({ userId, quantity: { $lte: 0 } });
+  await StickerInventory.deleteMany({
+    userId,
+    stickerId: { $in: pack.stickers },
+    quantity: { $lte: 0 }
+  });
 
   await emitAuditEvent(req, {
     entityType: 'StickerPack',

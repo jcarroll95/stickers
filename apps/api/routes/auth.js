@@ -12,7 +12,8 @@ const {
     logout,
     registerStart,
     registerVerify,
-    registerResend
+    registerResend,
+    renderResetPasswordForm
 } = require('../controllers/auth');
 const { protect } = require('../middleware/auth');
 
@@ -31,6 +32,7 @@ router.put('/resetPassword/:resettoken', resetPassword);
 router.put('/updatedetails', protect, updateDetails);
 router.put('/updatepassword', protect, updatePassword);
 router.get('/logout', logout);
+router.get('/resetpassword/:resettoken', renderResetPasswordForm);
 
 // New public registration flow
 router.post('/register-start', registerStartLimiter, registerStart);

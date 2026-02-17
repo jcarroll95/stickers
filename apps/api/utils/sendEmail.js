@@ -17,7 +17,7 @@ const sendEmail = async (options) => {
         const testDomains = ['@test.com', '@stickerboards.app', '@example.com'];
         const isTestEmail = testDomains.some(domain => options.email.endsWith(domain));
         if (!isTestEmail) {
-            console.log(`[EMAIL BLOCKED] Refusing to send to ${options.email} in non-production`);
+            console.log(`[EMAIL BLOCKED] Refusing to send to ${options.email} in non-production. Add domain to whitelist in apps/api/utils/sendEmail.js if needed.`);
             return;
         }
     }
