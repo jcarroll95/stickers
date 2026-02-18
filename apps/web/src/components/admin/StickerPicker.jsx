@@ -20,6 +20,7 @@ const StickerPicker = () => {
       setUserData(response.data.user);
       setInventory(response.data.inventory);
       setCatalog(response.data.catalog);
+      console.log(response.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to fetch inventory');
       setUserData(null);
@@ -93,7 +94,7 @@ const StickerPicker = () => {
                   <div className={styles.packHeader}>
                     <h3>{getPackName(packId)}</h3>
                     {packId !== 'none' && (
-                      <button 
+                      <button
                         onClick={() => performAction('remove-pack', { packId })}
                         disabled={actionLoading}
                         className={styles.removePackBtn}
@@ -110,7 +111,7 @@ const StickerPicker = () => {
                           <span className={styles.stickerName}>{item.stickerId.name}</span>
                           <span className={styles.stickerQty}>Qty: {item.quantity}</span>
                         </div>
-                        <button 
+                        <button
                           onClick={() => performAction('remove-sticker', { stickerId: item.stickerId._id })}
                           disabled={actionLoading}
                           className={styles.deleteBtn}
@@ -127,14 +128,14 @@ const StickerPicker = () => {
 
           <section className={styles.catalogSection}>
             <h2>Add to Inventory</h2>
-            
+
             <div className={styles.catalogSubsection}>
               <h3>Packs</h3>
               <div className={styles.catalogGrid}>
                 {catalog.packs.map(pack => (
                   <div key={pack._id} className={styles.catalogCard}>
                     <strong>{pack.name}</strong>
-                    <button 
+                    <button
                       onClick={() => performAction('add-pack', { packId: pack._id })}
                       disabled={actionLoading}
                       className={styles.addBtn}
@@ -153,7 +154,7 @@ const StickerPicker = () => {
                   <div key={sticker._id} className={styles.stickerCard}>
                     <img src={sticker.imageUrl} alt={sticker.name} className={styles.stickerImg} />
                     <span className={styles.stickerName}>{sticker.name}</span>
-                    <button 
+                    <button
                       onClick={() => performAction('add-sticker', { stickerId: sticker._id })}
                       disabled={actionLoading}
                       className={styles.addBtn}
