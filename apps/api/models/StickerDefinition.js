@@ -46,8 +46,8 @@ const StickerDefinitionSchema = new mongoose.Schema(
     replacesStickerId: { type: mongoose.Schema.Types.ObjectId, ref: 'StickerDefinition' },
     supersededByStickerId: { type: mongoose.Schema.Types.ObjectId, ref: 'StickerDefinition' },
 
-    createdAt: { type: Date, default: Date.now, immutable: true },
-    updatedAt: { type: Date, default: Date.now },
+    // createdAt: { type: Date, default: Date.now, immutable: true },
+    // updatedAt: { type: Date, default: Date.now },
     contentDigest: String,
     sourceBatchId: String,
     ingestedAt: Date

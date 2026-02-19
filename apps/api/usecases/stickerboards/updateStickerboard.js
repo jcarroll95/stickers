@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const ErrorResponse = require('../../utils/errorResponse');
 const Stickerboard = require('../../models/Stickerboard');
 
+
 const { DomainError } = require('../../domain/errors/domainError');
 const {
   assertNonOwnerOnlyAppendingSticker,

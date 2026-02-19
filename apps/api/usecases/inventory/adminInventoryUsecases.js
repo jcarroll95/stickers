@@ -31,11 +31,39 @@ async function getUserInventoryAndCatalog({ identifier }) {
   }
 
   // Get user inventory
-  const inventory = await StickerInventory.find({ userId: user._id }).populate('stickerId');
+  let inventory = await StickerInventory.find({ userId: user._id }).populate('stickerId');
+
+  // Hardening: Filter out inventory items with missing sticker definitions and log them
+  const initialInventoryCount = inventory.length;
+  inventory = inventory.filter(item => {
+    if (!item.stickerId) {
+      console.warn(`[Data Inconsistency] User ${user.email} (${user._id}) has an inventory item with missing stickerId. Item ID: ${item._id}`);
+      return false;
+    }
+    return true;
+  });
+
+  if (inventory.length < initialInventoryCount) {
+    console.error(`[Data Inconsistency Summary] Filtered out ${initialInventoryCount - inventory.length} orphaned inventory items for user ${user.email}`);
+  }
 
   // Get full catalog
-  const packs = await StickerPack.find().populate('stickers');
+  let packs = await StickerPack.find().populate('stickers');
   const stickers = await StickerDefinition.find();
+
+  // Hardening: Filter out null stickers within packs (if any orphaned IDs exist in packs.stickers array)
+  packs = packs.map(pack => {
+    const initialStickerCount = pack.stickers.length;
+    pack.stickers = pack.stickers.filter(s => {
+      if (!s) return false;
+      return true;
+    });
+
+    if (pack.stickers.length < initialStickerCount) {
+       console.error(`[Data Inconsistency] Pack ${pack.name} (${pack._id}) contains ${initialStickerCount - pack.stickers.length} orphaned sticker references.`);
+    }
+    return pack;
+  });
 
   return {
     user: { _id: user._id, name: user.name, email: user.email },

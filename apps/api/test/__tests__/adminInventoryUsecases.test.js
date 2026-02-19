@@ -63,7 +63,7 @@ describe('adminInventoryUsecases', () => {
 
       // StickerInventory.find(...).populate(...) chain
       StickerInventory.find.mockReturnValue({
-        populate: jest.fn().mockResolvedValue([{ _id: 'inv1' }]),
+        populate: jest.fn().mockResolvedValue([{ _id: 'inv1', stickerId: { _id: stickerId } }]),
       });
 
       // StickerPack.find(...).populate(...) chain
