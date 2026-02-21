@@ -81,11 +81,11 @@
 
 .stickerPaletteTabs {
   display: flex;
-  flex-wrap: wrap; /* This allows buttons to wrap to the next line */
+  flex-wrap: wrap;
   gap: 8px;
   border-bottom: 1px solid #dee2e6;
   padding-bottom: 8px;
-  /* overflow-x: auto;  <-- You can remove this if you want wrapping instead of horizontal scrolling */
+  /* overflow-x: auto; */
 }
 
 .tabButton {
