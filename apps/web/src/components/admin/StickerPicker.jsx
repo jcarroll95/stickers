@@ -106,7 +106,7 @@ const StickerPicker = () => {
                   <div className={styles.stickerGrid}>
                     {items.map((item) => (
                       <div key={item._id} className={styles.stickerCard}>
-                        <img src={item.stickerId.imageUrl} alt={item.stickerId.name} className={styles.stickerImg} />
+                        <img src={item.stickerId.thumbnailUrl} alt={item.stickerId.name} className={styles.stickerImg} />
                         <div className={styles.stickerInfo}>
                           <span className={styles.stickerName}>{item.stickerId.name}</span>
                           <span className={styles.stickerQty}>Qty: {item.quantity}</span>
@@ -152,7 +152,7 @@ const StickerPicker = () => {
               <div className={styles.stickerGrid}>
                 {catalog.stickers.map(sticker => (
                   <div key={sticker._id} className={styles.stickerCard}>
-                    <img src={sticker.imageUrl} alt={sticker.name} className={styles.stickerImg} />
+                    <img src={sticker.thumbnailUrl} alt={sticker.name} className={styles.stickerImg} />
                     <span className={styles.stickerName}>{sticker.name}</span>
                     <button
                       onClick={() => performAction('add-sticker', { stickerId: sticker._id })}
