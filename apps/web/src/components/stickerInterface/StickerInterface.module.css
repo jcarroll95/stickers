@@ -81,10 +81,11 @@
 
 .stickerPaletteTabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   border-bottom: 1px solid #dee2e6;
   padding-bottom: 8px;
-  overflow-x: auto;
+  /* overflow-x: auto; */
 }
 
 .tabButton {

@@ -5,7 +5,7 @@
  * @param {number} maxBytes - Maximum filesize for the thumbnail in bytes (default: 99KB)
  * @returns {Promise<{blob: Blob, width: number, height: number, bytes: number, contentType: string}>}
  */
-export async function generateThumbnailFromStage(stageRef, maxDimension = 600, maxBytes = 99 * 1024) {
+export async function generateThumbnailFromStage(stageRef, maxDimension = 600, maxBytes = 70 * 1024) {
   if (!stageRef?.current) {
     throw new Error('Invalid stage reference');
   }
