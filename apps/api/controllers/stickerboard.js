@@ -193,7 +193,15 @@ exports.postThumbnail = asyncHandler(async (req, res, next) => {
     const height = req.body.height || 0;
 
     await Stickerboard.findByIdAndUpdate(req.params.id, {
-      thumbnail: { version, width, height, contentType, bytes, url: publicUrl },
+      thumbnail: {
+        version,
+        width,
+        height,
+        contentType,
+        bytes,
+        url: publicUrl,
+        createdAt: new Date(version),
+      },
     });
 
     updateRateLimit(req.user.id, req.params.id);

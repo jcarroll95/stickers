@@ -32,6 +32,35 @@ export default function BoardView({ token }) {
 
   const [activeTab, setActiveTab] = useState(isOwner ? 'stix' : 'comments');
 
+  useEffect(() => {
+    // 1. Only proceed if we have a board, the user is the owner, and assets are ready
+    const boardId = board?._id || board?.id;
+    if (!board || !isOwner || !isAssetsReady || !stageRef.current) return;
+
+    // 2. Get the latest sticker creation date (default to 0 if no stickers)
+    const latestStickerTime = board.stickers?.length > 0
+      ? Math.max(...board.stickers.map(s => new Date(s.createdAt).getTime()))
+      : 0;
+
+    // 3. Get the current thumbnail version (as a timestamp)
+    const thumbTime = board.thumbnail.createdAt
+      ? new Date(board.thumbnail.version).getTime()
+      : 0;
+
+    // 4. If a sticker is newer than the thumbnail, trigger an update
+    if (latestStickerTime > thumbTime) {
+      console.log('Stale thumbnail detected, updating...');
+
+      // Use a small delay to ensure all sticker images are fully rendered in the Konva stage
+      setTimeout(() => {
+        uploadThumbnail(boardId, stageRef).catch(err => {
+          console.warn('Auto-thumbnail update failed:', err);
+        });
+      }, 1500); // 1.5s is usually safe for asset loading
+    }
+  }, [board, isOwner, isAssetsReady]);
+
+
   // Ensure activeTab is set correctly when board/me seed-data loads
   useEffect(() => {
     if (board && me) {
@@ -41,7 +70,7 @@ export default function BoardView({ token }) {
 
   // Auto-generate thumbnail if it doesn't exist (e.g. newly created board)
   useEffect(() => {
-    // Only proceed if board seed-data is loaded, user is owner, assets are loaded, and thumbnail is missing
+    // Only proceed if board data is loaded, user is owner, assets are loaded, and thumbnail is missing
     const boardId = board?._id || board?.id;
     if (board && isOwner && isAssetsReady && !board.thumbnail?.url && stageRef.current) {
       console.log('No thumbnail found for board, triggering auto-generation...');
@@ -49,6 +78,33 @@ export default function BoardView({ token }) {
         // Silently fail as this is a background task
         console.warn('Auto-thumbnail generation failed:', err);
       });
+    }
+  }, [board, isOwner, isAssetsReady]);
+
+  // Check for stale thumbnail and regenerate if needed
+  useEffect(() => {
+    const boardId = board?._id || board?.id;
+    if (!board || !isOwner || !isAssetsReady || !stageRef.current) return;
+
+    // 1. Get latest sticker creation time
+    const latestStickerTime = board.stickers?.length > 0
+      ? Math.max(...board.stickers.map(s => new Date(s.createdAt).getTime()))
+      : 0;
+
+    // 2. Get current thumbnail creation time
+    const thumbTime = board.thumbnail?.createdAt
+      ? new Date(board.thumbnail.createdAt).getTime()
+      : 0;
+
+    // 3. If a sticker is newer than the thumbnail, trigger an update
+    if (latestStickerTime > thumbTime) {
+      console.log('Stale thumbnail detected, triggering auto-regeneration...');
+      // Small delay to ensure all assets are definitely rendered
+      setTimeout(() => {
+        uploadThumbnail(boardId, stageRef).catch(err => {
+          console.warn('Stale thumbnail auto-regeneration failed:', err);
+        });
+      }, 1500);
     }
   }, [board, isOwner, isAssetsReady]);
 

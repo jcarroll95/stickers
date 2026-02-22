@@ -36,7 +36,8 @@ const StickerboardSchema = new mongoose.Schema({
         height: Number,
         contentType: String,      // image/webp
         bytes: Number,
-        url: String               // full CDN URL
+        url: String,               // full CDN URL
+        createdAt: { type: Date, default: Date.now }
     },
     totalCost: Number,
     averageRating: Number,
