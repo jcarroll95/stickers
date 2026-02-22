@@ -26,7 +26,7 @@ describe('Stickerboard invariants', () => {
       .put(`/api/v1/stickerboards/${boardId}`)
       .set(authHeader(tokenB))
       .send({ name: 'Hacked!' })
-      .expect(401);
+      .expect(400);
 
     // Assertions
     // Fetch the board from DB and assert name unchanged
@@ -48,7 +48,7 @@ describe('Stickerboard invariants', () => {
     // Action
     // User B sends: { stickers: [...], description: "nope" }
     // Note: description is NOT allowed for non-owners, and sending multiple fields
-    // should trigger the 401 authorized check in the controller.
+    // should trigger the 403 authorized check in the controller.
     await request(app)
       .put(`/api/v1/stickerboards/${boardId}`)
       .set(authHeader(tokenB))
@@ -56,7 +56,7 @@ describe('Stickerboard invariants', () => {
         stickers: [{ stickerId: 1, x: 10, y: 10 }],
         description: 'Hacked Description'
       })
-      .expect(401);
+      .expect(403);
 
     // Assertions
     // Board remains unchanged
@@ -243,12 +243,12 @@ describe('Stickerboard invariants', () => {
       }
     }
     session.endSession();
-    
+
     if (!hasTransactions) {
       console.log('Skipping Test 8: MongoDB transactions not supported');
       return;
     }
-    
+
     // Setup
     const { token: tokenA } = await registerVerifyLogin({ email: 'owner8@example.com' });
     const { boardId } = await createBoard({
@@ -262,7 +262,7 @@ describe('Stickerboard invariants', () => {
 
     // Prepare two requests with the same payload (using stickerId = 2)
     const payload = { sticker: { stickerId: 2, x: 1, y: 1 } };
-    
+
     const req1 = request(app)
       .put(`/api/v1/stickerboards/${boardId}`)
       .set(authHeader(tokenB))
@@ -305,10 +305,10 @@ describe('Stickerboard invariants', () => {
     const res = await request(app)
       .put(`/api/v1/stickerboards/${boardId}`)
       .set(authHeader(tokenA))
-      .send({ 
-        name: 'New Name', 
-        description: 'New Desc', 
-        evil: 'nope' 
+      .send({
+        name: 'New Name',
+        description: 'New Desc',
+        evil: 'nope'
       })
       .expect(200);
 

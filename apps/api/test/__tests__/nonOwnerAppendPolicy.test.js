@@ -55,7 +55,17 @@ describe('nonOwnerAppendPolicy', () => {
     expect(() => assertNonOwnerOnlyAppendingSticker(goodBody)).not.toThrow();
   });
   test('Try to change the name of a non-owned board', () => {
-    expect(() => assertNonOwnerOnlyAppendingSticker(badBody)).toThrow(DomainError);
+    try {
+      assertNonOwnerOnlyAppendingSticker(badBody);
+      fail('Should have thrown');
+    } catch (err) {
+      expect(err).toBeInstanceOf(DomainError);
+      expect(err.statusCode).toBe(400);
+    }
+  });
+  test('Allow extra metadata like opId', () => {
+    const bodyWithOpId = { ...goodBody, opId: '123' };
+    expect(() => assertNonOwnerOnlyAppendingSticker(bodyWithOpId)).not.toThrow();
   });
   test('Try to pass a null body', () => {
     expect(() => extractCandidateSticker({body: null, existingStickerCount: 0})).toThrow(DomainError);

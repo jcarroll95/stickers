@@ -24,7 +24,7 @@ describe('Stickerboard controller additional coverage', () => {
       .put(`/api/v1/stickerboards/${boardId}`)
       .set(authHeader(intruderToken))
       .send({ description: 'hacked' })
-      .expect(401);
+      .expect(400);
 
     await request(app)
       .delete(`/api/v1/stickerboards/${boardId}`)
