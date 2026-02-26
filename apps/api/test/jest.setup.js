@@ -4,14 +4,16 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 let mongo;
 
 beforeAll(async () => {
+  jest.setTimeout(60000);
+  console.log('beforeAll: Starting MongoMemoryServer...');
   try {
-    mongo = await MongoMemoryServer.create({
-      replSet: { count: 1 }
-    });
+    mongo = await MongoMemoryServer.create();
     const uri = mongo.getUri();
+    console.log('beforeAll: MongoMemoryServer URI:', uri);
     await mongoose.connect(uri, { dbName: 'stickers_test' });
+    console.log('beforeAll: Mongoose connected');
   } catch (err) {
-    console.error('MongoMemoryServer startup failed:', err);
+    console.error('beforeAll: MongoMemoryServer startup failed:', err);
     if (mongo) await mongo.stop();
     throw err;
   }
@@ -53,3 +55,12 @@ jest.mock('nodemailer', () => ({
 // Silence/neutralize noisy middlewares in test
 jest.mock('express-rate-limit', () => () => (req, res, next) => next());
 jest.mock('express-fileupload', () => () => (req, res, next) => next());
+
+// Mock Redis client to avoid open handles and connection issues in test
+jest.mock('../config/redis', () => ({
+  isOpen: false,
+  get: jest.fn().mockResolvedValue(null),
+  set: jest.fn().mockResolvedValue('OK'),
+  del: jest.fn().mockResolvedValue(1),
+  connect: jest.fn().mockResolvedValue(true)
+}));

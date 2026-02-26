@@ -13,7 +13,8 @@ const {
     registerStart,
     registerVerify,
     registerResend,
-    renderResetPasswordForm
+    renderResetPasswordForm,
+    refresh
 } = require('../controllers/auth');
 const { protect } = require('../middleware/auth');
 
@@ -38,4 +39,8 @@ router.get('/resetpassword/:resettoken', renderResetPasswordForm);
 router.post('/register-start', registerStartLimiter, registerStart);
 router.post('/register-verify', registerVerifyLimiter, registerVerify);
 router.post('/register-resend', registerResendLimiter, registerResend);
+
+// Dual token auth refresh route
+router.post('/refresh', refresh);
+
 module.exports = router;

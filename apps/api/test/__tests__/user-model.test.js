@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const User = require('../../models/User');
 
 describe('User model methods', () => {
+  jest.setTimeout(30000);
   test('getSignedJwtToken returns a token and matchPassword true/false works', async () => {
     const user = await User.create({
       name: 'ModelUser',
@@ -10,8 +11,9 @@ describe('User model methods', () => {
       role: 'user'
     });
 
-    const token = user.getSignedJwtToken();
-    expect(typeof token).toBe('string');
+    const tokens = user.getSignedJwtToken();
+    expect(typeof tokens.accessToken).toBe('string');
+    expect(typeof tokens.refreshToken).toBe('string');
 
     // Need password selected to compare; refetch with +password
     const withPw = await User.findById(user._id).select('+password');
