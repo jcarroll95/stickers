@@ -17,26 +17,26 @@ const {
 } = require('../usecases/auth/authUsecases');
 
 /**
- * HTTP helper: set cookie + send token response.
- * This is delivery-layer only (Express).
+ * HTTP helper: set refresh cookie and send access token response.
+ *
  */
-const sendTokenResponse = (user, token, statusCode, res) => {
-  const options = {
-    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
-    httpOnly: true,
-    sameSite: 'lax',
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
-
+const sendTokenResponse = (user, tokens, statusCode, res) => {
   res
     .status(statusCode)
-    .cookie('token', token, options)
+    .cookie('refreshToken', tokens.refreshToken, {
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production'
+      })
+    // split from one auth token to refresh + access but didn't refactor how the front end handles it
+    // so we'll just send two cookies back
+    .cookie('token', tokens.accessToken, {
+      expires: new Date(Date.now() + 15 * 60  * 1000),
+      httpOnly: true
+    })
     .json({
       success: true,
-      token,
+      token: tokens.accessToken,
       data: user,
     });
 };
@@ -69,9 +69,9 @@ exports.register = asyncHandler(async (req, res) => {
 exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const { token, user } = await login({ email, password });
+  const { tokens, user } = await login({ email, password });
 
-  sendTokenResponse(user, token, 200, res);
+  sendTokenResponse(user, tokens, 200, res);
 });
 
 /**
@@ -215,7 +215,8 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     newPassword: req.body.password,
   });
 
-  sendTokenResponse(user, token, 200, res);
+  const tokens = { accessToken: token, refreshToken: 'mock-refresh' };
+  sendTokenResponse(user, tokens, 200, res);
 });
 
 /**
@@ -245,7 +246,8 @@ exports.registerVerify = asyncHandler(async (req, res) => {
     nodeEnv: process.env.NODE_ENV,
   });
 
-  sendTokenResponse(user, token, 200, res);
+  const tokens = { accessToken: token, refreshToken: 'mock-refresh' };
+  sendTokenResponse(user, tokens, 200, res);
 });
 
 /**
@@ -285,5 +287,25 @@ exports.updatePassword = asyncHandler(async (req, res) => {
     newPassword: req.body.newPassword,
   });
 
-  sendTokenResponse(user, token, 200, res);
+  const tokens = { accessToken: token, refreshToken: 'mock-refresh' };
+  sendTokenResponse(user, tokens, 200, res);
+});
+
+/**
+ * @desc    Get new access token using refresh token
+ * @route   POST /api/v1/auth/refresh
+ * @access  Public
+ */
+exports.refresh = asyncHandler(async (req, res, next) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return next(new ErrorResponse('Session expired. Please log in again.', 401));
+  }
+
+  // Call use-case to swap refresh token for new tokens
+  const { tokens, user } = await refreshTokens({ refreshToken });
+
+  // Use your helper to send the new tokens back
+  sendTokenResponse(user, tokens, 200, res);
 });

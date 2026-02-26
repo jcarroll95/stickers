@@ -71,30 +71,29 @@ const UserSchema = new mongoose.Schema({
     }
 });
 
-// encrypt password with bcrypt before save
 UserSchema.pre('save', async function() {
     if (!this.isModified('password')) return; // no next here in async style
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 });
 
-// sign jwt and return, we can call this from the controller
 UserSchema.methods.getSignedJwtToken = function() {
-    // jwt needs the payload (user id) and the secret (from our config)
-    return jwt.sign({ id: this._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+    // jwt needs the payload (user id and role) and the secret (from our config)
+
+    const accessToken =  jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    return { accessToken, refreshToken };
 }
 
-// match user entered password to hashed password in db
 UserSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 }
 
-// Generate and hash pw tokem
+
 UserSchema.methods.getResetPasswordToken = function() {
-    // generate tokem
+
     const resetToken = crypto.randomBytes(20).toString('hex');
 
-    // hash token and set to reset pw token field
     this.resetPasswordToken = crypto
         .createHash('sha256')
         .update(resetToken)
@@ -103,7 +102,6 @@ UserSchema.methods.getResetPasswordToken = function() {
     // set timeout
     this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 
-    // the original token not the hashed versiom
     return resetToken;
 }
 

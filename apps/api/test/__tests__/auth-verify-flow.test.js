@@ -61,6 +61,7 @@ describe('Auth email verification flow and auth middleware branches', () => {
       .expect(200);
     const token = reg.body.token;
     expect(token).toBeDefined();
+    // Use the cookie name 'token' which we maintained for backwards compatibility
     const cookieHeader = [`token=${token}; HttpOnly`];
 
     // Access /auth/me WITH cookie but WITHOUT Authorization header
@@ -76,7 +77,7 @@ describe('Auth email verification flow and auth middleware branches', () => {
   test('register-start early-return branch when user already verified', async () => {
     const email = `verified-${Date.now()}@example.com`;
     const password = 'Pass123!';
-    
+
     // Create a verified user directly
     await registerVerifyLogin({ name: 'V2', email, password, role: 'user' });
 

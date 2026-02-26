@@ -48,6 +48,14 @@ const stickers = require('./routes/stickers');
 // define express app
 const app = express();
 
+app.get('/healthz', (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: 'UP',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Attach request IDs early so all downstream logs/metrics can include them
 app.use(requestIdMiddleware);
 morgan.token('request-id', (req) => req.id);
@@ -172,7 +180,6 @@ app.use('/api/v1/comments', comments)
 app.use('/api/v1/admin', admin);
 app.use('/api/v1/stickers', stickers);
 
-// sanitize seed-data (Express 5 has a getter-only req.query; use manual sanitizer to avoid reassigning req.query)
 app.use((req, res, next) => {
     const opts = { allowDots: true };
     if (req.body) mongoSanitize.sanitize(req.body, opts);
@@ -182,7 +189,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// set static folder
+
 app.use(express.static(path.join(__dirname, 'public'), {
     maxAge: '1d',
     etag: true

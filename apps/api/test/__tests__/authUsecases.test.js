@@ -22,7 +22,7 @@ describe('authUsecases', () => {
     test('creates a user and returns token and user object', async () => {
       const userData = { name: 'Test', email: 'test@example.com', password: 'password' };
       const userMock = {
-        getSignedJwtToken: jest.fn().mockReturnValue('mock-token'),
+        getSignedJwtToken: jest.fn().mockReturnValue({ accessToken: 'mock-token', refreshToken: 'mock-refresh' }),
       };
       User.create.mockResolvedValue(userMock);
 
@@ -104,7 +104,7 @@ describe('authUsecases', () => {
         verifyEmailToken: require('crypto').createHash('sha256').update('123456').digest('hex'),
         verifyEmailExpire: Date.now() + 10000,
         save: jest.fn().mockResolvedValue(true),
-        getSignedJwtToken: jest.fn().mockReturnValue('mock-token'),
+        getSignedJwtToken: jest.fn().mockReturnValue({ accessToken: 'mock-token', refreshToken: 'mock-refresh' }),
       };
       User.findOne.mockReturnValue({ select: jest.fn().mockResolvedValue(userMock) });
 

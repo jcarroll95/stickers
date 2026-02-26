@@ -58,11 +58,11 @@ The MVP helps them: (1) record doses and side effects quickly, (2) gain insight 
 - Reliability: autosave stickerboard changes; API validation and meaningful errors.
 
 #### Data model snapshot (MVP)
-- User: auth profile; roles: `user`, `admin`.
+- User: auth profile; roles: `user`, `vipuser`, `admin`.
 - Stickerboard: name, slug, description, user owner, createdAt, tags, photo, layout/derived fields.
-- Stick: belongsToBoard, assetKey, x, y, width, height, rotation, zIndex, metadata.
-- Dose (new): user, medication (enum/string), amount, unit, takenAt, notes, optional stickerboardId.
-- SideEffectLog (new): user, effectType, severity (1–5), notes, occurredAt, optional linkedDoseId.
+- Sticker: belongsToBoard, assetKey, x, y, width, height, rotation, zIndex, metadata.
+- Dose: user, medication (enum/string), amount, unit, takenAt, notes, optional stickerboardId.
+- SideEffectLog: user, effectType, severity (1–5), notes, occurredAt, optional linkedDoseId.
 
 ---
 
@@ -314,31 +314,6 @@ Feature: Side effects
     Given I am not the owner
     When I DELETE /api/v1/side-effects/{id}
     Then status is 403
-```
-
-See also Postman collection: [../postman/](../../docs/api/postman)
-
-#### Analytics (new)
-- GET `/api/v1/analytics/adherence` (protected)
-    - Query: `from`, `to`, `bucket=day|week`
-    - 200 → `{ success: true, data: { streak: { current, best }, adherencePct, series: [ { date, taken } ] } }`
-- GET `/api/v1/analytics/side-effects/trend` (protected)
-    - Query: `from`, `to`, `bucket`
-    - 200 → `{ success: true, data: [ { date, avgSeverity } ] }`
-
-Acceptance tests
-
-```javascript
-Feature: Analytics
-  Scenario: Adherence analytics
-    Given I have logged doses across multiple days
-    When I GET /api/v1/analytics/adherence?from=...&to=...&bucket=day
-    Then status is 200 and data includes streak.current, streak.best, adherencePct, and series
-
-  Scenario: Side-effects trend
-    Given I have side effect logs
-    When I GET /api/v1/analytics/side-effects/trend?from=...&to=...&bucket=week
-    Then status is 200 and data is a time series of avgSeverity
 ```
 
 See also Postman collection: [../postman/](../../docs/api/postman)

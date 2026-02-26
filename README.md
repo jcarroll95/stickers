@@ -16,7 +16,7 @@ A production-deployed social “stickerboard” designed for GLP-1 users to stay
 Stickerboards is a full-stack monorepo application built to explore:
 
 - Idempotent transactional reward systems
-- Secure JWT-based auth with RBAC
+- Secure JWT-based stateless auth with RBAC, automatic token refresh and Redis-based blacklisting
 - Image-heavy UI performance optimization
 - Auditability of administrative actions
 - Production deployment with observability and backups
@@ -133,11 +133,12 @@ Tradeoff:
 
 ## 4. RBAC via JWT Payload
 
-Authentication uses:
+Stateless authentication uses:
 
-- JWTs stored in HttpOnly cookies
-- Role-based claims embedded in JWT payload
-- Middleware-based authorization checks
+- JWTs stored in HttpOnly cookies (access token and refresh token)
+- Role-based claims embedded in JWT payload (access token)
+- Middleware-based authorization checks, automatic refresh
+- Redis-backed blacklisting for token revocation
 
 Frontend listens for `auth:unauthorized` broadcast events to gracefully handle session expiry.
 

@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const ErrorResponse = require('../../utils/errorResponse');
 const sendEmail = require('../../utils/sendEmail');
 const User = require('../../models/User');
-
+const redisClient = require('../../config/redis')
 const { normalizeEmail, assertValidEmailAndPassword } = require('../../domain/auth/validators');
 
 /**
@@ -18,8 +18,8 @@ async function register({ name, email, password, role, nodeEnv }) {
     role: nodeEnv === 'test' ? role : (role || 'user'),
   });
 
-  const token = user.getSignedJwtToken();
-  return { token, user };
+  const tokens = user.getSignedJwtToken();
+  return { token: tokens.accessToken, user };
 }
 
 async function login({ email, password }) {
@@ -40,8 +40,9 @@ async function login({ email, password }) {
   user.lastLoginAt = new Date();
   await user.save();
 
-  const token = user.getSignedJwtToken();
-  return { token, user };
+  const tokens = user.getSignedJwtToken();
+  await redisClient.set(`refresh:${tokens.refreshToken}`, user._id.toString(), 'EX', 60 * 60 * 24 * 7);
+  return { tokens, user };
 }
 
 async function logout() {
@@ -97,8 +98,8 @@ async function resetPassword({ resetTokenParam, newPassword }) {
   user.resetPasswordExpire = undefined;
   await user.save();
 
-  const token = user.getSignedJwtToken();
-  return { token, user };
+  const tokens = user.getSignedJwtToken();
+  return { token: tokens.accessToken, user };
 }
 
 async function registerStart({ email, password, name }) {
@@ -176,8 +177,8 @@ async function registerVerify({ email, code, nodeEnv }) {
 
   await user.save();
 
-  const token = user.getSignedJwtToken();
-  return { token, user };
+  const tokens = user.getSignedJwtToken();
+  return { token: tokens.accessToken, user };
 }
 
 async function registerResend({ email }) {
@@ -226,8 +227,31 @@ async function updatePassword({ userId, currentPassword, newPassword }) {
   user.password = newPassword;
   await user.save();
 
-  const token = user.getSignedJwtToken();
-  return { token, user };
+  const tokens = user.getSignedJwtToken();
+  return { token: tokens.accessToken, user };
+}
+
+async function refreshTokens({ refreshToken }) {
+  // 1. Check Redis for the refresh token
+  const userId = await redisClient.get(`refresh:${refreshToken}`);
+
+  if (!userId) {
+    throw new ErrorResponse('Invalid or expired session', 401);
+  }
+
+  // 2. Fetch the user (since we need their role for the new JWT)
+  const user = await User.findById(userId);
+  if (!user) throw new ErrorResponse('User no longer exists', 404);
+
+  // 3. Generate a new pair of tokens
+  const tokens = user.getTokens();
+
+  // 4. (Optional but recommended) "Rotate" the refresh token
+  // Delete the old one and save the new one in Redis
+  await redisClient.del(`refresh:${refreshToken}`);
+  await redisClient.set(`refresh:${tokens.refreshToken}`, userId, 'EX', 60 * 60 * 24 * 7);
+
+  return { tokens, user };
 }
 
 module.exports = {
@@ -242,4 +266,5 @@ module.exports = {
   registerResend,
   updateDetails,
   updatePassword,
+  refreshTokens
 };

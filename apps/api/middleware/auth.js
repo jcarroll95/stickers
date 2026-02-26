@@ -2,9 +2,8 @@ const jwt = require('jsonwebtoken');
 const asyncHandler = require('./async');
 const ErrorResponse = require('../utils/errorResponse');
 const User = require('../models/User');
+const redisClient = require('../config/redis');
 
-// protect routes. this middleware will check for a valid jwt in the request header and attach the decoded user to req.user
-// if we require protect and pass it into the function calls, it gives us access to req.user in the controller.
 exports.protect = asyncHandler(async (req, res, next) => {
     let token;
 
@@ -14,17 +13,28 @@ exports.protect = asyncHandler(async (req, res, next) => {
         token = req.cookies.token;
     }
 
-    // confirm we actually have a token
     if (!token) {
         return next(new ErrorResponse('Not authorized to access this route', 401));
     }
 
     try {
+        if (redisClient.isOpen) {
+          const isRevoked = await redisClient.get(`blacklist:${token}`);
+
+          if (isRevoked) {
+            return next(new ErrorResponse('Not authorized to access this route', 401));
+          }
+        }
         // verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // console.log(decoded);
-        // get the decoded id from the token and find that user in the db
-        req.user = await User.findById(decoded.id);
+        // New logic for stateless RBAC reducing db hits
+        req.user = {
+          id: decoded.id,
+          _id: decoded.id,  // For Mongoose compatibility / Audit logs
+          role: decoded.role // For RBAC
+        };
+        // old logic, deprecated by above
+        // req.user = await User.findById(decoded.id);
         if (!req.user) return next(new ErrorResponse('Not authorized to access this route', 401));
         next();
     } catch (err) {
