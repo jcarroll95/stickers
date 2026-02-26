@@ -25,11 +25,16 @@ describe('apiClient', () => {
     expect(body.data.foo).toBe('bar');
   });
 
-  it('should broadcast event on 401', async () => {
+  it('should broadcast event on 401 when refresh fails', async () => {
     const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
-    
+
+    // Mock the initial 401 response
     server.use(
       http.get('*/test-401', () => {
+        return new HttpResponse(null, { status: 401 });
+      }),
+      // Mock the refresh call to fail as well
+      http.post('*/auth/refresh', () => {
         return new HttpResponse(null, { status: 401 });
       })
     );
@@ -37,17 +42,38 @@ describe('apiClient', () => {
     try {
       await apiClient.get('/test-401');
     } catch (err) {
+      // The error thrown is from the failed refresh call
       expect(err.response.status).toBe(401);
     }
 
     expect(dispatchSpy).toHaveBeenCalled();
-    const event = dispatchSpy.mock.calls[0][0];
+    const event = dispatchSpy.mock.calls.find(call => call[0].type === 'auth:unauthorized')[0];
     expect(event.type).toBe('auth:unauthorized');
+  });
+
+  it('should retry request when refresh succeeds', async () => {
+    let callCount = 0;
+    server.use(
+      http.get('*/test-retry', () => {
+        callCount++;
+        if (callCount === 1) {
+          return new HttpResponse(null, { status: 401 });
+        }
+        return HttpResponse.json({ success: true, data: 'retried' });
+      }),
+      http.post('*/auth/refresh', () => {
+        return HttpResponse.json({ success: true });
+      })
+    );
+
+    const result = await apiClient.get('/test-retry');
+    expect(result.data).toBe('retried');
+    expect(callCount).toBe(2);
   });
 
   it('should log network errors', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     server.use(
       http.get('*/test-network-error', () => {
         return HttpResponse.error();
