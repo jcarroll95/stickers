@@ -1,0 +1,20 @@
+{
+  "name": "@stickerboards/insight-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pattern detection and LLM-based medical insight generation",
+  "main": "patternDetector.js",
+  "scripts": {
+    "ingest": "node ingestToMongo.js",
+    "fetch": "node fetchPubmedAbstracts.js",
+    "report": "node generateInsightReport.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

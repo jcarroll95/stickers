@@ -17,7 +17,7 @@ const LogEntrySchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['weight', 'nsv', 'note'],
+    enum: ['weight', 'nsv', 'note', 'mood', 'sleep', 'activity', 'side-effect'],
     required: true
   },
   weight: {

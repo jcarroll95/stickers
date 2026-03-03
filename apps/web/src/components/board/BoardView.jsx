@@ -186,6 +186,18 @@ export default function BoardView({ token }) {
               <button className={styles.addButton} onClick={() => setLogModal({ show: true, type: 'note' })}>
                 Add Note
               </button>
+              <button className={styles.addButton} onClick={() => setLogModal({ show: true, type: 'mood' })}>
+                Log Mood
+              </button>
+              <button className={styles.addButton} onClick={() => setLogModal({ show: true, type: 'sleep' })}>
+                Log Sleep
+              </button>
+              <button className={styles.addButton} onClick={() => setLogModal({ show: true, type: 'activity' })}>
+                Log Activity
+              </button>
+              <button className={styles.addButton} onClick={() => setLogModal({ show: true, type: 'side-effect' })}>
+                Log Side Effect
+              </button>
             </div>
           )}
           {isAdmin && (
@@ -374,7 +386,11 @@ export default function BoardView({ token }) {
         <div className={styles.modalOverlay}>
           <div className={styles.modalDialog}> {/* Use your existing modal styles */}
             <div className={styles.modalHeader}>
-              <h3>Log {logModal.type === 'nsv' ? 'Non-Scale Victory' : logModal.type.charAt(0).toUpperCase() + logModal.type.slice(1)}</h3>
+              <h3>
+                {logModal.type === 'nsv' ? 'Log Non-Scale Victory' :
+                 logModal.type === 'side-effect' ? 'Log Side Effect' :
+                 `Log ${logModal.type.charAt(0).toUpperCase() + logModal.type.slice(1)}`}
+              </h3>
               <button className={styles.modalClose} onClick={() => setLogModal({ show: false, type: null })}>&times;</button>
             </div>
             <div className={styles.modalBody}>
